@@ -27,6 +27,48 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+// API endpoint for video info by ID
+app.get('/api/video', async (req, res) => {
+  try {
+    const videoId = req.query.id;
+    if (!videoId) {
+      return res.status(400).json({ error: 'Video ID required' });
+    }
+    
+    console.log(`Fetching video info for: ${videoId}`);
+    
+    // Try to get video info by searching
+    const searchResult = await ytSearch({ videoId: videoId });
+    
+    if (searchResult && searchResult.title) {
+      res.json(searchResult);
+    } else {
+      // Fallback: Search and filter
+      const searchResult = await ytSearch(videoId);
+      if (searchResult.videos && searchResult.videos.length > 0) {
+        const video = searchResult.videos.find(v => v.videoId === videoId) || searchResult.videos[0];
+        res.json(video);
+      } else {
+        res.status(404).json({ error: 'Video not found' });
+      }
+    }
+  } catch (error) {
+    console.error('Video info error:', error);
+    res.status(500).json({ error: 'Failed to fetch video info' });
+  }
+});
+
+// Download endpoint (placeholder - requires ytdl-core)
+app.get('/api/download', (req, res) => {
+  const { id, quality } = req.query;
+  res.json({ 
+    message: 'Download endpoint',
+    note: 'Implement with ytdl-core in production',
+    videoId: id,
+    quality: quality
+  });
+});
+
 // Serve node_modules
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 
@@ -38,4 +80,6 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`✅ Server running on port ${port}`);
   console.log(`🔍 Search API: http://localhost:${port}/api/search?q=your_query`);
+  console.log(`🎬 Video API: http://localhost:${port}/api/video?id=VIDEO_ID`);
+  console.log(`📥 Download API: http://localhost:${port}/api/download?id=VIDEO_ID&quality=720p`);
 });
