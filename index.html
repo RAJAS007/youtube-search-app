@@ -109,8 +109,8 @@
         
         .results-section {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
             margin-top: 30px;
         }
         
@@ -120,43 +120,52 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s;
+            border: 1px solid #eee;
         }
         
         .video-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
         
         .thumbnail {
             position: relative;
-            height: 180px;
+            height: 200px;
             overflow: hidden;
+            background-color: #000;
         }
         
         .thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .video-card:hover .thumbnail img {
+            transform: scale(1.05);
         }
         
         .duration {
             position: absolute;
             bottom: 10px;
             right: 10px;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 3px 6px;
-            border-radius: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 0.8rem;
+            font-weight: 600;
         }
         
         .video-info {
-            padding: 15px;
+            padding: 20px;
         }
         
         .video-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #333;
             line-height: 1.4;
             display: -webkit-box;
@@ -167,8 +176,15 @@
         
         .video-channel {
             color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .video-channel i {
+            color: #FF0000;
         }
         
         .video-stats {
@@ -176,7 +192,71 @@
             justify-content: space-between;
             color: #888;
             font-size: 0.85rem;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .video-link-section {
+            margin-top: 15px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .link-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .link-label i {
+            color: #FF0000;
+        }
+        
+        .video-url {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .url-display {
+            flex: 1;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: #3d8b40;
+        }
+        
+        .copy-btn.copied {
+            background-color: #2196F3;
         }
         
         .watch-button {
@@ -185,11 +265,15 @@
             background-color: #FF0000;
             color: white;
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             text-decoration: none;
             font-weight: 600;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .watch-button:hover {
@@ -208,9 +292,12 @@
         
         .no-results {
             text-align: center;
-            padding: 40px;
+            padding: 50px 20px;
             color: #666;
             grid-column: 1 / -1;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
         
         .footer {
@@ -219,6 +306,29 @@
             color: #777;
             font-size: 0.9rem;
             padding: 20px;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
         }
         
         @media (max-width: 768px) {
@@ -239,6 +349,14 @@
                 border-radius: 5px;
                 padding: 15px;
             }
+            
+            .video-url {
+                flex-direction: column;
+            }
+            
+            .url-display {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -246,7 +364,7 @@
     <div class="container">
         <header>
             <h1><i class="fab fa-youtube"></i> YouTube Video Search</h1>
-            <p>Search for any YouTube video - Direct links included</p>
+            <p>Search for any YouTube video - Get video links instantly</p>
         </header>
         
         <section class="search-section">
@@ -274,9 +392,14 @@
         </div>
         
         <div class="footer">
-            <p>YouTube Video Search App | Deployed on Render</p>
-            <p>Uses ytsearch npm package with backend API</p>
+            <p><i class="fas fa-link"></i> YouTube Video Search App | Get direct YouTube links | Deployed on Render</p>
+            <p><i class="fas fa-info-circle"></i> Click "Copy Link" to save video URL to clipboard</p>
         </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">Link copied to clipboard!</span>
     </div>
 
     <script>
@@ -288,21 +411,55 @@
         const errorMessage = document.getElementById('errorMessage');
         const errorText = document.getElementById('errorText');
         const resultCount = document.getElementById('resultCount');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
         
         // Format duration
         function formatDuration(seconds) {
             if (!seconds) return "";
-            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
-            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            }
         }
         
         // Format view count
         function formatViews(views) {
             if (!views) return "0 views";
+            if (views >= 1000000000) return (views / 1000000000).toFixed(1) + 'B views';
             if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M views';
             if (views >= 1000) return (views / 1000).toFixed(1) + 'K views';
             return views + ' views';
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('YouTube link copied to clipboard!');
+            }).catch(err => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Link copied!');
+            });
         }
         
         // Search function using backend API
@@ -349,7 +506,7 @@
             } catch (error) {
                 loadingElement.style.display = 'none';
                 console.error('Search error:', error);
-                showError("Failed to search YouTube. Please try again in a moment.");
+                showError("Failed to search YouTube. Please try again.");
                 resultCount.textContent = `Search failed for "${query}"`;
             }
         }
@@ -362,6 +519,10 @@
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
+                // Create YouTube URLs
+                const watchUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+                const shortUrl = `https://youtu.be/${video.videoId}`;
+                
                 const thumbnail = video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
                 const duration = formatDuration(video.duration?.seconds || video.duration);
                 const views = formatViews(video.views);
@@ -370,17 +531,49 @@
                 card.innerHTML = `
                     <div class="thumbnail">
                         <img src="${thumbnail}" alt="${video.title}" 
-                             onerror="this.src='https://via.placeholder.com/300x180/FF0000/FFFFFF?text=YouTube'">
+                             onerror="this.src='https://via.placeholder.com/350x200/FF0000/FFFFFF?text=YouTube+Thumbnail'">
                         ${duration ? `<div class="duration">${duration}</div>` : ''}
                     </div>
                     <div class="video-info">
                         <h3 class="video-title" title="${video.title}">${video.title}</h3>
-                        <div class="video-channel">${video.author?.name || 'Unknown Channel'}</div>
-                        <div class="video-stats">
-                            <span>${views}</span>
-                            <span>${uploadDate}</span>
+                        
+                        <div class="video-channel">
+                            <i class="fas fa-user-circle"></i>
+                            ${video.author?.name || 'Unknown Channel'}
                         </div>
-                        <a href="https://www.youtube.com/watch?v=${video.videoId}" 
+                        
+                        <div class="video-stats">
+                            <span><i class="fas fa-eye"></i> ${views}</span>
+                            <span><i class="far fa-clock"></i> ${uploadDate}</span>
+                        </div>
+                        
+                        <div class="video-link-section">
+                            <div class="link-label">
+                                <i class="fas fa-link"></i> YouTube Video Link:
+                            </div>
+                            <div class="video-url">
+                                <div class="url-display" title="${watchUrl}">
+                                    ${shortUrl}
+                                </div>
+                                <button class="copy-btn" data-url="${watchUrl}">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            
+                            <div class="link-label">
+                                <i class="fas fa-external-link-alt"></i> Full YouTube URL:
+                            </div>
+                            <div class="video-url">
+                                <div class="url-display" title="${watchUrl}">
+                                    ${watchUrl}
+                                </div>
+                                <button class="copy-btn" data-url="${watchUrl}">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <a href="${watchUrl}" 
                            target="_blank" 
                            class="watch-button">
                             <i class="fab fa-youtube"></i> Watch on YouTube
@@ -389,6 +582,24 @@
                 `;
                 
                 resultsContainer.appendChild(card);
+            });
+            
+            // Add copy button event listeners
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    copyToClipboard(url);
+                    
+                    // Visual feedback
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    this.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('copied');
+                    }, 2000);
+                });
             });
         }
         
@@ -405,12 +616,13 @@
         });
         
         // Initialize with example
-        searchInput.value = "music";
+        searchInput.value = "music tutorials";
+        searchInput.focus();
         
         // Auto-search on page load
         window.onload = function() {
-            // Uncomment to auto-search on load:
-            // performSearch();
+            // Optional: Uncomment to auto-search on load
+            // setTimeout(() => performSearch(), 500);
         };
     </script>
 </body>
