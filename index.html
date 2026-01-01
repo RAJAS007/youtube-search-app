@@ -35,7 +35,7 @@
             overflow-x: hidden;
         }
 
-        /* --- Header --- */
+        /* --- HEADER (Responsive) --- */
         header {
             display: flex;
             align-items: center;
@@ -47,7 +47,7 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 1px 0 rgba(0,0,0,0.05);
-            will-change: transform; /* Performance hint */
+            transition: all 0.3s ease;
         }
 
         .logo-section {
@@ -63,8 +63,15 @@
         .logo-text-main { font-size: 20px; font-weight: 700; letter-spacing: -1px; color: #212121; }
         .logo-text-sub { font-size: 20px; font-weight: 400; letter-spacing: -0.5px; color: #212121; }
 
-        /* --- Search Bar --- */
-        .search-center { flex: 1; display: flex; justify-content: center; max-width: 600px; margin: 0 20px; }
+        /* Flexible Search Bar */
+        .search-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 20px;
+            transition: margin 0.3s ease;
+        }
 
         .search-box {
             display: flex;
@@ -75,12 +82,22 @@
             overflow: hidden;
             background: #fff;
             box-shadow: inset 0 1px 2px #eee;
-            transition: border 0.2s;
+            transition: box-shadow 0.2s, border 0.2s;
         }
 
-        .search-box:focus-within { border-color: #1c62b9; }
+        .search-box:focus-within {
+            border-color: #1c62b9;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+        }
 
-        #searchInput { flex: 1; border: none; padding: 0 16px; font-size: 16px; outline: none; min-width: 0; }
+        #searchInput {
+            flex: 1;
+            border: none;
+            padding: 0 16px;
+            font-size: 16px;
+            outline: none;
+            min-width: 0;
+        }
 
         #searchButton {
             width: 60px;
@@ -94,41 +111,68 @@
         }
         #searchButton i { color: #333; font-size: 18px; }
 
-        /* --- Main Content --- */
-        .container { padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; flex: 1; }
+        /* --- MAIN LAYOUT --- */
+        .container {
+            padding: 20px;
+            max-width: 1400px; /* Wider support for big screens */
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
 
-        .empty-state { text-align: center; margin-top: 80px; color: var(--text-sec); padding: 20px; }
-        .empty-state i { font-size: 50px; margin-bottom: 20px; opacity: 0.15; }
-        .empty-state h2 { font-weight: 500; margin-bottom: 8px; color: #333; font-size: 1.2rem; }
+        .empty-state {
+            text-align: center;
+            margin-top: 10vh;
+            color: var(--text-sec);
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        .empty-state i { font-size: 60px; margin-bottom: 20px; opacity: 0.15; }
+        .empty-state h2 { font-weight: 500; margin-bottom: 8px; color: #333; font-size: 1.4rem; }
 
-        /* Grid */
+        /* --- RESPONSIVE GRID --- */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            /* Auto-fit magic: Resizes based on screen width */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
             display: none;
+            padding-bottom: 40px;
         }
         
         .video-grid.active { display: grid; }
-        .video-grid.single-mode { display: flex; justify-content: center; }
-        .video-grid.single-mode .video-card { max-width: 400px; width: 100%; }
+        
+        /* Centered Mode for Single Result (Link Paste) */
+        .video-grid.single-mode {
+            display: flex;
+            justify-content: center;
+        }
+        .video-grid.single-mode .video-card {
+            max-width: 450px;
+            width: 100%;
+        }
 
-        /* Cards */
+        /* --- CARDS --- */
         .video-card {
             background: white;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: var(--shadow-card);
-            transform: translateZ(0); /* Hardware Acceleration */
+            transform: translateZ(0);
             display: flex;
             flex-direction: column;
-            contain: content; /* Rendering Optimization */
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
         }
 
         .thumb {
             position: relative;
-            padding-top: 56.25%;
-            background: #eee;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #e0e0e0;
         }
 
         .thumb img {
@@ -138,8 +182,6 @@
             opacity: 0;
             transition: opacity 0.3s ease-in;
         }
-        
-        /* Fade in image when loaded */
         .thumb img.loaded { opacity: 1; }
 
         .duration-badge {
@@ -154,10 +196,10 @@
             font-weight: 500;
         }
 
-        .details { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .details { padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 6px; }
 
         .title {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
             line-height: 1.3;
             display: -webkit-box;
@@ -168,95 +210,74 @@
             margin-bottom: 2px;
         }
 
-        .meta { font-size: 12px; color: var(--text-sec); }
+        .meta { font-size: 13px; color: var(--text-sec); display: flex; align-items: center; gap: 5px; }
 
-        .actions { margin-top: 8px; display: flex; gap: 8px; }
+        .actions { margin-top: auto; padding-top: 10px; display: flex; gap: 10px; }
 
         .btn {
             flex: 1;
             padding: 10px;
             border: none;
-            border-radius: 18px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            font-size: 13px;
-            height: 36px;
+            font-size: 14px;
+            height: 40px;
+            transition: background 0.2s;
         }
         
         .btn-mp3 { background: #0f0f0f; color: white; }
+        .btn-mp3:hover { background: #333; }
         .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
+        .btn-mp4:hover { background: #e5e5e5; }
 
-        /* --- SKELETON LOADING (SHIMMER) --- */
+        /* --- SKELETON LOADER (Shimmer) --- */
         .skeleton {
             background: #f0f0f0;
             position: relative;
             overflow: hidden;
         }
-        
         .skeleton::after {
             content: '';
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
             transform: translateX(-100%);
-            background-image: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0,
-                rgba(255, 255, 255, 0.5) 20%,
-                rgba(255, 255, 255, 0.8) 60%,
-                rgba(255, 255, 255, 0)
-            );
+            background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0));
             animation: shimmer 1.5s infinite;
         }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
 
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
+        .skel-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
+        .skel-thumb { padding-top: 56.25%; width: 100%; }
+        .skel-details { padding: 14px; gap: 10px; display: flex; flex-direction: column; }
+        .skel-line { height: 16px; border-radius: 4px; width: 90%; }
+        .skel-line.short { width: 60%; }
+        .skel-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .skel-btn { flex: 1; height: 40px; border-radius: 8px; }
 
-        .skel-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow-card);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .skel-thumb { width: 100%; padding-top: 56.25%; }
-        .skel-details { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .skel-title { height: 18px; width: 90%; border-radius: 4px; }
-        .skel-title-2 { height: 18px; width: 70%; border-radius: 4px; }
-        .skel-meta { height: 14px; width: 40%; border-radius: 4px; margin-top: 4px; }
-        .skel-actions { display: flex; gap: 8px; margin-top: 8px; }
-        .skel-btn { flex: 1; height: 36px; border-radius: 18px; }
-
-
-        /* --- Mini Popup --- */
+        /* --- MINI POPUP / BOTTOM SHEET --- */
         .mini-popup {
             position: fixed;
             bottom: 30px;
             right: 30px;
             background: white;
-            width: 340px;
-            padding: 20px;
+            width: 360px;
+            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             z-index: 1000;
             display: none;
             animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .popup-title { font-weight: 600; font-size: 14px; color: #333; }
-        .popup-close { cursor: pointer; color: #999; padding: 5px; font-size: 18px; }
+        .popup-title { font-weight: 600; font-size: 15px; color: #333; }
+        .popup-close { cursor: pointer; color: #999; padding: 5px; font-size: 20px; }
         .popup-content { display: flex; align-items: center; gap: 15px; }
         .format-badge { background: #0f0f0f; color: white; font-size: 12px; font-weight: 700; padding: 8px 0; width: 45px; border-radius: 8px; text-transform: uppercase; text-align: center; flex-shrink: 0; }
         .progress-area { flex: 1; }
@@ -268,15 +289,31 @@
         .progress-fill.indeterminate { width: 100%; background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-        /* --- MOBILE --- */
+        /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 600px) {
-            header { padding: 0 16px; gap: 15px; }
-            .logo-text-sub { display: none; } 
-            .search-center { margin: 0; max-width: none; }
+            header { padding: 0 16px; gap: 10px; }
+            .logo-text-sub { display: none; } /* Hide subtext on mobile to save space */
+            .search-center { margin: 0; }
+            
             .container { padding: 16px; }
-            .video-grid { grid-template-columns: 1fr; gap: 24px; }
-            .mini-popup { width: 100%; right: 0; bottom: 0; left: 0; border-radius: 20px 20px 0 0; padding: 24px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); }
+            .video-grid { 
+                grid-template-columns: 1fr; /* Full width cards */
+                gap: 20px;
+            }
+            
+            /* Bottom Sheet Style for Mobile */
+            .mini-popup {
+                width: 100%;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                border-radius: 20px 20px 0 0;
+                padding: 24px 24px 40px 24px; /* Extra padding bottom for safe area */
+                box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
+            }
         }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -302,7 +339,7 @@
         <div class="empty-state" id="emptyState">
             <i class="fas fa-cloud-download-alt"></i>
             <h2>Ready to Download</h2>
-            <p>Paste a YouTube link to start.</p>
+            <p>Paste a YouTube link or search to start.</p>
         </div>
 
         <div class="video-grid" id="grid"></div>
@@ -345,7 +382,7 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- SKELETON LOADER ---
+        // --- SKELETON LOADER (Instant Feedback) ---
         function showSkeletons(count = 8) {
             let html = '';
             for(let i=0; i<count; i++) {
@@ -353,10 +390,10 @@
                 <div class="skel-card">
                     <div class="skel-thumb skeleton"></div>
                     <div class="skel-details">
-                        <div class="skel-title skeleton"></div>
-                        <div class="skel-title-2 skeleton"></div>
-                        <div class="skel-meta skeleton"></div>
-                        <div class="skel-actions">
+                        <div class="skel-line skeleton"></div>
+                        <div class="skel-line short skeleton"></div>
+                        <div class="skel-line short skeleton" style="width: 30%; margin-top: 5px;"></div>
+                        <div class="skel-btns">
                             <div class="skel-btn skeleton"></div>
                             <div class="skel-btn skeleton"></div>
                         </div>
@@ -368,16 +405,16 @@
             ui.grid.classList.remove('single-mode');
         }
 
-        // --- SEARCH ---
+        // --- SEARCH LOGIC ---
         async function handleSearch() {
             const query = ui.input.value.trim();
             if(!query) return;
 
-            ui.input.blur();
+            ui.input.blur(); // Close keyboard on mobile
             ui.empty.style.display = 'none';
             
-            // 1. Show Skeletons Immediately
-            showSkeletons(6);
+            // 1. Render Skeletons immediately for perceived speed
+            showSkeletons(8);
 
             const videoId = extractID(query);
             const searchQuery = videoId || query;
@@ -388,15 +425,13 @@
 
                 if(data.videos && data.videos.length > 0) {
                     let videos = data.videos;
-                    // If link, we only want 1 result centered
                     if(videoId) {
                         videos = [data.videos[0]]; 
                         ui.grid.classList.add('single-mode');
                     } else {
                         ui.grid.classList.remove('single-mode');
                     }
-                    
-                    // 2. Render Actual Content
+                    // 2. Replace Skeletons with Real Content
                     renderVideos(videos);
                 } else {
                     ui.grid.classList.remove('active');
@@ -406,14 +441,13 @@
             } catch(e) {
                 ui.grid.classList.remove('active');
                 ui.empty.style.display = 'block';
-                ui.empty.innerHTML = '<h2>Something went wrong</h2><p>Please try again later.</p>';
+                ui.empty.innerHTML = '<h2>Connection Error</h2><p>Please try again later.</p>';
             }
         }
 
         function renderVideos(videos) {
             ui.grid.innerHTML = videos.map(v => {
                 const title = v.title.replace(/"/g, '&quot;');
-                // High Quality Thumb
                 const thumb = v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
                 const url = `https://www.youtube.com/watch?v=${v.videoId}`;
                 const duration = formatYoutubeTime(v.duration?.seconds || v.duration);
@@ -427,7 +461,7 @@
                     </div>
                     <div class="details">
                         <div class="title">${title}</div>
-                        <div class="meta">${v.author?.name || 'Unknown Channel'}</div>
+                        <div class="meta">${v.author?.name || 'Unknown'}</div>
                         <div class="actions">
                             <button class="btn btn-mp3" onclick="triggerDownload('${url}', 'mp3', '${safeName}')">
                                 <i class="fas fa-music"></i> Audio
@@ -441,8 +475,9 @@
             }).join('');
         }
 
-        // --- DIRECT DOWNLOAD (No Redirect) ---
+        // --- SECURE DOWNLOAD (No Redirects) ---
         async function triggerDownload(url, format, filename) {
+            // UI Reset
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
@@ -454,7 +489,10 @@
             const targetUrl = api + url;
 
             try {
+                // Fetch (Stream)
                 const response = await fetch(targetUrl);
+                
+                // If API fails (like 404), throw error immediately
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 
                 const reader = response.body.getReader();
@@ -474,6 +512,7 @@
                         ui.popPercent.textContent = `${percent}%`;
                         ui.popStatus.textContent = 'Downloading...';
                     } else {
+                        // Indeterminate mode if server doesn't send size
                         if(!ui.popBar.classList.contains('indeterminate')) {
                             ui.popBar.classList.add('indeterminate');
                             ui.popPercent.textContent = '';
@@ -482,16 +521,19 @@
                     }
                 }
 
+                // File Ready
                 ui.popStatus.textContent = 'Saving file...';
                 const blob = new Blob(chunks);
                 const blobUrl = window.URL.createObjectURL(blob);
                 
+                // Success State
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('complete');
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
                 ui.popStatus.textContent = 'Download Complete';
 
+                // Trigger Save
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `${filename}.${format}`;
@@ -506,6 +548,8 @@
 
             } catch (error) {
                 console.error("Download failed:", error);
+                
+                // ERROR STATE (User stays on page)
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('error');
                 ui.popBar.style.width = '100%';
