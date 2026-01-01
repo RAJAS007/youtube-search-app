@@ -56,15 +56,14 @@
         
         .logo-text-main {
             font-size: 20px;
-            font-weight: 700; /* Bold "YouTube" */
+            font-weight: 700;
             letter-spacing: -1px;
-            font-family: 'Roboto', sans-serif;
             color: #212121;
         }
 
         .logo-text-sub {
             font-size: 20px;
-            font-weight: 400; /* Light "Downloader" */
+            font-weight: 400;
             letter-spacing: -0.5px;
             color: #212121;
         }
@@ -116,12 +115,9 @@
 
         #searchButton:hover { background: #f0f0f0; }
         
-        /* FontAwesome Fix for Button */
         #searchButton i {
             color: #333;
             font-size: 18px;
-            font-family: "Font Awesome 6 Free"; 
-            font-weight: 900;
         }
 
         /* --- Main Content --- */
@@ -132,12 +128,11 @@
             width: 100%;
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             margin-top: 100px;
             color: var(--text-sec);
-            display: block; /* Visible by default */
+            display: block;
         }
         .empty-state i {
             font-size: 60px;
@@ -150,19 +145,17 @@
             color: #333;
         }
 
-        /* Results Grid */
         .video-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
-            display: none; /* Hidden until search */
+            display: none;
         }
         
         .video-grid.active { display: grid; }
         .video-grid.single-mode { display: flex; justify-content: center; }
         .video-grid.single-mode .video-card { max-width: 380px; width: 100%; }
 
-        /* --- Cards --- */
         .video-card {
             background: white;
             border-radius: 12px;
@@ -227,7 +220,7 @@
         .btn-mp3 { background: #0f0f0f; color: white; }
         .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
 
-        /* --- Mini Popup (The Download Manager) --- */
+        /* --- Mini Popup --- */
         .mini-popup {
             position: fixed;
             bottom: 30px;
@@ -238,7 +231,7 @@
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1);
             z-index: 1000;
-            display: none; /* Hidden by default */
+            display: none;
             animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -306,26 +299,12 @@
 
         .progress-fill {
             height: 100%;
-            background: #3ea6ff; /* YouTube Blue */
+            background: #3ea6ff;
             width: 0%;
             border-radius: 2px;
             transition: width 0.2s linear;
         }
-        
-        /* Indeterminate animation */
-        .progress-fill.indeterminate {
-            width: 100%;
-            background: linear-gradient(90deg, #3ea6ff 25%, #60b5ff 50%, #3ea6ff 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite linear;
-        }
 
-        @keyframes loading {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-
-        /* Mobile adjustments */
         @media (max-width: 600px) {
             header { padding: 0 16px; }
             .search-center { margin: 0 10px; }
@@ -387,21 +366,17 @@
     </div>
 
     <script>
-        // --- CONFIG ---
         const CONFIG = {
             mp3Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp3?url=',
             mp4Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
         };
 
-        // --- DOM ELEMENTS ---
         const ui = {
             input: document.getElementById('searchInput'),
             btn: document.getElementById('searchButton'),
             grid: document.getElementById('grid'),
             empty: document.getElementById('emptyState'),
             loader: document.getElementById('mainLoader'),
-            
-            // Popup Elements
             popup: document.getElementById('downloadPopup'),
             popFormat: document.getElementById('popFormat'),
             popBar: document.getElementById('popBar'),
@@ -409,12 +384,10 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- SEARCH LOGIC ---
         async function handleSearch() {
             const query = ui.input.value.trim();
             if(!query) return;
 
-            // UI Reset
             ui.empty.style.display = 'none';
             ui.loader.style.display = 'block';
             ui.grid.style.display = 'none';
@@ -425,7 +398,6 @@
             const searchQuery = videoId || query;
 
             try {
-                // Fetch Results
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
                 
@@ -437,7 +409,7 @@
                     
                     let videos = data.videos;
                     if(videoId) {
-                        videos = [data.videos[0]]; // Single result mode
+                        videos = [data.videos[0]]; 
                         ui.grid.classList.add('single-mode');
                     }
                     renderVideos(videos);
@@ -481,58 +453,63 @@
             }).join('');
         }
 
-        // --- DOWNLOAD POPUP LOGIC ---
+        // --- DOWNLOAD LOGIC (NO REDIRECT) ---
         function triggerDownload(url, format) {
             // 1. Show Popup
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             
-            // 2. Reset Progress
+            // 2. Reset Progress UI
             ui.popBar.style.width = '0%';
-            ui.popBar.classList.remove('indeterminate');
-            ui.popStatus.textContent = 'Connecting...';
+            ui.popStatus.textContent = 'Processing...';
             ui.popPercent.textContent = '0%';
 
-            // 3. Simulate Progress (since we can't track API progress easily client-side)
+            // 3. Fake Progress Bar
             let progress = 0;
             const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if(progress > 90) progress = 90; // Hold at 90%
+                progress += Math.random() * 20;
+                if(progress > 95) progress = 95; 
                 
                 ui.popBar.style.width = `${progress}%`;
                 ui.popPercent.textContent = `${Math.floor(progress)}%`;
                 
-                if(progress > 20) ui.popStatus.textContent = 'Converting...';
-                if(progress > 60) ui.popStatus.textContent = 'Preparing File...';
+                if(progress > 30) ui.popStatus.textContent = 'Converting...';
+                if(progress > 70) ui.popStatus.textContent = 'Finalizing...';
             }, 300);
 
-            // 4. Construct Final URL
+            // 4. Trigger Silent Download (Using Hidden Iframe)
             const apiUrl = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
             const finalLink = apiUrl + url;
 
-            // 5. Trigger Real Download after small delay (Simulating server processing)
             setTimeout(() => {
                 clearInterval(interval);
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
-                ui.popStatus.textContent = 'Starting Download...';
+                ui.popStatus.textContent = 'Download Started!';
                 
-                // Open native browser download
-                window.open(finalLink, '_blank');
+                // --- THE KEY CHANGE: HIDDEN IFRAME INSTEAD OF WINDOW.OPEN ---
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = finalLink;
+                document.body.appendChild(iframe);
                 
-                // Close popup automatically after 3s
+                // Cleanup iframe after a minute to free memory
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 60000);
+                
+                // Auto close popup
                 setTimeout(() => {
                     closePopup();
-                }, 3000);
+                }, 4000);
 
-            }, 2500); // 2.5 second fake processing time
+            }, 2500);
         }
 
         function closePopup() {
             ui.popup.style.display = 'none';
         }
 
-        // --- UTILS ---
         function extractID(url) {
             const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
             return (match && match[2].length === 11) ? match[2] : null;
@@ -544,7 +521,6 @@
             return h>0 ? `${h}:${m}:${sec.toString().padStart(2,'0')}` : `${m}:${sec.toString().padStart(2,'0')}`;
         }
 
-        // --- EVENTS ---
         ui.btn.addEventListener('click', handleSearch);
         ui.input.addEventListener('keypress', e => e.key === 'Enter' && handleSearch());
     </script>
