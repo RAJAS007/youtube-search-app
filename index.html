@@ -3,304 +3,618 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Search & Downloader</title>
+    <title>YouTube Converter & Downloader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* (All previous CSS remains exactly the same) */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f9f9f9; color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        header { text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #FF0000, #CC0000); color: white; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .search-section { background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; text-align: center; }
-        .search-box { display: flex; max-width: 600px; margin: 0 auto 15px; }
-        #searchInput { flex: 1; padding: 15px; border: 2px solid #e0e0e0; border-radius: 5px 0 0 5px; font-size: 1.1rem; outline: none; }
-        #searchInput:focus { border-color: #FF0000; }
-        #searchButton { background-color: #FF0000; color: white; border: none; padding: 0 30px; border-radius: 0 5px 5px 0; cursor: pointer; font-size: 1.1rem; transition: background-color 0.3s; }
-        #searchButton:hover { background-color: #CC0000; }
-        .search-info { color: #666; font-size: 0.95rem; margin-top: 10px; }
-        .loading { text-align: center; padding: 40px; display: none; }
-        .loading i { font-size: 2.5rem; color: #FF0000; margin-bottom: 15px; }
-        .results-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; margin-top: 30px; }
-        .video-card { background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); transition: transform 0.3s; border: 1px solid #eee; }
-        .video-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
-        .thumbnail { position: relative; height: 200px; overflow: hidden; background-color: #000; }
-        .thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
-        .video-card:hover .thumbnail img { transform: scale(1.05); }
-        .duration { position: absolute; bottom: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
-        .video-info { padding: 20px; }
-        .video-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; color: #333; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .video-channel { color: #666; font-size: 0.95rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .video-channel i { color: #FF0000; }
-        .video-stats { display: flex; justify-content: space-between; color: #888; font-size: 0.85rem; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .video-link-section { margin-top: 15px; background-color: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; }
-        .link-label { font-size: 0.9rem; color: #666; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .link-label i { color: #FF0000; }
-        .video-url { display: flex; gap: 10px; margin-bottom: 12px; }
-        .url-display { flex: 1; background: white; padding: 10px 15px; border-radius: 5px; border: 1px solid #ddd; font-size: 0.9rem; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .copy-btn { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; transition: background-color 0.3s; }
-        .copy-btn:hover { background-color: #3d8b40; }
-        .copy-btn.copied { background-color: #2196F3; }
-        .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .watch-button { display: block; width: 100%; background-color: #FF0000; color: white; text-align: center; padding: 12px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .watch-button:hover { background-color: #CC0000; }
-        .error-message { text-align: center; padding: 20px; background-color: #ffebee; color: #c62828; border-radius: 5px; margin: 20px 0; display: none; }
-        .no-results { text-align: center; padding: 50px 20px; color: #666; grid-column: 1 / -1; background: white; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
-        .footer { text-align: center; margin-top: 40px; color: #777; font-size: 0.9rem; padding: 20px; }
-        .notification { position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; padding: 15px 20px; border-radius: 5px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); display: flex; align-items: center; gap: 10px; z-index: 1000; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; }
-        .notification.show { opacity: 1; transform: translateY(0); }
-        @media (max-width: 768px) { .results-section { grid-template-columns: 1fr; } .search-box { flex-direction: column; } #searchInput { border-radius: 5px; margin-bottom: 10px; } #searchButton { border-radius: 5px; padding: 15px; } .video-url { flex-direction: column; } .url-display { font-size: 0.8rem; } }
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --accent-mp3: #8b5cf6; /* Violet */
+            --accent-mp4: #3b82f6; /* Blue */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+        }
 
-        /* Download Button Style */
-        .download-button {
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        
+        body {
+            background-color: var(--secondary-bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
             width: 100%;
-            background-color: #2196F3;
+            flex: 1;
+        }
+
+        /* --- Header --- */
+        header {
+            text-align: center;
+            padding: 70px 20px;
+            background: var(--primary-gradient);
             color: white;
-            padding: 12px;
-            border-radius: 5px;
+            border-radius: var(--radius);
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.02em;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        /* --- Search Bar --- */
+        .search-container {
+            max-width: 700px;
+            margin: -45px auto 40px; /* Overlap header */
+            position: relative;
+            z-index: 10;
+            padding: 0 20px;
+        }
+
+        .search-box {
+            display: flex;
+            background: white;
+            padding: 8px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px 25px;
             border: none;
-            font-size: 1rem;
+            outline: none;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            background: transparent;
+            color: var(--text-main);
+        }
+
+        #searchButton {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 40px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: filter 0.2s;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #searchButton:hover {
+            filter: brightness(110%);
+        }
+
+        .status-text {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        /* --- Results Grid --- */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        /* --- Card Design --- */
+        .media-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .media-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .thumbnail-wrapper {
+            position: relative;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            overflow: hidden;
+            background: #000;
+        }
+
+        .thumbnail-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .media-card:hover .thumbnail-wrapper img {
+            transform: scale(1.05);
+            opacity: 0.8;
+        }
+
+        /* Play Icon Overlay */
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .play-overlay i {
+            color: var(--accent-mp3);
+            font-size: 1.2rem;
+            margin-left: 3px; /* visual fix */
+        }
+
+        .media-card:hover .play-overlay {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .duration-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        .card-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 3em; /* Fixed height for alignment */
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 20px;
+        }
+
+        .channel-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        /* --- Buttons --- */
+        .actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             text-decoration: none;
+            position: relative;
+            overflow: hidden;
         }
 
-        .download-button:hover {
-            background-color: #1976D2;
+        .btn:active {
+            transform: scale(0.98);
         }
 
-        .download-button:disabled {
-            background-color: #90CAF9;
-            cursor: not-allowed;
+        /* Primary MP3 Button */
+        .btn-mp3 {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+        }
+        .btn-mp3:hover {
+            box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4);
+            filter: brightness(105%);
+        }
+
+        /* Secondary MP4 Button */
+        .btn-mp4 {
+            background: white;
+            color: var(--text-main);
+            border: 2px solid #e5e7eb;
+        }
+        .btn-mp4:hover {
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
+
+        .btn i { font-size: 1.1em; }
+
+        /* Loading Spinner inside Button */
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- Utilities --- */
+        .loading-state {
+            text-align: center;
+            padding: 60px;
+            display: none;
+        }
+        .loading-state i {
+            font-size: 3rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .error-card {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid #fee2e2;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-top: auto;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .footer a {
+            color: var(--accent-mp3);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1f2937;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(150%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        .toast.show { transform: translateY(0); }
+        .toast i { color: #34d399; font-size: 1.2rem; }
+
+        @media (max-width: 768px) {
+            header { padding: 50px 20px 60px; margin-bottom: 30px; }
+            header h1 { font-size: 2rem; }
+            .search-container { margin-top: -40px; }
+            .search-box { flex-direction: column; padding: 10px; border-radius: 20px; }
+            #searchInput { padding: 12px; text-align: center; margin-bottom: 10px; }
+            #searchButton { width: 100%; }
         }
     </style>
 </head>
 <body>
+
     <div class="container">
         <header>
-            <h1><i class="fab fa-youtube"></i> YouTube Search & Download</h1>
-            <p>Search for any YouTube video - Watch or Download Instantly</p>
+            <h1>YouTube Converter</h1>
+            <p>Download High Quality MP3 & MP4 instantly</p>
         </header>
-        
-        <section class="search-section">
+
+        <div class="search-container">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Enter keywords or paste YouTube link...">
-                <button id="searchButton">Search</button>
+                <input type="text" id="searchInput" placeholder="Paste YouTube link or type keywords...">
+                <button id="searchButton"><i class="fas fa-search"></i> Search</button>
             </div>
-            <div class="search-info">
-                <span id="resultCount">Enter search terms or a link above</span>
-            </div>
-        </section>
-        
-        <div class="error-message" id="errorMessage">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span id="errorText">Error searching. Try again.</span>
+            <div class="status-text" id="resultCount"></div>
         </div>
-        
-        <div class="loading" id="loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Searching YouTube videos...</p>
+
+        <div class="error-card" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText">Error message here</span>
         </div>
-        
-        <div class="results-section" id="resultsContainer">
-            </div>
-        
-        <div class="footer">
-        <a href="https://ameen-api.vercel.app">    <p><i class="fas fa-link"></i> YouTube Downloader | Team Keiko Media</p> </a>
+
+        <div class="loading-state" id="loading">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <p>Searching the archives...</p>
         </div>
+
+        <div class="results-grid" id="resultsContainer"></div>
     </div>
 
-    <div class="notification" id="notification">
+    <div class="footer">
+        <a href="https://ameen-api.vercel.app">
+            <i class="fas fa-code-branch"></i> Powered by Team Keiko Media
+        </a>
+    </div>
+
+    <div class="toast" id="toast">
         <i class="fas fa-check-circle"></i>
-        <span id="notificationText">Link copied to clipboard!</span>
+        <span id="toastText">Download started successfully!</span>
     </div>
 
     <script>
-        // --- API Constants ---
-        const ameen = 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=';
-        const rajas = "ameen+text";
-        
-        // --- DOM Elements ---
-        const searchInput = document.getElementById('searchInput');
-        const searchButton = document.getElementById('searchButton');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingElement = document.getElementById('loading');
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        const resultCount = document.getElementById('resultCount');
-        const notification = document.getElementById('notification');
-        const notificationText = document.getElementById('notificationText');
-        
-        // --- Helper Functions ---
-        function formatDuration(seconds) {
-            if (!seconds) return "";
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = Math.floor(seconds % 60);
-            if (hours > 0) return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            return `${minutes}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        function formatViews(views) {
-            if (!views) return "0 views";
-            if (views >= 1000000000) return (views / 1000000000).toFixed(1) + 'B views';
-            if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M views';
-            if (views >= 1000) return (views / 1000).toFixed(1) + 'K views';
-            return views + ' views';
-        }
-        
-        function showNotification(message) {
-            notificationText.textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => { notification.classList.remove('show'); }, 3000);
-        }
+        // --- Configuration ---
+        const CONFIG = {
+            mp3Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp3?url=',
+            mp4Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
+        };
 
-        // --- NEW: URL Extraction Helper ---
-        function extractVideoId(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
+        // --- Elements ---
+        const ui = {
+            input: document.getElementById('searchInput'),
+            btn: document.getElementById('searchButton'),
+            grid: document.getElementById('resultsContainer'),
+            loader: document.getElementById('loading'),
+            error: document.getElementById('errorMessage'),
+            errorText: document.getElementById('errorText'),
+            status: document.getElementById('resultCount'),
+            toast: document.getElementById('toast'),
+            toastText: document.getElementById('toastText')
+        };
 
-        // --- CORE SEARCH FUNCTION ---
-        async function performSearch() {
-            let query = searchInput.value.trim();
-            if (!query) { showError("Please enter search terms"); return; }
-            
-            // --- UPDATED: Check for URL ---
-            const videoId = extractVideoId(query);
-            if (videoId) {
-                // If the user pasted a link, we switch the query to the Video ID
-                // This usually guarantees the specific video appears first in search results
-                query = videoId;
+        // --- Utilities ---
+        const utils = {
+            formatTime: (s) => {
+                if (!s) return '';
+                const h = Math.floor(s / 3600);
+                const m = Math.floor((s % 3600) / 60);
+                const sec = Math.floor(s % 60);
+                return h > 0 
+                    ? `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}` 
+                    : `${m}:${sec.toString().padStart(2,'0')}`;
+            },
+            formatViews: (n) => {
+                if (!n) return '0';
+                if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+                if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+                if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+                return n;
+            },
+            extractID: (url) => {
+                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+                return (match && match[2].length === 11) ? match[2] : null;
+            },
+            notify: (msg) => {
+                ui.toastText.textContent = msg;
+                ui.toast.classList.add('show');
+                setTimeout(() => ui.toast.classList.remove('show'), 4000);
             }
-            
-            loadingElement.style.display = 'block';
-            errorMessage.style.display = 'none';
-            resultsContainer.innerHTML = '';
-            
-            // Show different message if it's a link/ID vs keyword
-            if (videoId) {
-                resultCount.textContent = `Fetching details for video ID: ${query}...`;
-            } else {
-                resultCount.textContent = `Searching for "${query}"...`;
+        };
+
+        // --- Main Logic ---
+        async function handleSearch() {
+            const rawQuery = ui.input.value.trim();
+            if (!rawQuery) {
+                showError("Please enter a link or search term.");
+                return;
             }
-            
+
+            // UI Reset
+            ui.loader.style.display = 'block';
+            ui.grid.innerHTML = '';
+            ui.error.style.display = 'none';
+            ui.status.textContent = 'Searching...';
+
+            // Determine if ID or Keyword
+            const vidId = utils.extractID(rawQuery);
+            const finalQuery = vidId || rawQuery;
+
             try {
-                // Assuming you have a backend endpoint like /api/search
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                // Fetch Data
+                // NOTE: Replace this with your actual local or backend API route
+                const response = await fetch(`/api/search?q=${encodeURIComponent(finalQuery)}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
                 const data = await response.json();
                 
-                loadingElement.style.display = 'none';
+                ui.loader.style.display = 'none';
                 
                 if (data.videos && data.videos.length > 0) {
-                    displayVideos(data.videos);
-                    if (videoId) {
-                         resultCount.textContent = `Video found`;
-                    } else {
-                         resultCount.textContent = `Found ${data.videos.length} videos for "${query}"`;
-                    }
+                    renderCards(data.videos);
+                    ui.status.textContent = vidId ? 'Video found' : `Found ${data.videos.length} results`;
                 } else {
-                    resultsContainer.innerHTML = `<div class="no-results"><h3>No videos found</h3></div>`;
-                    resultCount.textContent = `No results found`;
+                    ui.status.textContent = 'No results found.';
+                    showError('We couldn\'t find any videos matching your search.');
                 }
-            } catch (error) {
-                loadingElement.style.display = 'none';
-                console.error('Search error:', error);
-                showError("Failed to search. Try again.");
-            }
-        }
-        
-        // --- DOWNLOAD LOGIC ---
-        async function downloadVideo(button, videoUrl, filename) {
-            const originalContent = button.innerHTML;
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-            
-            const apiUrl = ameen + videoUrl;
 
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error("Download failed from API");
-                
-                const blob = await response.blob();
-                
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `${filename}.mp4`; 
-                document.body.appendChild(a);
-                
-                a.click();
-                
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                showNotification("Download started!");
-
-            } catch (error) {
-                console.error("Download Error:", error);
-                showError("Direct download failed. Opening link instead.");
-                window.open(apiUrl, '_blank');
-            } finally {
-                button.innerHTML = originalContent;
-                button.disabled = false;
+            } catch (e) {
+                console.error(e);
+                ui.loader.style.display = 'none';
+                ui.status.textContent = '';
+                showError('Something went wrong. Please try again later.');
             }
         }
 
-        // --- DISPLAY RESULTS ---
-        function displayVideos(videos) {
-            resultsContainer.innerHTML = '';
-            
-            videos.slice(0, 12).forEach(video => {
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                
-                const watchUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-                const thumbnail = video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
-                const duration = formatDuration(video.duration?.seconds || video.duration);
-                const views = formatViews(video.views);
-                const safeTitle = video.title.replace(/"/g, '&quot;');
-                
-                card.innerHTML = `
-                    <div class="thumbnail">
-                        <img src="${thumbnail}" alt="${video.title}">
-                        ${duration ? `<div class="duration">${duration}</div>` : ''}
+        function renderCards(videos) {
+            ui.grid.innerHTML = videos.slice(0, 12).map(v => {
+                const id = v.videoId;
+                const title = v.title.replace(/"/g, '&quot;');
+                const thumb = v.thumbnail || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+                const duration = utils.formatTime(v.duration?.seconds || v.duration);
+                const views = utils.formatViews(v.views);
+                const author = v.author?.name || 'Unknown';
+                const url = `https://www.youtube.com/watch?v=${id}`;
+
+                return `
+                <div class="media-card">
+                    <div class="thumbnail-wrapper">
+                        <img src="${thumb}" alt="${title}">
+                        <div class="play-overlay"><i class="fas fa-play"></i></div>
+                        ${duration ? `<span class="duration-badge">${duration}</span>` : ''}
                     </div>
-                    <div class="video-info">
-                        <h3 class="video-title" title="${safeTitle}">${video.title}</h3>
-                        <div class="video-channel"><i class="fas fa-user-circle"></i> ${video.author?.name || 'Unknown'}</div>
-                        <div class="video-stats"><span>${views}</span></div>
-                        
-                        <div class="action-buttons">
-                            <a href="${watchUrl}" target="_blank" class="watch-button">
-                                <i class="fab fa-youtube"></i> Watch on YouTube
-                            </a>
-                            
-                            <button class="download-button" 
-                                onclick='downloadVideo(this, "${watchUrl}", "${safeTitle}")'>
-                                <i class="fas fa-download"></i> Download Video
+                    <div class="card-content">
+                        <h3 class="card-title" title="${title}">${title}</h3>
+                        <div class="card-meta">
+                            <span class="channel-name"><i class="fas fa-check-circle" style="color:#6b7280; font-size:0.8em;"></i> ${author}</span>
+                            <span>${views} views</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-mp3" onclick="startDownload(this, '${url}', '${title}', 'mp3')">
+                                <i class="fas fa-music"></i> Download MP3
+                            </button>
+                            <button class="btn btn-mp4" onclick="startDownload(this, '${url}', '${title}', 'mp4')">
+                                <i class="fas fa-video"></i> Download MP4
                             </button>
                         </div>
                     </div>
-                `;
-                resultsContainer.appendChild(card);
-            });
+                </div>`;
+            }).join('');
         }
-        
-        function showError(message) {
-            errorText.textContent = message;
-            errorMessage.style.display = 'block';
+
+        async function startDownload(btn, url, title, format) {
+            if (btn.disabled) return;
+            
+            // UI State: Loading
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-circle-notch spinner"></i> Converting...`;
+            
+            const api = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
+            const targetUrl = api + url;
+
+            try {
+                // 1. Fetch Blob
+                const res = await fetch(targetUrl);
+                if (!res.ok) throw new Error('API Error');
+                const blob = await res.blob();
+
+                // 2. Create Download Link
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `${title.replace(/[^a-z0-9]/gi, '_').substring(0, 50)}.${format}`;
+                document.body.appendChild(link);
+                link.click();
+                
+                // 3. Cleanup
+                window.URL.revokeObjectURL(link.href);
+                document.body.removeChild(link);
+                utils.notify(`${format.toUpperCase()} Download Started!`);
+
+            } catch (e) {
+                console.error(e);
+                utils.notify('Download failed. Opening backup link...');
+                // Fallback: Open in new tab if blob fails (e.g. CORS issues)
+                window.open(targetUrl, '_blank');
+            } finally {
+                // UI State: Reset
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
         }
-        
-        searchButton.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
+
+        function showError(msg) {
+            ui.errorText.textContent = msg;
+            ui.error.style.display = 'block';
+        }
+
+        // --- Event Listeners ---
+        ui.btn.addEventListener('click', handleSearch);
+        ui.input.addEventListener('keypress', e => e.key === 'Enter' && handleSearch());
     </script>
 </body>
 </html>
