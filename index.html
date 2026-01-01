@@ -11,26 +11,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* (Styles maintained for consistency) */
         :root { --bg-color: #f9f9f9; --text-main: #0f0f0f; --text-sec: #606060; --yt-red: #ff0000; --accent-blue: #3ea6ff; --success-green: #2ba640; --error-red: #cc0000; --shadow-card: 0 4px 12px rgba(0,0,0,0.08); --header-height: 60px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        
+        /* HEADER */
         header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: var(--header-height); background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
         .logo-section { display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; flex-shrink: 0; }
         .logo-icon { color: var(--yt-red); font-size: 28px; }
         .logo-text-main { font-size: 20px; font-weight: 700; letter-spacing: -1px; color: #212121; }
         .logo-text-sub { font-size: 20px; font-weight: 400; letter-spacing: -0.5px; color: #212121; }
+        
+        /* SEARCH */
         .search-center { flex: 1; display: flex; justify-content: center; max-width: 600px; margin: 0 20px; }
         .search-box { display: flex; width: 100%; height: 40px; border-radius: 40px; border: 1px solid #ccc; overflow: hidden; background: #fff; box-shadow: inset 0 1px 2px #eee; transition: box-shadow 0.2s, border 0.2s; }
         .search-box:focus-within { border-color: #1c62b9; box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28); }
         #searchInput { flex: 1; border: none; padding: 0 16px; font-size: 16px; outline: none; min-width: 0; }
         #searchButton { width: 60px; background: #f8f8f8; border: none; border-left: 1px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* CONTAINER */
         .container { padding: 20px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
         .empty-state { text-align: center; margin-top: 10vh; color: var(--text-sec); padding: 20px; animation: fadeIn 0.5s ease; }
+        
+        /* GRID */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; display: none; padding-bottom: 40px; }
         .video-grid.active { display: grid; }
         .video-grid.single-mode { display: flex; justify-content: center; }
         .video-grid.single-mode .video-card { max-width: 450px; width: 100%; }
+        
+        /* CARDS */
         .video-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); transform: translateZ(0); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
         .video-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
         .thumb { position: relative; padding-top: 56.25%; background: #e0e0e0; }
@@ -45,6 +54,7 @@
         .btn-mp3 { background: #0f0f0f; color: white; }
         .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
         
+        /* POPUP */
         .mini-popup { position: fixed; bottom: 30px; right: 30px; background: white; width: 360px; padding: 24px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; display: none; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -53,12 +63,12 @@
         .popup-content { display: flex; align-items: center; gap: 15px; }
         .format-badge { background: #0f0f0f; color: white; font-size: 12px; font-weight: 700; padding: 8px 0; width: 45px; border-radius: 8px; text-transform: uppercase; text-align: center; flex-shrink: 0; }
         .progress-area { flex: 1; }
-        .progress-text { font-size: 12px; color: var(--text-sec); margin-bottom: 6px; display: flex; justify-content: space-between; }
         .progress-bar { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; position: relative; }
         .progress-fill { height: 100%; background: var(--accent-blue); width: 0%; border-radius: 2px; transition: width 0.1s linear; }
         .progress-fill.indeterminate { width: 100%; background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
         
+        /* SKELETON */
         .skeleton { background: #f0f0f0; position: relative; overflow: hidden; }
         .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0)); animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
@@ -137,7 +147,7 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // NEW API ENDPOINT
+        // --- SPECIFIED API ---
         const DOWNLOAD_API = 'https://ameen-api.vercel.app/v2/yts';
 
         function showSkeletons(count = 8) {
@@ -159,7 +169,6 @@
             const searchQuery = videoId || query;
 
             try {
-                // Keeping local search for speed, but could switch if needed
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
 
@@ -199,16 +208,16 @@
                         <div class="title">${title}</div>
                         <div class="meta">${v.author?.name || 'Unknown'}</div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="triggerAmeenDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
-                            <button class="btn btn-mp4" onclick="triggerAmeenDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
+                            <button class="btn btn-mp3" onclick="triggerDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
+                            <button class="btn btn-mp4" onclick="triggerDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- NEW DOWNLOAD LOGIC USING AMEEN API ---
-        async function triggerAmeenDownload(videoId, format) {
+        // --- DOWNLOAD VIA AMEEN API ---
+        async function triggerDownload(videoId, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
@@ -216,38 +225,31 @@
             ui.popStatus.textContent = 'Contacting API...';
             ui.popPercent.textContent = '';
             
-            // Construct the API URL
-            // Assuming the API takes `?url=` or `?id=` based on the provided pattern
-            const targetUrl = `${DOWNLOAD_API}?url=https://www.youtube.com/watch?v=${videoId}`;
+            // Construct request URL
+            const url = `https://www.youtube.com/watch?v=${videoId}`;
+            const targetUrl = `${DOWNLOAD_API}?url=${encodeURIComponent(url)}`;
 
             try {
-                // 1. Fetch metadata/download link from the new API
                 const response = await fetch(targetUrl);
-                
-                // Note: Without knowing the exact JSON structure of this specific API, 
-                // I am writing logic to handle a likely JSON response containing a 'url' or 'link'.
-                // If it returns a direct stream, we handle that in the catch or by checking content-type.
-                
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                if (!response.ok) throw new Error('API Error');
                 
                 const data = await response.json();
                 
-                // ADAPT THIS PART based on the actual API response structure
-                // Assuming it returns something like { status: true, download_url: "..." } or similar
-                // We'll look for common keys
-                const downloadLink = data.url || data.link || data.download_url || data.data?.url; 
+                // Assuming API returns JSON with a 'url' or 'dl' property
+                // We'll check for common keys since exact schema is external
+                const finalLink = data.url || data.link || data.download_url || data.data?.url;
 
-                if (!downloadLink) throw new Error('No download link found in response');
+                if (!finalLink) throw new Error('No link found');
 
-                ui.popStatus.textContent = 'Starting Download...';
+                ui.popStatus.textContent = 'Starting...';
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.style.width = '100%';
 
-                // 2. Trigger the download in browser
+                // Trigger Download
                 const a = document.createElement('a');
-                a.href = downloadLink;
-                a.download = `download.${format}`; // Try to force name
-                a.target = '_blank'; // Open in new tab just in case CORS blocks direct trigger
+                a.href = finalLink;
+                a.download = `download.${format}`;
+                a.target = '_blank'; // Required for many APIs to bypass pop-up blockers
                 document.body.appendChild(a);
                 a.click();
                 
@@ -260,10 +262,10 @@
                 console.error(error);
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.style.background = '#cc0000';
-                ui.popStatus.textContent = 'Download Failed. API Error.';
+                ui.popStatus.textContent = 'Download Failed';
                 
-                // Fallback: If JSON parsing fails, maybe the link IS the download?
-                // Uncomment below if the API URL itself triggers the download directly
+                // Fallback: If fetch failed, maybe the URL *is* the page?
+                // Uncomment to enable fallback
                 // window.open(targetUrl, '_blank');
             }
         }
