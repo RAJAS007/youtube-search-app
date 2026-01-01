@@ -14,6 +14,7 @@
             --yt-red: #ff0000;
             --accent-blue: #3ea6ff;
             --success-green: #2ba640;
+            --error-red: #cc0000;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
@@ -180,6 +181,21 @@
             object-fit: cover;
         }
 
+        /* --- YOUTUBE DURATION BADGE --- */
+        .duration-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 3px 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
         .details { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
 
         .title {
@@ -306,10 +322,9 @@
             transition: width 0.1s linear;
         }
         
-        .progress-fill.complete {
-            background: var(--success-green);
-        }
-
+        .progress-fill.complete { background: var(--success-green); }
+        .progress-fill.error { background: var(--error-red); }
+        
         .progress-fill.indeterminate {
             width: 100%;
             background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%);
@@ -349,7 +364,6 @@
     </header>
 
     <div class="container">
-        
         <div class="empty-state" id="emptyState">
             <i class="fas fa-cloud-download-alt"></i>
             <h2>Ready to Download</h2>
@@ -401,7 +415,7 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- SEARCH LOGIC ---
+        // --- SEARCH ---
         async function handleSearch() {
             const query = ui.input.value.trim();
             if(!query) return;
@@ -447,18 +461,21 @@
                 const title = v.title.replace(/"/g, '&quot;');
                 const thumb = v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
                 const url = `https://www.youtube.com/watch?v=${v.videoId}`;
-                const duration = formatTime(v.duration?.seconds || v.duration);
-                // Sanitize filename
+                
+                // Format Duration using new logic
+                const duration = formatYoutubeTime(v.duration?.seconds || v.duration);
+                
                 const safeName = v.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 
                 return `
                 <div class="video-card">
                     <div class="thumb">
                         <img src="${thumb}" alt="thumb">
+                        ${duration ? `<div class="duration-badge">${duration}</div>` : ''}
                     </div>
                     <div class="details">
                         <div class="title">${title}</div>
-                        <div class="meta">${v.author?.name || 'Unknown'} • ${duration}</div>
+                        <div class="meta">${v.author?.name || 'Unknown'}</div>
                         <div class="actions">
                             <button class="btn btn-mp3" onclick="triggerDownload('${url}', 'mp3', '${safeName}')">
                                 <i class="fas fa-music"></i> Audio
@@ -472,14 +489,12 @@
             }).join('');
         }
 
-        // --- REAL DOWNLOAD LOGIC (Fetch Stream) ---
+        // --- DOWNLOAD LOGIC ---
         async function triggerDownload(url, format, filename) {
-            // 1. Setup Popup
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
-            ui.popBar.classList.remove('complete');
-            ui.popBar.classList.remove('indeterminate');
+            ui.popBar.className = 'progress-fill'; 
             ui.popStatus.textContent = 'Connecting...';
             ui.popPercent.textContent = '0%';
             
@@ -487,70 +502,63 @@
             const targetUrl = api + url;
 
             try {
-                // 2. Start Fetch
                 const response = await fetch(targetUrl);
-                if (!response.ok) throw new Error("Network response was not ok");
-
-                // 3. Setup Reader for Progress
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+                
                 const reader = response.body.getReader();
                 const contentLength = +response.headers.get('Content-Length');
-                
                 let receivedLength = 0;
                 let chunks = [];
 
-                // 4. Loop through data chunks
                 while(true) {
                     const {done, value} = await reader.read();
                     if (done) break;
-
                     chunks.push(value);
                     receivedLength += value.length;
 
-                    // Update UI
                     if(contentLength) {
                         const percent = Math.floor((receivedLength / contentLength) * 100);
                         ui.popBar.style.width = `${percent}%`;
                         ui.popPercent.textContent = `${percent}%`;
                         ui.popStatus.textContent = 'Downloading...';
                     } else {
-                        // If no content-length, show indeterminate animation
                         if(!ui.popBar.classList.contains('indeterminate')) {
                             ui.popBar.classList.add('indeterminate');
                             ui.popPercent.textContent = '';
-                            ui.popStatus.textContent = 'Downloading (Size unknown)...';
+                            ui.popStatus.textContent = 'Downloading...';
                         }
                     }
                 }
 
-                // 5. Build File (Blob)
                 ui.popStatus.textContent = 'Finalizing...';
                 const blob = new Blob(chunks);
                 const blobUrl = window.URL.createObjectURL(blob);
                 
-                // 6. Complete UI
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('complete');
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
                 ui.popStatus.textContent = 'Download Complete';
 
-                // 7. Trigger Save
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `${filename}.${format}`;
                 document.body.appendChild(a);
                 a.click();
                 
-                // Cleanup
-                window.URL.revokeObjectURL(blobUrl);
-                document.body.removeChild(a);
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(blobUrl);
+                    document.body.removeChild(a);
+                    closePopup();
+                }, 4000);
 
             } catch (error) {
                 console.error("Download failed:", error);
-                ui.popStatus.textContent = 'Error. Opening backup...';
-                ui.popBar.style.backgroundColor = '#ff0000';
-                // Fallback to window.open if fetch fails (CORS, etc)
-                window.open(targetUrl, '_blank');
+                ui.popBar.classList.remove('indeterminate');
+                ui.popBar.classList.add('error');
+                ui.popBar.style.width = '100%';
+                ui.popStatus.textContent = 'Download Failed (API Error)';
+                ui.popPercent.textContent = '!';
             }
         }
 
@@ -563,10 +571,24 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        function formatTime(s) {
-            if(!s) return '';
-            const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
-            return h>0 ? `${h}:${m}:${sec.toString().padStart(2,'0')}` : `${m}:${sec.toString().padStart(2,'0')}`;
+        // --- UPDATED TIME FORMATTER (YouTube Style) ---
+        function formatYoutubeTime(s) {
+            if (!s) return '';
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = Math.floor(s % 60);
+            
+            const pad = (num) => num.toString().padStart(2, '0');
+            
+            // Logic:
+            // If hours > 0 -> H:MM:SS (e.g. 1:05:30)
+            // If hours == 0 -> M:SS (e.g. 5:30)
+            
+            if (h > 0) {
+                return `${h}:${pad(m)}:${pad(sec)}`;
+            } else {
+                return `${m}:${pad(sec)}`;
+            }
         }
 
         ui.btn.addEventListener('click', handleSearch);
