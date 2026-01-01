@@ -10,33 +10,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
+        /* (Styles kept identical to preserve your UI) */
         :root { --bg-color: #f9f9f9; --text-main: #0f0f0f; --text-sec: #606060; --yt-red: #ff0000; --accent-blue: #3ea6ff; --success-green: #2ba640; --error-red: #cc0000; --shadow-card: 0 4px 12px rgba(0,0,0,0.08); --header-height: 60px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-        
-        /* HEADER */
         header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: var(--header-height); background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
         .logo-section { display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; flex-shrink: 0; }
         .logo-icon { color: var(--yt-red); font-size: 28px; }
         .logo-text-main { font-size: 20px; font-weight: 700; letter-spacing: -1px; color: #212121; }
         .logo-text-sub { font-size: 20px; font-weight: 400; letter-spacing: -0.5px; color: #212121; }
-        
-        /* SEARCH */
         .search-center { flex: 1; display: flex; justify-content: center; max-width: 600px; margin: 0 20px; }
         .search-box { display: flex; width: 100%; height: 40px; border-radius: 40px; border: 1px solid #ccc; overflow: hidden; background: #fff; box-shadow: inset 0 1px 2px #eee; transition: box-shadow 0.2s, border 0.2s; }
         .search-box:focus-within { border-color: #1c62b9; box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28); }
         #searchInput { flex: 1; border: none; padding: 0 16px; font-size: 16px; outline: none; min-width: 0; }
         #searchButton { width: 60px; background: #f8f8f8; border: none; border-left: 1px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
-        /* LAYOUT */
         .container { padding: 20px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
         .empty-state { text-align: center; margin-top: 10vh; color: var(--text-sec); padding: 20px; animation: fadeIn 0.5s ease; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; display: none; padding-bottom: 40px; }
         .video-grid.active { display: grid; }
         .video-grid.single-mode { display: flex; justify-content: center; }
         .video-grid.single-mode .video-card { max-width: 450px; width: 100%; }
-        
-        /* CARDS */
         .video-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); transform: translateZ(0); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
         .video-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
         .thumb { position: relative; padding-top: 56.25%; background: #e0e0e0; }
@@ -51,7 +44,6 @@
         .btn-mp3 { background: #0f0f0f; color: white; }
         .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
         
-        /* POPUP */
         .mini-popup { position: fixed; bottom: 30px; right: 30px; background: white; width: 360px; padding: 24px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; display: none; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -60,12 +52,12 @@
         .popup-content { display: flex; align-items: center; gap: 15px; }
         .format-badge { background: #0f0f0f; color: white; font-size: 12px; font-weight: 700; padding: 8px 0; width: 45px; border-radius: 8px; text-transform: uppercase; text-align: center; flex-shrink: 0; }
         .progress-area { flex: 1; }
+        .progress-text { font-size: 12px; color: var(--text-sec); margin-bottom: 6px; display: flex; justify-content: space-between; }
         .progress-bar { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; position: relative; }
         .progress-fill { height: 100%; background: var(--accent-blue); width: 0%; border-radius: 2px; transition: width 0.1s linear; }
         .progress-fill.indeterminate { width: 100%; background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-
-        /* SKELETON */
+        
         .skeleton { background: #f0f0f0; position: relative; overflow: hidden; }
         .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0)); animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
@@ -76,7 +68,6 @@
         .skel-btns { display: flex; gap: 10px; margin-top: 10px; }
         .skel-btn { flex: 1; height: 40px; border-radius: 8px; }
 
-        /* MOBILE */
         @media (max-width: 600px) {
             header { padding: 0 12px; gap: 8px; }
             .logo-text-main, .logo-text-sub { display: none; }
@@ -122,7 +113,7 @@
             <div class="format-badge" id="popFormat">MP3</div>
             <div class="progress-area">
                 <div style="font-size:12px; color:#666; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span id="popStatus">Processing...</span>
+                    <span id="popStatus">Connecting...</span>
                     <span id="popPercent"></span>
                 </div>
                 <div class="progress-bar">
@@ -145,19 +136,16 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- NEW: List of reliable API mirrors ---
-        const API_SERVERS = [
+        // --- BACKUP SERVERS LIST ---
+        const EXTERNAL_APIS = [
             'https://cobalt.154.53.56.154.nip.io/api/json',
-            'https://cobalt.xy2401.com/api/json', 
-            'https://cobalt.kwiatekmiki.pl/api/json',
-            'https://api.cobalt.tools/api/json' // Official backup
+            'https://cobalt.xy2401.com/api/json',
+            'https://api.cobalt.tools/api/json'
         ];
 
         function showSkeletons(count = 8) {
             let html = '';
-            for(let i=0; i<count; i++) {
-                html += `<div class="skel-card"><div class="skel-thumb skeleton"></div><div class="skel-details"><div class="skel-line skeleton"></div><div class="skel-line skeleton" style="width:60%"></div><div class="skel-btns"><div class="skel-btn skeleton"></div><div class="skel-btn skeleton"></div></div></div></div>`;
-            }
+            for(let i=0; i<count; i++) html += `<div class="skel-card"><div class="skel-thumb skeleton"></div><div class="skel-details"><div class="skel-line skeleton"></div><div class="skel-line skeleton" style="width:60%"></div><div class="skel-btns"><div class="skel-btn skeleton"></div><div class="skel-btn skeleton"></div></div></div></div>`;
             ui.grid.innerHTML = html;
             ui.grid.classList.add('active');
             ui.grid.classList.remove('single-mode');
@@ -174,7 +162,6 @@
             const searchQuery = videoId || query;
 
             try {
-                // Local search API
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
 
@@ -214,42 +201,60 @@
                         <div class="title">${title}</div>
                         <div class="meta">${v.author?.name || 'Unknown'}</div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="startSmartDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
-                            <button class="btn btn-mp4" onclick="startSmartDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
+                            <button class="btn btn-mp3" onclick="triggerHybridDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
+                            <button class="btn btn-mp4" onclick="triggerHybridDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- SMART DOWNLOADER WITH AUTO-RETRY ---
-        async function startSmartDownload(videoId, format) {
+        // --- HYBRID DOWNLOAD SYSTEM ---
+        async function triggerHybridDownload(videoId, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill indeterminate';
+            ui.popBar.style.background = 'var(--accent-blue)';
             ui.popPercent.textContent = '';
             
-            // Try servers one by one
-            for (let i = 0; i < API_SERVERS.length; i++) {
-                const server = API_SERVERS[i];
-                ui.popStatus.textContent = `Connecting to Server ${i + 1}...`;
-                
+            // 1. Try Internal Server First
+            ui.popStatus.textContent = 'Trying Server 1...';
+            try {
+                // If this works, it returns a stream
+                const success = await attemptDirectDownload(`/api/download?id=${videoId}&type=${format}`, format);
+                if (success) return;
+            } catch(e) {
+                console.log("Internal Server Busy, switching to Backup...");
+            }
+
+            // 2. Failover to External Mirrors
+            for (let i = 0; i < EXTERNAL_APIS.length; i++) {
+                ui.popStatus.textContent = `Switching to Backup ${i+1}...`;
                 try {
-                    const success = await attemptDownload(server, videoId, format);
-                    if (success) return; // Stop if successful
-                } catch (e) {
-                    console.warn(`Server ${i+1} failed, trying next...`);
+                    const success = await attemptCobaltDownload(EXTERNAL_APIS[i], videoId, format);
+                    if (success) return;
+                } catch(e) {
+                    console.log(`Backup ${i+1} failed.`);
                 }
             }
 
-            // All failed
+            // 3. All Failed
             ui.popBar.classList.remove('indeterminate');
             ui.popBar.style.background = '#cc0000';
             ui.popStatus.textContent = 'All Servers Busy. Try again later.';
         }
 
-        async function attemptDownload(apiUrl, videoId, format) {
+        // Helper: Download from Stream (Internal) or Direct Link (External)
+        async function attemptDirectDownload(url, format) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed');
+            await processBlob(response, format);
+            return true;
+        }
+
+        // Helper: Cobalt Logic
+        async function attemptCobaltDownload(apiUrl, videoId, format) {
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -261,19 +266,24 @@
                     isAudioOnly: format === 'mp3'
                 })
             });
-
             const data = await response.json();
-            if (!data.url) throw new Error('Invalid response');
-
-            // Success! Start download
-            ui.popStatus.textContent = 'Downloading File...';
-            ui.popBar.classList.remove('indeterminate');
-            ui.popBar.style.width = '60%';
-
+            if (!data.url) throw new Error('No URL');
+            
+            // Download the file from the generated link
             const fileRes = await fetch(data.url);
-            const blob = await fileRes.blob();
+            if (!fileRes.ok) throw new Error('File fetch failed');
+            
+            await processBlob(fileRes, format);
+            return true;
+        }
+
+        // Helper: Handle the file data
+        async function processBlob(response, format) {
+            ui.popStatus.textContent = 'Downloading Data...';
+            const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
             
+            ui.popBar.classList.remove('indeterminate');
             ui.popBar.style.width = '100%';
             ui.popStatus.textContent = 'Saving...';
 
@@ -288,8 +298,6 @@
                 document.body.removeChild(a);
                 closePopup();
             }, 3000);
-            
-            return true;
         }
 
         function closePopup() { ui.popup.style.display = 'none'; }
