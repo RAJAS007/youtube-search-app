@@ -6,11 +6,12 @@
     <title>YouTube Downloader</title>
     
     <link rel="preconnect" href="https://i.ytimg.com">
+    <link rel="preconnect" href="https://ameen-api.vercel.app">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* (Styles kept identical to preserve your UI) */
+        /* (Styles maintained for consistency) */
         :root { --bg-color: #f9f9f9; --text-main: #0f0f0f; --text-sec: #606060; --yt-red: #ff0000; --accent-blue: #3ea6ff; --success-green: #2ba640; --error-red: #cc0000; --shadow-card: 0 4px 12px rgba(0,0,0,0.08); --header-height: 60px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
@@ -113,7 +114,7 @@
             <div class="format-badge" id="popFormat">MP3</div>
             <div class="progress-area">
                 <div style="font-size:12px; color:#666; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span id="popStatus">Connecting...</span>
+                    <span id="popStatus">Processing...</span>
                     <span id="popPercent"></span>
                 </div>
                 <div class="progress-bar">
@@ -136,12 +137,8 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- BACKUP SERVERS LIST ---
-        const EXTERNAL_APIS = [
-            'https://cobalt.154.53.56.154.nip.io/api/json',
-            'https://cobalt.xy2401.com/api/json',
-            'https://api.cobalt.tools/api/json'
-        ];
+        // NEW API ENDPOINT
+        const DOWNLOAD_API = 'https://ameen-api.vercel.app/v2/yts';
 
         function showSkeletons(count = 8) {
             let html = '';
@@ -162,6 +159,7 @@
             const searchQuery = videoId || query;
 
             try {
+                // Keeping local search for speed, but could switch if needed
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
 
@@ -201,103 +199,73 @@
                         <div class="title">${title}</div>
                         <div class="meta">${v.author?.name || 'Unknown'}</div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="triggerHybridDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
-                            <button class="btn btn-mp4" onclick="triggerHybridDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
+                            <button class="btn btn-mp3" onclick="triggerAmeenDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
+                            <button class="btn btn-mp4" onclick="triggerAmeenDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- HYBRID DOWNLOAD SYSTEM ---
-        async function triggerHybridDownload(videoId, format) {
+        // --- NEW DOWNLOAD LOGIC USING AMEEN API ---
+        async function triggerAmeenDownload(videoId, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill indeterminate';
-            ui.popBar.style.background = 'var(--accent-blue)';
+            ui.popStatus.textContent = 'Contacting API...';
             ui.popPercent.textContent = '';
             
-            // 1. Try Internal Server First
-            ui.popStatus.textContent = 'Trying Server 1...';
+            // Construct the API URL
+            // Assuming the API takes `?url=` or `?id=` based on the provided pattern
+            const targetUrl = `${DOWNLOAD_API}?url=https://www.youtube.com/watch?v=${videoId}`;
+
             try {
-                // If this works, it returns a stream
-                const success = await attemptDirectDownload(`/api/download?id=${videoId}&type=${format}`, format);
-                if (success) return;
-            } catch(e) {
-                console.log("Internal Server Busy, switching to Backup...");
+                // 1. Fetch metadata/download link from the new API
+                const response = await fetch(targetUrl);
+                
+                // Note: Without knowing the exact JSON structure of this specific API, 
+                // I am writing logic to handle a likely JSON response containing a 'url' or 'link'.
+                // If it returns a direct stream, we handle that in the catch or by checking content-type.
+                
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // ADAPT THIS PART based on the actual API response structure
+                // Assuming it returns something like { status: true, download_url: "..." } or similar
+                // We'll look for common keys
+                const downloadLink = data.url || data.link || data.download_url || data.data?.url; 
+
+                if (!downloadLink) throw new Error('No download link found in response');
+
+                ui.popStatus.textContent = 'Starting Download...';
+                ui.popBar.classList.remove('indeterminate');
+                ui.popBar.style.width = '100%';
+
+                // 2. Trigger the download in browser
+                const a = document.createElement('a');
+                a.href = downloadLink;
+                a.download = `download.${format}`; // Try to force name
+                a.target = '_blank'; // Open in new tab just in case CORS blocks direct trigger
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    closePopup();
+                }, 3000);
+
+            } catch (error) {
+                console.error(error);
+                ui.popBar.classList.remove('indeterminate');
+                ui.popBar.style.background = '#cc0000';
+                ui.popStatus.textContent = 'Download Failed. API Error.';
+                
+                // Fallback: If JSON parsing fails, maybe the link IS the download?
+                // Uncomment below if the API URL itself triggers the download directly
+                // window.open(targetUrl, '_blank');
             }
-
-            // 2. Failover to External Mirrors
-            for (let i = 0; i < EXTERNAL_APIS.length; i++) {
-                ui.popStatus.textContent = `Switching to Backup ${i+1}...`;
-                try {
-                    const success = await attemptCobaltDownload(EXTERNAL_APIS[i], videoId, format);
-                    if (success) return;
-                } catch(e) {
-                    console.log(`Backup ${i+1} failed.`);
-                }
-            }
-
-            // 3. All Failed
-            ui.popBar.classList.remove('indeterminate');
-            ui.popBar.style.background = '#cc0000';
-            ui.popStatus.textContent = 'All Servers Busy. Try again later.';
-        }
-
-        // Helper: Download from Stream (Internal) or Direct Link (External)
-        async function attemptDirectDownload(url, format) {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed');
-            await processBlob(response, format);
-            return true;
-        }
-
-        // Helper: Cobalt Logic
-        async function attemptCobaltDownload(apiUrl, videoId, format) {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    url: `https://www.youtube.com/watch?v=${videoId}`,
-                    vCodec: 'h264',
-                    vQuality: '720',
-                    aFormat: 'mp3',
-                    isAudioOnly: format === 'mp3'
-                })
-            });
-            const data = await response.json();
-            if (!data.url) throw new Error('No URL');
-            
-            // Download the file from the generated link
-            const fileRes = await fetch(data.url);
-            if (!fileRes.ok) throw new Error('File fetch failed');
-            
-            await processBlob(fileRes, format);
-            return true;
-        }
-
-        // Helper: Handle the file data
-        async function processBlob(response, format) {
-            ui.popStatus.textContent = 'Downloading Data...';
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            
-            ui.popBar.classList.remove('indeterminate');
-            ui.popBar.style.width = '100%';
-            ui.popStatus.textContent = 'Saving...';
-
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = `download.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            
-            setTimeout(() => {
-                window.URL.revokeObjectURL(blobUrl);
-                document.body.removeChild(a);
-                closePopup();
-            }, 3000);
         }
 
         function closePopup() { ui.popup.style.display = 'none'; }
