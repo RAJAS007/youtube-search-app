@@ -6,7 +6,7 @@
     <title>YouTube Downloader</title>
     
     <link rel="preconnect" href="https://i.ytimg.com">
-    <link rel="preconnect" href="https://api.cobalt.tools">
+    <link rel="preconnect" href="https://co.wuk.sh">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -167,6 +167,7 @@
             const searchQuery = videoId || query;
 
             try {
+                // Using your local server for search
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
 
@@ -214,18 +215,20 @@
             }).join('');
         }
 
-        // --- NEW FIXED DOWNLOAD LOGIC ---
+        // --- FIXED DOWNLOAD LOGIC (Stable API + No Redirects) ---
         async function triggerDownload(videoId, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill indeterminate';
-            ui.popStatus.textContent = 'Processing...';
+            ui.popStatus.textContent = 'Preparing File...';
             ui.popPercent.textContent = '';
             
-            // Use Cobalt API to generate a clean download link
+            // Using a more stable Cobalt instance
+            const apiUrl = 'https://co.wuk.sh/api/json';
+
             try {
-                const response = await fetch('https://api.cobalt.tools/api/json', {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -244,22 +247,33 @@
 
                 if (!data.url) throw new Error('No URL returned');
 
-                // Success! Now hand it to the browser download manager
+                // Success! We found the file.
+                ui.popStatus.textContent = 'Downloading...';
                 ui.popBar.classList.remove('indeterminate');
-                ui.popBar.style.width = '100%';
-                ui.popStatus.textContent = 'Download Starting...';
+                ui.popBar.style.width = '50%'; 
 
-                // Create a temporary link and click it
-                // This forces the browser to handle the download natively
+                // Fetch the file as a blob to avoid redirecting the user
+                const fileRes = await fetch(data.url);
+                
+                if(!fileRes.ok) throw new Error('File fetch failed');
+
+                const blob = await fileRes.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const filename = `download.${format}`; 
+
+                ui.popBar.style.width = '100%';
+                ui.popStatus.textContent = 'Saving to Device...';
+
+                // Trigger the save dialog
                 const a = document.createElement('a');
-                a.href = data.url;
-                a.target = '_blank'; // Opens in new tab to ensure download triggers
-                a.download = `download.${format}`; // Suggest filename
+                a.href = blobUrl;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 
                 // Cleanup
                 setTimeout(() => {
+                    window.URL.revokeObjectURL(blobUrl);
                     document.body.removeChild(a);
                     closePopup();
                 }, 3000);
@@ -268,12 +282,8 @@
                 console.error(error);
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.style.background = '#cc0000';
-                ui.popStatus.textContent = 'Server Busy (Try again)';
-                
-                // Fallback: Open Cobalt site directly if API fails
-                setTimeout(() => {
-                     window.open(`https://cobalt.tools`, '_blank');
-                }, 2000);
+                ui.popStatus.textContent = 'Server Busy. Try again later.';
+                // Removed the window.open fallback to prevent redirects
             }
         }
 
