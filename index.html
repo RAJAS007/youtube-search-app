@@ -35,7 +35,7 @@
             overflow-x: hidden;
         }
 
-        /* --- HEADER (Responsive) --- */
+        /* --- HEADER --- */
         header {
             display: flex;
             align-items: center;
@@ -63,14 +63,13 @@
         .logo-text-main { font-size: 20px; font-weight: 700; letter-spacing: -1px; color: #212121; }
         .logo-text-sub { font-size: 20px; font-weight: 400; letter-spacing: -0.5px; color: #212121; }
 
-        /* Flexible Search Bar */
+        /* Search Bar Wrapper */
         .search-center {
             flex: 1;
             display: flex;
             justify-content: center;
             max-width: 600px;
             margin: 0 20px;
-            transition: margin 0.3s ease;
         }
 
         .search-box {
@@ -96,7 +95,7 @@
             padding: 0 16px;
             font-size: 16px;
             outline: none;
-            min-width: 0;
+            min-width: 0; /* Critical for flexbox shrinking */
         }
 
         #searchButton {
@@ -108,13 +107,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0; /* Prevent button from squashing */
         }
         #searchButton i { color: #333; font-size: 18px; }
 
         /* --- MAIN LAYOUT --- */
         .container {
             padding: 20px;
-            max-width: 1400px; /* Wider support for big screens */
+            max-width: 1400px;
             margin: 0 auto;
             width: 100%;
             flex: 1;
@@ -130,19 +130,16 @@
         .empty-state i { font-size: 60px; margin-bottom: 20px; opacity: 0.15; }
         .empty-state h2 { font-weight: 500; margin-bottom: 8px; color: #333; font-size: 1.4rem; }
 
-        /* --- RESPONSIVE GRID --- */
+        /* --- GRID --- */
         .video-grid {
             display: grid;
-            /* Auto-fit magic: Resizes based on screen width */
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 24px;
             display: none;
             padding-bottom: 40px;
         }
-        
         .video-grid.active { display: grid; }
         
-        /* Centered Mode for Single Result (Link Paste) */
         .video-grid.single-mode {
             display: flex;
             justify-content: center;
@@ -164,17 +161,13 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .video-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        }
+        .video-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
 
         .thumb {
             position: relative;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%;
             background: #e0e0e0;
         }
-
         .thumb img {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -211,7 +204,6 @@
         }
 
         .meta { font-size: 13px; color: var(--text-sec); display: flex; align-items: center; gap: 5px; }
-
         .actions { margin-top: auto; padding-top: 10px; display: flex; gap: 10px; }
 
         .btn {
@@ -235,12 +227,8 @@
         .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
         .btn-mp4:hover { background: #e5e5e5; }
 
-        /* --- SKELETON LOADER (Shimmer) --- */
-        .skeleton {
-            background: #f0f0f0;
-            position: relative;
-            overflow: hidden;
-        }
+        /* --- SKELETON LOADER --- */
+        .skeleton { background: #f0f0f0; position: relative; overflow: hidden; }
         .skeleton::after {
             content: '';
             position: absolute;
@@ -250,7 +238,6 @@
             animation: shimmer 1.5s infinite;
         }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
-
         .skel-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
         .skel-thumb { padding-top: 56.25%; width: 100%; }
         .skel-details { padding: 14px; gap: 10px; display: flex; flex-direction: column; }
@@ -259,7 +246,7 @@
         .skel-btns { display: flex; gap: 10px; margin-top: 10px; }
         .skel-btn { flex: 1; height: 40px; border-radius: 8px; }
 
-        /* --- MINI POPUP / BOTTOM SHEET --- */
+        /* --- MINI POPUP --- */
         .mini-popup {
             position: fixed;
             bottom: 30px;
@@ -289,26 +276,44 @@
         .progress-fill.indeterminate { width: 100%; background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-        /* --- MOBILE OPTIMIZATION --- */
+        /* --- MOBILE OPTIMIZATION (THE FIX) --- */
         @media (max-width: 600px) {
-            header { padding: 0 16px; gap: 10px; }
-            .logo-text-sub { display: none; } /* Hide subtext on mobile to save space */
-            .search-center { margin: 0; }
-            
-            .container { padding: 16px; }
-            .video-grid { 
-                grid-template-columns: 1fr; /* Full width cards */
-                gap: 20px;
+            header { 
+                padding: 0 12px; /* Smaller padding */
+                gap: 8px; /* Tighter gap */
+            }
+
+            /* HIDE TEXT LOGO ON MOBILE to make room for search */
+            .logo-text-main, .logo-text-sub {
+                display: none; 
             }
             
-            /* Bottom Sheet Style for Mobile */
+            /* Logo icon stays, but small */
+            .logo-icon {
+                font-size: 24px;
+            }
+
+            .search-center { 
+                margin: 0; 
+                flex: 1; /* Take all remaining space */
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            #searchButton {
+                width: 50px; /* Smaller button */
+            }
+
+            .container { padding: 12px; }
+            .video-grid { grid-template-columns: 1fr; gap: 20px; }
+            
             .mini-popup {
                 width: 100%;
-                right: 0;
-                bottom: 0;
-                left: 0;
+                right: 0; bottom: 0; left: 0;
                 border-radius: 20px 20px 0 0;
-                padding: 24px 24px 40px 24px; /* Extra padding bottom for safe area */
+                padding: 20px 20px 40px 20px;
                 box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
             }
         }
@@ -382,7 +387,7 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- SKELETON LOADER (Instant Feedback) ---
+        // --- SKELETON LOADER ---
         function showSkeletons(count = 8) {
             let html = '';
             for(let i=0; i<count; i++) {
@@ -410,10 +415,9 @@
             const query = ui.input.value.trim();
             if(!query) return;
 
-            ui.input.blur(); // Close keyboard on mobile
+            ui.input.blur();
             ui.empty.style.display = 'none';
             
-            // 1. Render Skeletons immediately for perceived speed
             showSkeletons(8);
 
             const videoId = extractID(query);
@@ -431,7 +435,6 @@
                     } else {
                         ui.grid.classList.remove('single-mode');
                     }
-                    // 2. Replace Skeletons with Real Content
                     renderVideos(videos);
                 } else {
                     ui.grid.classList.remove('active');
@@ -477,7 +480,6 @@
 
         // --- SECURE DOWNLOAD (No Redirects) ---
         async function triggerDownload(url, format, filename) {
-            // UI Reset
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
@@ -489,10 +491,7 @@
             const targetUrl = api + url;
 
             try {
-                // Fetch (Stream)
                 const response = await fetch(targetUrl);
-                
-                // If API fails (like 404), throw error immediately
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 
                 const reader = response.body.getReader();
@@ -512,7 +511,6 @@
                         ui.popPercent.textContent = `${percent}%`;
                         ui.popStatus.textContent = 'Downloading...';
                     } else {
-                        // Indeterminate mode if server doesn't send size
                         if(!ui.popBar.classList.contains('indeterminate')) {
                             ui.popBar.classList.add('indeterminate');
                             ui.popPercent.textContent = '';
@@ -521,19 +519,16 @@
                     }
                 }
 
-                // File Ready
                 ui.popStatus.textContent = 'Saving file...';
                 const blob = new Blob(chunks);
                 const blobUrl = window.URL.createObjectURL(blob);
                 
-                // Success State
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('complete');
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
                 ui.popStatus.textContent = 'Download Complete';
 
-                // Trigger Save
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `${filename}.${format}`;
@@ -548,8 +543,6 @@
 
             } catch (error) {
                 console.error("Download failed:", error);
-                
-                // ERROR STATE (User stays on page)
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('error');
                 ui.popBar.style.width = '100%';
