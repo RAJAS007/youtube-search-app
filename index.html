@@ -6,7 +6,7 @@
     <title>YouTube Video Search & Downloader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* (All previous CSS remains exactly the same, only the .download-button is updated) */
+        /* (All previous CSS remains exactly the same) */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f9f9f9; color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -51,15 +51,15 @@
         .notification.show { opacity: 1; transform: translateY(0); }
         @media (max-width: 768px) { .results-section { grid-template-columns: 1fr; } .search-box { flex-direction: column; } #searchInput { border-radius: 5px; margin-bottom: 10px; } #searchButton { border-radius: 5px; padding: 15px; } .video-url { flex-direction: column; } .url-display { font-size: 0.8rem; } }
 
-        /* Updated Download Button Style to look like a button, not a link */
+        /* Download Button Style */
         .download-button {
             width: 100%;
             background-color: #2196F3;
             color: white;
             padding: 12px;
             border-radius: 5px;
-            border: none; /* No border for button element */
-            font-size: 1rem; /* Match link font size */
+            border: none;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
@@ -89,11 +89,11 @@
         
         <section class="search-section">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Enter keywords (e.g., music, tutorials, gaming)">
-                <button id="searchButton">Search Videos</button>
+                <input type="text" id="searchInput" placeholder="Enter keywords or paste YouTube link...">
+                <button id="searchButton">Search</button>
             </div>
             <div class="search-info">
-                <span id="resultCount">Enter search terms above</span>
+                <span id="resultCount">Enter search terms or a link above</span>
             </div>
         </section>
         
@@ -159,30 +159,37 @@
             notification.classList.add('show');
             setTimeout(() => { notification.classList.remove('show'); }, 3000);
         }
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showNotification('Link copied to clipboard!');
-            }).catch(err => {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showNotification('Link copied!');
-            });
+
+        // --- NEW: URL Extraction Helper ---
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
 
         // --- CORE SEARCH FUNCTION ---
         async function performSearch() {
-            const query = searchInput.value.trim();
+            let query = searchInput.value.trim();
             if (!query) { showError("Please enter search terms"); return; }
+            
+            // --- UPDATED: Check for URL ---
+            const videoId = extractVideoId(query);
+            if (videoId) {
+                // If the user pasted a link, we switch the query to the Video ID
+                // This usually guarantees the specific video appears first in search results
+                query = videoId;
+            }
             
             loadingElement.style.display = 'block';
             errorMessage.style.display = 'none';
             resultsContainer.innerHTML = '';
-            resultCount.textContent = `Searching for "${query}"...`;
+            
+            // Show different message if it's a link/ID vs keyword
+            if (videoId) {
+                resultCount.textContent = `Fetching details for video ID: ${query}...`;
+            } else {
+                resultCount.textContent = `Searching for "${query}"...`;
+            }
             
             try {
                 // Assuming you have a backend endpoint like /api/search
@@ -194,7 +201,11 @@
                 
                 if (data.videos && data.videos.length > 0) {
                     displayVideos(data.videos);
-                    resultCount.textContent = `Found ${data.videos.length} videos for "${query}"`;
+                    if (videoId) {
+                         resultCount.textContent = `Video found`;
+                    } else {
+                         resultCount.textContent = `Found ${data.videos.length} videos for "${query}"`;
+                    }
                 } else {
                     resultsContainer.innerHTML = `<div class="no-results"><h3>No videos found</h3></div>`;
                     resultCount.textContent = `No results found`;
@@ -206,9 +217,8 @@
             }
         }
         
-        // --- DOWNLOAD LOGIC (No Redirect) ---
+        // --- DOWNLOAD LOGIC ---
         async function downloadVideo(button, videoUrl, filename) {
-            // 1. Visual Feedback
             const originalContent = button.innerHTML;
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
@@ -216,24 +226,20 @@
             const apiUrl = ameen + videoUrl;
 
             try {
-                // 2. Fetch the video as a Blob (Binary Large Object)
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error("Download failed from API");
                 
                 const blob = await response.blob();
                 
-                // 3. Create a temporary invisible link to trigger the save
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = `${filename}.mp4`; // Force filename
+                a.download = `${filename}.mp4`; 
                 document.body.appendChild(a);
                 
-                // 4. Click it automatically
                 a.click();
                 
-                // 5. Cleanup
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 showNotification("Download started!");
@@ -241,10 +247,8 @@
             } catch (error) {
                 console.error("Download Error:", error);
                 showError("Direct download failed. Opening link instead.");
-                // Fallback: Just open the link if fetch fails (e.g., due to CORS)
                 window.open(apiUrl, '_blank');
             } finally {
-                // Reset Button
                 button.innerHTML = originalContent;
                 button.disabled = false;
             }
@@ -259,12 +263,9 @@
                 card.className = 'video-card';
                 
                 const watchUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-                const shortUrl = `https://youtu.be/${video.videoId}`;
                 const thumbnail = video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
                 const duration = formatDuration(video.duration?.seconds || video.duration);
                 const views = formatViews(video.views);
-                
-                // Sanitize title for attribute
                 const safeTitle = video.title.replace(/"/g, '&quot;');
                 
                 card.innerHTML = `
