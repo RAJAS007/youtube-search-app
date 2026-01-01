@@ -12,8 +12,8 @@
             --text-main: #0f0f0f;
             --text-sec: #606060;
             --yt-red: #ff0000;
-            --border: #e5e5e5;
             --accent-blue: #3ea6ff;
+            --success-green: #2ba640;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
@@ -216,6 +216,7 @@
             transition: opacity 0.2s;
         }
         .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-mp3 { background: #0f0f0f; color: white; }
         .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
@@ -226,7 +227,7 @@
             bottom: 30px;
             right: 30px;
             background: white;
-            width: 320px;
+            width: 340px;
             padding: 20px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1);
@@ -299,10 +300,26 @@
 
         .progress-fill {
             height: 100%;
-            background: #3ea6ff;
+            background: var(--accent-blue);
             width: 0%;
             border-radius: 2px;
-            transition: width 0.2s linear;
+            transition: width 0.1s linear;
+        }
+        
+        .progress-fill.complete {
+            background: var(--success-green);
+        }
+
+        .progress-fill.indeterminate {
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite linear;
+        }
+
+        @keyframes loading {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
         }
 
         @media (max-width: 600px) {
@@ -355,7 +372,7 @@
             <div class="format-badge" id="popFormat">MP3</div>
             <div class="progress-area">
                 <div class="progress-text">
-                    <span id="popStatus">Converting...</span>
+                    <span id="popStatus">Starting...</span>
                     <span id="popPercent">0%</span>
                 </div>
                 <div class="progress-bar">
@@ -384,6 +401,7 @@
             popPercent: document.getElementById('popPercent')
         };
 
+        // --- SEARCH LOGIC ---
         async function handleSearch() {
             const query = ui.input.value.trim();
             if(!query) return;
@@ -417,7 +435,6 @@
                     ui.empty.style.display = 'block';
                     ui.empty.innerHTML = '<h2>No results found</h2><p>Try a different keyword.</p>';
                 }
-
             } catch(e) {
                 ui.loader.style.display = 'none';
                 ui.empty.style.display = 'block';
@@ -431,6 +448,8 @@
                 const thumb = v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
                 const url = `https://www.youtube.com/watch?v=${v.videoId}`;
                 const duration = formatTime(v.duration?.seconds || v.duration);
+                // Sanitize filename
+                const safeName = v.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 
                 return `
                 <div class="video-card">
@@ -441,10 +460,10 @@
                         <div class="title">${title}</div>
                         <div class="meta">${v.author?.name || 'Unknown'} • ${duration}</div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="triggerDownload('${url}', 'mp3')">
+                            <button class="btn btn-mp3" onclick="triggerDownload('${url}', 'mp3', '${safeName}')">
                                 <i class="fas fa-music"></i> Audio
                             </button>
-                            <button class="btn btn-mp4" onclick="triggerDownload('${url}', 'mp4')">
+                            <button class="btn btn-mp4" onclick="triggerDownload('${url}', 'mp4', '${safeName}')">
                                 <i class="fas fa-video"></i> Video
                             </button>
                         </div>
@@ -453,57 +472,86 @@
             }).join('');
         }
 
-        // --- DOWNLOAD LOGIC (NO REDIRECT) ---
-        function triggerDownload(url, format) {
-            // 1. Show Popup
+        // --- REAL DOWNLOAD LOGIC (Fetch Stream) ---
+        async function triggerDownload(url, format, filename) {
+            // 1. Setup Popup
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
-            
-            // 2. Reset Progress UI
             ui.popBar.style.width = '0%';
-            ui.popStatus.textContent = 'Processing...';
+            ui.popBar.classList.remove('complete');
+            ui.popBar.classList.remove('indeterminate');
+            ui.popStatus.textContent = 'Connecting...';
             ui.popPercent.textContent = '0%';
+            
+            const api = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
+            const targetUrl = api + url;
 
-            // 3. Fake Progress Bar
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 20;
-                if(progress > 95) progress = 95; 
+            try {
+                // 2. Start Fetch
+                const response = await fetch(targetUrl);
+                if (!response.ok) throw new Error("Network response was not ok");
+
+                // 3. Setup Reader for Progress
+                const reader = response.body.getReader();
+                const contentLength = +response.headers.get('Content-Length');
                 
-                ui.popBar.style.width = `${progress}%`;
-                ui.popPercent.textContent = `${Math.floor(progress)}%`;
+                let receivedLength = 0;
+                let chunks = [];
+
+                // 4. Loop through data chunks
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+
+                    chunks.push(value);
+                    receivedLength += value.length;
+
+                    // Update UI
+                    if(contentLength) {
+                        const percent = Math.floor((receivedLength / contentLength) * 100);
+                        ui.popBar.style.width = `${percent}%`;
+                        ui.popPercent.textContent = `${percent}%`;
+                        ui.popStatus.textContent = 'Downloading...';
+                    } else {
+                        // If no content-length, show indeterminate animation
+                        if(!ui.popBar.classList.contains('indeterminate')) {
+                            ui.popBar.classList.add('indeterminate');
+                            ui.popPercent.textContent = '';
+                            ui.popStatus.textContent = 'Downloading (Size unknown)...';
+                        }
+                    }
+                }
+
+                // 5. Build File (Blob)
+                ui.popStatus.textContent = 'Finalizing...';
+                const blob = new Blob(chunks);
+                const blobUrl = window.URL.createObjectURL(blob);
                 
-                if(progress > 30) ui.popStatus.textContent = 'Converting...';
-                if(progress > 70) ui.popStatus.textContent = 'Finalizing...';
-            }, 300);
-
-            // 4. Trigger Silent Download (Using Hidden Iframe)
-            const apiUrl = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
-            const finalLink = apiUrl + url;
-
-            setTimeout(() => {
-                clearInterval(interval);
+                // 6. Complete UI
+                ui.popBar.classList.remove('indeterminate');
+                ui.popBar.classList.add('complete');
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
-                ui.popStatus.textContent = 'Download Started!';
-                
-                // --- THE KEY CHANGE: HIDDEN IFRAME INSTEAD OF WINDOW.OPEN ---
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = finalLink;
-                document.body.appendChild(iframe);
-                
-                // Cleanup iframe after a minute to free memory
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 60000);
-                
-                // Auto close popup
-                setTimeout(() => {
-                    closePopup();
-                }, 4000);
+                ui.popStatus.textContent = 'Download Complete';
 
-            }, 2500);
+                // 7. Trigger Save
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `${filename}.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+
+            } catch (error) {
+                console.error("Download failed:", error);
+                ui.popStatus.textContent = 'Error. Opening backup...';
+                ui.popBar.style.backgroundColor = '#ff0000';
+                // Fallback to window.open if fetch fails (CORS, etc)
+                window.open(targetUrl, '_blank');
+            }
         }
 
         function closePopup() {
