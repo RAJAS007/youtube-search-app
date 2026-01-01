@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Search</title>
+    <title>YouTube Video Search & Downloader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -259,6 +259,13 @@
             background-color: #2196F3;
         }
         
+        /* Button Container */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .watch-button {
             display: block;
             width: 100%;
@@ -278,6 +285,28 @@
         
         .watch-button:hover {
             background-color: #CC0000;
+        }
+
+        /* NEW DOWNLOAD BUTTON STYLE */
+        .download-button {
+            display: block;
+            width: 100%;
+            background-color: #2196F3; /* Blue color */
+            color: white;
+            text-align: center;
+            padding: 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .download-button:hover {
+            background-color: #1976D2; /* Darker blue on hover */
         }
         
         .error-message {
@@ -363,8 +392,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fab fa-youtube"></i> YouTube Video Search</h1>
-            <p>Search for any YouTube video - Get video links instantly</p>
+            <h1><i class="fab fa-youtube"></i> YouTube Search & Download</h1>
+            <p>Search for any YouTube video - Watch or Download Instantly</p>
         </header>
         
         <section class="search-section">
@@ -388,12 +417,11 @@
         </div>
         
         <div class="results-section" id="resultsContainer">
-            <!-- Results will appear here -->
-        </div>
+            </div>
         
         <div class="footer">
-            <p><i class="fas fa-link"></i> YouTube Video Search App | Get direct YouTube links | Deployed on Render</p>
-            <p><i class="fas fa-info-circle"></i> Click "Copy Link" to save video URL to clipboard</p>
+            <p><i class="fas fa-link"></i> YouTube Video Search App | Deployed on Render</p>
+            <p><i class="fas fa-info-circle"></i> Click "Download" to save the video</p>
         </div>
     </div>
 
@@ -404,8 +432,9 @@
 
     <script>
         // DOM Elements
-       const ameen = 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
-        const rajas = "ameen+text"
+        // The API constant as requested
+        const ameen = 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=';
+        const rajas = "ameen+text";
         
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
@@ -454,7 +483,6 @@
             navigator.clipboard.writeText(text).then(() => {
                 showNotification('YouTube link copied to clipboard!');
             }).catch(err => {
-                // Fallback for older browsers
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 document.body.appendChild(textarea);
@@ -481,7 +509,6 @@
             resultCount.textContent = `Searching for "${query}"...`;
             
             try {
-                // Use our backend API
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
                 
                 if (!response.ok) {
@@ -526,6 +553,9 @@
                 const watchUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
                 const shortUrl = `https://youtu.be/${video.videoId}`;
                 
+                // Create Download URL using the api constant
+                const downloadUrl = ameen + watchUrl;
+                
                 const thumbnail = video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
                 const duration = formatDuration(video.duration?.seconds || video.duration);
                 const views = formatViews(video.views);
@@ -562,25 +592,21 @@
                                     <i class="far fa-copy"></i> Copy
                                 </button>
                             </div>
-                            
-                            <div class="link-label">
-                                <i class="fas fa-external-link-alt"></i> Full YouTube URL:
-                            </div>
-                            <div class="video-url">
-                                <div class="url-display" title="${watchUrl}">
-                                    ${watchUrl}
-                                </div>
-                                <button class="copy-btn" data-url="${watchUrl}">
-                                    <i class="far fa-copy"></i> Copy
-                                </button>
-                            </div>
                         </div>
                         
-                        <a href="${watchUrl}" 
-                           target="_blank" 
-                           class="watch-button">
-                            <i class="fab fa-youtube"></i> Watch on YouTube
-                        </a>
+                        <div class="action-buttons" style="margin-top: 15px;">
+                            <a href="${watchUrl}" 
+                               target="_blank" 
+                               class="watch-button">
+                                <i class="fab fa-youtube"></i> Watch on YouTube
+                            </a>
+                            
+                            <a href="${downloadUrl}" 
+                               target="_blank" 
+                               class="download-button">
+                                <i class="fas fa-download"></i> Download Video
+                            </a>
+                        </div>
                     </div>
                 `;
                 
