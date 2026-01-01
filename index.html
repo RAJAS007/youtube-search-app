@@ -6,40 +6,30 @@
     <title>YouTube Downloader</title>
     
     <link rel="preconnect" href="https://i.ytimg.com">
-    <link rel="preconnect" href="https://ameen-api.vercel.app">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
+        /* (Styles kept identical for consistency) */
         :root { --bg-color: #f9f9f9; --text-main: #0f0f0f; --text-sec: #606060; --yt-red: #ff0000; --accent-blue: #3ea6ff; --success-green: #2ba640; --error-red: #cc0000; --shadow-card: 0 4px 12px rgba(0,0,0,0.08); --header-height: 60px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-        
-        /* HEADER */
         header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: var(--header-height); background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
         .logo-section { display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; flex-shrink: 0; }
         .logo-icon { color: var(--yt-red); font-size: 28px; }
         .logo-text-main { font-size: 20px; font-weight: 700; letter-spacing: -1px; color: #212121; }
         .logo-text-sub { font-size: 20px; font-weight: 400; letter-spacing: -0.5px; color: #212121; }
-        
-        /* SEARCH */
         .search-center { flex: 1; display: flex; justify-content: center; max-width: 600px; margin: 0 20px; }
         .search-box { display: flex; width: 100%; height: 40px; border-radius: 40px; border: 1px solid #ccc; overflow: hidden; background: #fff; box-shadow: inset 0 1px 2px #eee; transition: box-shadow 0.2s, border 0.2s; }
         .search-box:focus-within { border-color: #1c62b9; box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28); }
         #searchInput { flex: 1; border: none; padding: 0 16px; font-size: 16px; outline: none; min-width: 0; }
         #searchButton { width: 60px; background: #f8f8f8; border: none; border-left: 1px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
-        /* CONTAINER */
         .container { padding: 20px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
         .empty-state { text-align: center; margin-top: 10vh; color: var(--text-sec); padding: 20px; animation: fadeIn 0.5s ease; }
-        
-        /* GRID */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; display: none; padding-bottom: 40px; }
         .video-grid.active { display: grid; }
         .video-grid.single-mode { display: flex; justify-content: center; }
         .video-grid.single-mode .video-card { max-width: 450px; width: 100%; }
-        
-        /* CARDS */
         .video-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); transform: translateZ(0); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
         .video-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
         .thumb { position: relative; padding-top: 56.25%; background: #e0e0e0; }
@@ -68,7 +58,6 @@
         .progress-fill.indeterminate { width: 100%; background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
         
-        /* SKELETON */
         .skeleton { background: #f0f0f0; position: relative; overflow: hidden; }
         .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0)); animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
@@ -147,9 +136,6 @@
             popPercent: document.getElementById('popPercent')
         };
 
-        // --- SPECIFIED API ---
-        const DOWNLOAD_API = 'https://ameen-api.vercel.app/v2/yts';
-
         function showSkeletons(count = 8) {
             let html = '';
             for(let i=0; i<count; i++) html += `<div class="skel-card"><div class="skel-thumb skeleton"></div><div class="skel-details"><div class="skel-line skeleton"></div><div class="skel-line skeleton" style="width:60%"></div><div class="skel-btns"><div class="skel-btn skeleton"></div><div class="skel-btn skeleton"></div></div></div></div>`;
@@ -169,13 +155,18 @@
             const searchQuery = videoId || query;
 
             try {
+                // Call local search API (which uses Ameen API internally now)
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
 
-                if(data.videos && data.videos.length > 0) {
-                    let videos = data.videos;
+                // Ameen API response handling (Adapt based on actual response structure)
+                // Assuming it returns { results: [...] } or { videos: [...] }
+                const results = data.results || data.videos || (Array.isArray(data) ? data : []);
+
+                if(results.length > 0) {
+                    let videos = results;
                     if(videoId) {
-                        videos = [data.videos[0]]; 
+                        videos = [results[0]]; 
                         ui.grid.classList.add('single-mode');
                     } else {
                         ui.grid.classList.remove('single-mode');
@@ -196,64 +187,72 @@
         function renderVideos(videos) {
             ui.grid.innerHTML = videos.map(v => {
                 const title = v.title.replace(/"/g, '&quot;');
-                const thumb = v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
-                const duration = formatYoutubeTime(v.duration?.seconds || v.duration);
+                // Handle different property names from external APIs
+                const id = v.videoId || v.id || v.url?.split('v=')[1]; 
+                const thumb = v.thumbnail || v.thumb || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+                const author = v.author?.name || v.channel || 'Unknown';
+                const url = `https://www.youtube.com/watch?v=${id}`;
+                
                 return `
                 <div class="video-card">
                     <div class="thumb">
                         <img src="${thumb}" alt="thumb" loading="lazy" onload="this.classList.add('loaded')">
-                        ${duration ? `<div class="duration-badge">${duration}</div>` : ''}
                     </div>
                     <div class="details">
                         <div class="title">${title}</div>
-                        <div class="meta">${v.author?.name || 'Unknown'}</div>
+                        <div class="meta">${author}</div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="triggerDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
-                            <button class="btn btn-mp4" onclick="triggerDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
+                            <button class="btn btn-mp3" onclick="startDownload('${url}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
+                            <button class="btn btn-mp4" onclick="startDownload('${url}', 'mp4')"><i class="fas fa-video"></i> Video</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- DOWNLOAD VIA AMEEN API ---
-        async function triggerDownload(videoId, format) {
+        async function startDownload(url, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill indeterminate';
-            ui.popStatus.textContent = 'Contacting API...';
-            ui.popPercent.textContent = '';
+            ui.popStatus.textContent = 'Processing (Converting)...';
             
-            // Construct request URL
-            const url = `https://www.youtube.com/watch?v=${videoId}`;
-            const targetUrl = `${DOWNLOAD_API}?url=${encodeURIComponent(url)}`;
+            // Call OUR Server which handles the conversion using Ameen API
+            const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&type=${format}`;
 
             try {
-                const response = await fetch(targetUrl);
-                if (!response.ok) throw new Error('API Error');
-                
-                const data = await response.json();
-                
-                // Assuming API returns JSON with a 'url' or 'dl' property
-                // We'll check for common keys since exact schema is external
-                const finalLink = data.url || data.link || data.download_url || data.data?.url;
+                const response = await fetch(downloadUrl);
+                if (!response.ok) throw new Error('Download failed');
 
-                if (!finalLink) throw new Error('No link found');
+                const reader = response.body.getReader();
+                const contentLength = +response.headers.get('Content-Length');
+                let receivedLength = 0;
+                let chunks = [];
 
-                ui.popStatus.textContent = 'Starting...';
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    receivedLength += value.length;
+                    
+                    // Note: Conversion streams often don't have Content-Length known ahead of time
+                    // So we stick to indeterminate loading animation for better UX
+                }
+
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.style.width = '100%';
+                ui.popStatus.textContent = 'Saving File...';
 
-                // Trigger Download
+                const blob = new Blob(chunks);
+                const blobUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = finalLink;
+                a.href = blobUrl;
                 a.download = `download.${format}`;
-                a.target = '_blank'; // Required for many APIs to bypass pop-up blockers
                 document.body.appendChild(a);
                 a.click();
                 
                 setTimeout(() => {
+                    window.URL.revokeObjectURL(blobUrl);
                     document.body.removeChild(a);
                     closePopup();
                 }, 3000);
@@ -262,17 +261,12 @@
                 console.error(error);
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.style.background = '#cc0000';
-                ui.popStatus.textContent = 'Download Failed';
-                
-                // Fallback: If fetch failed, maybe the URL *is* the page?
-                // Uncomment to enable fallback
-                // window.open(targetUrl, '_blank');
+                ui.popStatus.textContent = 'Error. Try again.';
             }
         }
 
         function closePopup() { ui.popup.style.display = 'none'; }
         function extractID(url) { const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return (match && match[2].length === 11) ? match[2] : null; }
-        function formatYoutubeTime(s) { if (!s) return ''; const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60), pad = n => n.toString().padStart(2, '0'); return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`; }
 
         ui.btn.addEventListener('click', handleSearch);
         ui.input.addEventListener('keypress', e => e.key === 'Enter' && handleSearch());
