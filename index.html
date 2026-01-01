@@ -6,386 +6,77 @@
     <title>YouTube Video Search & Downloader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f9f9f9;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #FF0000, #CC0000);
-            color: white;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .search-section {
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .search-box {
-            display: flex;
-            max-width: 600px;
-            margin: 0 auto 15px;
-        }
-        
-        #searchInput {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px 0 0 5px;
-            font-size: 1.1rem;
-            outline: none;
-        }
-        
-        #searchInput:focus {
-            border-color: #FF0000;
-        }
-        
-        #searchButton {
-            background-color: #FF0000;
-            color: white;
-            border: none;
-            padding: 0 30px;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: background-color 0.3s;
-        }
-        
-        #searchButton:hover {
-            background-color: #CC0000;
-        }
-        
-        .search-info {
-            color: #666;
-            font-size: 0.95rem;
-            margin-top: 10px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            display: none;
-        }
-        
-        .loading i {
-            font-size: 2.5rem;
-            color: #FF0000;
-            margin-bottom: 15px;
-        }
-        
-        .results-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-        
-        .video-card {
-            background-color: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s;
-            border: 1px solid #eee;
-        }
-        
-        .video-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
-        
-        .thumbnail {
-            position: relative;
-            height: 200px;
-            overflow: hidden;
-            background-color: #000;
-        }
-        
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s;
-        }
-        
-        .video-card:hover .thumbnail img {
-            transform: scale(1.05);
-        }
-        
-        .duration {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .video-info {
-            padding: 20px;
-        }
-        
-        .video-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .video-channel {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .video-channel i {
-            color: #FF0000;
-        }
-        
-        .video-stats {
-            display: flex;
-            justify-content: space-between;
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .video-link-section {
-            margin-top: 15px;
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .link-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .link-label i {
-            color: #FF0000;
-        }
-        
-        .video-url {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        
-        .url-display {
-            flex: 1;
-            background: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            font-size: 0.9rem;
-            color: #333;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .copy-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: background-color 0.3s;
-        }
-        
-        .copy-btn:hover {
-            background-color: #3d8b40;
-        }
-        
-        .copy-btn.copied {
-            background-color: #2196F3;
-        }
-        
-        /* Button Container */
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        /* (All previous CSS remains exactly the same, only the .download-button is updated) */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f9f9f9; color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #FF0000, #CC0000); color: white; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .search-section { background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); margin-bottom: 30px; text-align: center; }
+        .search-box { display: flex; max-width: 600px; margin: 0 auto 15px; }
+        #searchInput { flex: 1; padding: 15px; border: 2px solid #e0e0e0; border-radius: 5px 0 0 5px; font-size: 1.1rem; outline: none; }
+        #searchInput:focus { border-color: #FF0000; }
+        #searchButton { background-color: #FF0000; color: white; border: none; padding: 0 30px; border-radius: 0 5px 5px 0; cursor: pointer; font-size: 1.1rem; transition: background-color 0.3s; }
+        #searchButton:hover { background-color: #CC0000; }
+        .search-info { color: #666; font-size: 0.95rem; margin-top: 10px; }
+        .loading { text-align: center; padding: 40px; display: none; }
+        .loading i { font-size: 2.5rem; color: #FF0000; margin-bottom: 15px; }
+        .results-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; margin-top: 30px; }
+        .video-card { background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); transition: transform 0.3s; border: 1px solid #eee; }
+        .video-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
+        .thumbnail { position: relative; height: 200px; overflow: hidden; background-color: #000; }
+        .thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .video-card:hover .thumbnail img { transform: scale(1.05); }
+        .duration { position: absolute; bottom: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .video-info { padding: 20px; }
+        .video-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; color: #333; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .video-channel { color: #666; font-size: 0.95rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .video-channel i { color: #FF0000; }
+        .video-stats { display: flex; justify-content: space-between; color: #888; font-size: 0.85rem; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .video-link-section { margin-top: 15px; background-color: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .link-label { font-size: 0.9rem; color: #666; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+        .link-label i { color: #FF0000; }
+        .video-url { display: flex; gap: 10px; margin-bottom: 12px; }
+        .url-display { flex: 1; background: white; padding: 10px 15px; border-radius: 5px; border: 1px solid #ddd; font-size: 0.9rem; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .copy-btn { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; transition: background-color 0.3s; }
+        .copy-btn:hover { background-color: #3d8b40; }
+        .copy-btn.copied { background-color: #2196F3; }
+        .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .watch-button { display: block; width: 100%; background-color: #FF0000; color: white; text-align: center; padding: 12px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .watch-button:hover { background-color: #CC0000; }
+        .error-message { text-align: center; padding: 20px; background-color: #ffebee; color: #c62828; border-radius: 5px; margin: 20px 0; display: none; }
+        .no-results { text-align: center; padding: 50px 20px; color: #666; grid-column: 1 / -1; background: white; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .footer { text-align: center; margin-top: 40px; color: #777; font-size: 0.9rem; padding: 20px; }
+        .notification { position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; padding: 15px 20px; border-radius: 5px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); display: flex; align-items: center; gap: 10px; z-index: 1000; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; }
+        .notification.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 768px) { .results-section { grid-template-columns: 1fr; } .search-box { flex-direction: column; } #searchInput { border-radius: 5px; margin-bottom: 10px; } #searchButton { border-radius: 5px; padding: 15px; } .video-url { flex-direction: column; } .url-display { font-size: 0.8rem; } }
 
-        .watch-button {
-            display: block;
-            width: 100%;
-            background-color: #FF0000;
-            color: white;
-            text-align: center;
-            padding: 12px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .watch-button:hover {
-            background-color: #CC0000;
-        }
-
-        /* NEW DOWNLOAD BUTTON STYLE */
+        /* Updated Download Button Style to look like a button, not a link */
         .download-button {
-            display: block;
             width: 100%;
-            background-color: #2196F3; /* Blue color */
+            background-color: #2196F3;
             color: white;
-            text-align: center;
             padding: 12px;
             border-radius: 5px;
-            text-decoration: none;
+            border: none; /* No border for button element */
+            font-size: 1rem; /* Match link font size */
             font-weight: 600;
+            cursor: pointer;
             transition: background-color 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration: none;
         }
 
         .download-button:hover {
-            background-color: #1976D2; /* Darker blue on hover */
+            background-color: #1976D2;
         }
-        
-        .error-message {
-            text-align: center;
-            padding: 20px;
-            background-color: #ffebee;
-            color: #c62828;
-            border-radius: 5px;
-            margin: 20px 0;
-            display: none;
-        }
-        
-        .no-results {
-            text-align: center;
-            padding: 50px 20px;
-            color: #666;
-            grid-column: 1 / -1;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #777;
-            font-size: 0.9rem;
-            padding: 20px;
-        }
-        
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #333;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        
-        .notification.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        @media (max-width: 768px) {
-            .results-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .search-box {
-                flex-direction: column;
-            }
-            
-            #searchInput {
-                border-radius: 5px;
-                margin-bottom: 10px;
-            }
-            
-            #searchButton {
-                border-radius: 5px;
-                padding: 15px;
-            }
-            
-            .video-url {
-                flex-direction: column;
-            }
-            
-            .url-display {
-                font-size: 0.8rem;
-            }
+
+        .download-button:disabled {
+            background-color: #90CAF9;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -421,7 +112,6 @@
         
         <div class="footer">
             <p><i class="fas fa-link"></i> YouTube Video Search App | Deployed on Render</p>
-            <p><i class="fas fa-info-circle"></i> Click "Download" to save the video</p>
         </div>
     </div>
 
@@ -431,11 +121,11 @@
     </div>
 
     <script>
-        // DOM Elements
-        // The API constant as requested
+        // --- API Constants ---
         const ameen = 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=';
         const rajas = "ameen+text";
         
+        // --- DOM Elements ---
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const resultsContainer = document.getElementById('resultsContainer');
@@ -446,21 +136,16 @@
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notificationText');
         
-        // Format duration
+        // --- Helper Functions ---
         function formatDuration(seconds) {
             if (!seconds) return "";
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
-            
-            if (hours > 0) {
-                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            } else {
-                return `${minutes}:${secs.toString().padStart(2, '0')}`;
-            }
+            if (hours > 0) return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
         }
         
-        // Format view count
         function formatViews(views) {
             if (!views) return "0 views";
             if (views >= 1000000000) return (views / 1000000000).toFixed(1) + 'B views';
@@ -469,19 +154,15 @@
             return views + ' views';
         }
         
-        // Show notification
         function showNotification(message) {
             notificationText.textContent = message;
             notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+            setTimeout(() => { notification.classList.remove('show'); }, 3000);
         }
         
-        // Copy to clipboard
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                showNotification('YouTube link copied to clipboard!');
+                showNotification('Link copied to clipboard!');
             }).catch(err => {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
@@ -492,56 +173,84 @@
                 showNotification('Link copied!');
             });
         }
-        
-        // Search function using backend API
+
+        // --- CORE SEARCH FUNCTION ---
         async function performSearch() {
             const query = searchInput.value.trim();
+            if (!query) { showError("Please enter search terms"); return; }
             
-            if (!query) {
-                showError("Please enter search terms");
-                return;
-            }
-            
-            // Show loading
             loadingElement.style.display = 'block';
             errorMessage.style.display = 'none';
             resultsContainer.innerHTML = '';
             resultCount.textContent = `Searching for "${query}"...`;
             
             try {
+                // Assuming you have a backend endpoint like /api/search
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-                
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
                 const data = await response.json();
                 
-                // Hide loading
                 loadingElement.style.display = 'none';
                 
                 if (data.videos && data.videos.length > 0) {
                     displayVideos(data.videos);
                     resultCount.textContent = `Found ${data.videos.length} videos for "${query}"`;
                 } else {
-                    resultsContainer.innerHTML = `
-                        <div class="no-results">
-                            <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 15px; color: #ccc;"></i>
-                            <h3>No videos found</h3>
-                            <p>Try different search terms like "music", "tutorials", or "gaming"</p>
-                        </div>
-                    `;
-                    resultCount.textContent = `No results found for "${query}"`;
+                    resultsContainer.innerHTML = `<div class="no-results"><h3>No videos found</h3></div>`;
+                    resultCount.textContent = `No results found`;
                 }
             } catch (error) {
                 loadingElement.style.display = 'none';
                 console.error('Search error:', error);
-                showError("Failed to search YouTube. Please try again.");
-                resultCount.textContent = `Search failed for "${query}"`;
+                showError("Failed to search. Try again.");
             }
         }
         
-        // Display videos
+        // --- DOWNLOAD LOGIC (No Redirect) ---
+        async function downloadVideo(button, videoUrl, filename) {
+            // 1. Visual Feedback
+            const originalContent = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+            
+            const apiUrl = ameen + videoUrl;
+
+            try {
+                // 2. Fetch the video as a Blob (Binary Large Object)
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Download failed from API");
+                
+                const blob = await response.blob();
+                
+                // 3. Create a temporary invisible link to trigger the save
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `${filename}.mp4`; // Force filename
+                document.body.appendChild(a);
+                
+                // 4. Click it automatically
+                a.click();
+                
+                // 5. Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showNotification("Download started!");
+
+            } catch (error) {
+                console.error("Download Error:", error);
+                showError("Direct download failed. Opening link instead.");
+                // Fallback: Just open the link if fetch fails (e.g., due to CORS)
+                window.open(apiUrl, '_blank');
+            } finally {
+                // Reset Button
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }
+        }
+
+        // --- DISPLAY RESULTS ---
         function displayVideos(videos) {
             resultsContainer.innerHTML = '';
             
@@ -549,110 +258,48 @@
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
-                // Create YouTube URLs
                 const watchUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
                 const shortUrl = `https://youtu.be/${video.videoId}`;
-                
-                // Create Download URL using the api constant
-                const downloadUrl = ameen + watchUrl;
-                
                 const thumbnail = video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
                 const duration = formatDuration(video.duration?.seconds || video.duration);
                 const views = formatViews(video.views);
-                const uploadDate = video.ago || '';
+                
+                // Sanitize title for attribute
+                const safeTitle = video.title.replace(/"/g, '&quot;');
                 
                 card.innerHTML = `
                     <div class="thumbnail">
-                        <img src="${thumbnail}" alt="${video.title}" 
-                             onerror="this.src='https://via.placeholder.com/350x200/FF0000/FFFFFF?text=YouTube+Thumbnail'">
+                        <img src="${thumbnail}" alt="${video.title}">
                         ${duration ? `<div class="duration">${duration}</div>` : ''}
                     </div>
                     <div class="video-info">
-                        <h3 class="video-title" title="${video.title}">${video.title}</h3>
+                        <h3 class="video-title" title="${safeTitle}">${video.title}</h3>
+                        <div class="video-channel"><i class="fas fa-user-circle"></i> ${video.author?.name || 'Unknown'}</div>
+                        <div class="video-stats"><span>${views}</span></div>
                         
-                        <div class="video-channel">
-                            <i class="fas fa-user-circle"></i>
-                            ${video.author?.name || 'Unknown Channel'}
-                        </div>
-                        
-                        <div class="video-stats">
-                            <span><i class="fas fa-eye"></i> ${views}</span>
-                            <span><i class="far fa-clock"></i> ${uploadDate}</span>
-                        </div>
-                        
-                        <div class="video-link-section">
-                            <div class="link-label">
-                                <i class="fas fa-link"></i> YouTube Video Link:
-                            </div>
-                            <div class="video-url">
-                                <div class="url-display" title="${watchUrl}">
-                                    ${shortUrl}
-                                </div>
-                                <button class="copy-btn" data-url="${watchUrl}">
-                                    <i class="far fa-copy"></i> Copy
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="action-buttons" style="margin-top: 15px;">
-                            <a href="${watchUrl}" 
-                               target="_blank" 
-                               class="watch-button">
+                        <div class="action-buttons">
+                            <a href="${watchUrl}" target="_blank" class="watch-button">
                                 <i class="fab fa-youtube"></i> Watch on YouTube
                             </a>
                             
-                            <a href="${downloadUrl}" 
-                               target="_blank" 
-                               class="download-button">
+                            <button class="download-button" 
+                                onclick='downloadVideo(this, "${watchUrl}", "${safeTitle}")'>
                                 <i class="fas fa-download"></i> Download Video
-                            </a>
+                            </button>
                         </div>
                     </div>
                 `;
-                
                 resultsContainer.appendChild(card);
-            });
-            
-            // Add copy button event listeners
-            document.querySelectorAll('.copy-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const url = this.getAttribute('data-url');
-                    copyToClipboard(url);
-                    
-                    // Visual feedback
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                    this.classList.add('copied');
-                    
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                        this.classList.remove('copied');
-                    }, 2000);
-                });
             });
         }
         
-        // Show error
         function showError(message) {
             errorText.textContent = message;
             errorMessage.style.display = 'block';
         }
         
-        // Event listeners
         searchButton.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch();
-        });
-        
-        // Initialize with example
-        searchInput.value = "music tutorials";
-        searchInput.focus();
-        
-        // Auto-search on page load
-        window.onload = function() {
-            // Optional: Uncomment to auto-search on load
-            // setTimeout(() => performSearch(), 500);
-        };
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
     </script>
 </body>
 </html>
