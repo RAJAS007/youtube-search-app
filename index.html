@@ -5,27 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Converter & Downloader</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-bg: #f3f4f6;
+            /* YouTube Brand Colors */
+            --yt-red: #FF0000;
+            --yt-black: #0f0f0f;
+            --yt-gray: #606060;
+            --yt-light-gray: #f2f2f2;
+            --yt-white: #ffffff;
+            
+            --bg-color: #f9f9f9;
             --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-sub: #6b7280;
-            --accent-mp3: #8b5cf6; /* Violet */
-            --accent-mp4: #3b82f6; /* Blue */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --radius: 16px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         
         body {
-            background-color: var(--secondary-bg);
-            color: var(--text-main);
+            background-color: var(--bg-color);
+            color: var(--yt-black);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -39,49 +39,48 @@
             flex: 1;
         }
 
-        /* --- Header --- */
+        /* --- Header (YouTube Style) --- */
         header {
             text-align: center;
-            padding: 70px 20px;
-            background: var(--primary-gradient);
+            padding: 40px 20px 80px; /* Extra padding bottom for search bar overlap */
+            background-color: var(--yt-red);
             color: white;
-            border-radius: var(--radius);
-            margin-bottom: 40px;
-            box-shadow: var(--shadow-lg);
+            border-radius: 0 0 var(--radius) var(--radius); /* Rounded bottom only */
+            margin-bottom: 20px;
+            margin-top: -20px; /* Pull to top */
+            box-shadow: var(--shadow);
             position: relative;
-            overflow: hidden;
-        }
-
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
-            opacity: 0.3;
         }
 
         header h1 {
-            font-size: 2.8rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 1;
-            letter-spacing: -0.02em;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: -1px;
         }
         
+        header h1 i {
+            background: white;
+            color: var(--yt-red);
+            border-radius: 50%;
+            padding: 2px; /* White circle background behind play icon */
+            font-size: 0.9em;
+        }
+
         header p {
-            font-size: 1.1rem;
+            font-size: 1rem;
             opacity: 0.9;
-            position: relative;
-            z-index: 1;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         /* --- Search Bar --- */
         .search-container {
             max-width: 700px;
-            margin: -45px auto 40px; /* Overlap header */
+            margin: -60px auto 40px; /* Pull up into header */
             position: relative;
             z-index: 10;
             padding: 0 20px;
@@ -90,16 +89,14 @@
         .search-box {
             display: flex;
             background: white;
-            padding: 8px;
+            padding: 5px;
             border-radius: 50px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
         }
 
         .search-box:focus-within {
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         #searchInput {
@@ -108,32 +105,33 @@
             border: none;
             outline: none;
             font-size: 1.1rem;
-            border-radius: 50px;
             background: transparent;
-            color: var(--text-main);
+            color: var(--yt-black);
         }
 
         #searchButton {
-            background: var(--primary-gradient);
+            background-color: var(--yt-black); /* Dark Search Button */
             color: white;
             border: none;
-            padding: 12px 35px;
-            border-radius: 40px;
-            font-weight: 600;
+            padding: 0 35px;
+            border-radius: 50px;
+            font-weight: 500;
             cursor: pointer;
-            transition: filter 0.2s;
             font-size: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
         }
 
         #searchButton:hover {
-            filter: brightness(110%);
+            background-color: #333;
         }
 
         .status-text {
             text-align: center;
-            margin-top: 15px;
-            color: var(--text-sub);
+            margin-top: 20px;
+            color: var(--yt-gray);
             font-size: 0.9rem;
             min-height: 20px;
             font-weight: 500;
@@ -143,8 +141,18 @@
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            padding: 20px 0;
+            gap: 25px;
+            padding: 10px 0;
+        }
+
+        /* Center the grid if there is only 1 result (Link search) */
+        .results-grid.single-result {
+            display: flex;
+            justify-content: center;
+        }
+        .results-grid.single-result .media-card {
+            max-width: 450px; /* Larger card for single result */
+            width: 100%;
         }
 
         /* --- Card Design --- */
@@ -152,116 +160,69 @@
             background: var(--card-bg);
             border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
+            border: 1px solid #e5e5e5;
         }
 
         .media-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
         .thumbnail-wrapper {
             position: relative;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
-            overflow: hidden;
+            padding-top: 56.25%; /* 16:9 */
             background: #000;
         }
 
         .thumbnail-wrapper img {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .media-card:hover .thumbnail-wrapper img {
-            transform: scale(1.05);
-            opacity: 0.8;
-        }
-
-        /* Play Icon Overlay */
-        .play-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            width: 50px;
-            height: 50px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        
-        .play-overlay i {
-            color: var(--accent-mp3);
-            font-size: 1.2rem;
-            margin-left: 3px; /* visual fix */
-        }
-
-        .media-card:hover .play-overlay {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
         }
 
         .duration-badge {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.75);
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 3px 6px;
+            border-radius: 4px;
             font-size: 0.75rem;
-            font-weight: 600;
-            backdrop-filter: blur(4px);
+            font-weight: 500;
         }
 
         .card-content {
-            padding: 20px;
+            padding: 15px;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
 
         .card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 8px;
+            font-size: 1rem;
+            font-weight: 600; /* Roboto Medium */
+            color: var(--yt-black);
+            margin-bottom: 6px;
             line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 3em; /* Fixed height for alignment */
+            height: 2.8em;
         }
 
         .card-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             font-size: 0.85rem;
-            color: var(--text-sub);
-            margin-bottom: 20px;
-        }
-
-        .channel-name {
+            color: var(--yt-gray);
+            margin-bottom: 15px;
             display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 500;
+            flex-direction: column;
+            gap: 2px;
         }
 
         /* --- Buttons --- */
@@ -269,132 +230,85 @@
             margin-top: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .btn {
             width: 100%;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 20px; /* YouTube Pill Style */
             border: none;
-            font-size: 0.95rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
+            transition: filter 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Primary MP3 Button */
+        /* Primary: Red (Like Subscribe Button) */
         .btn-mp3 {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            background-color: var(--yt-red);
             color: white;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
         }
         .btn-mp3:hover {
-            box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4);
-            filter: brightness(105%);
+            background-color: #cc0000;
         }
 
-        /* Secondary MP4 Button */
+        /* Secondary: Dark Gray/Black */
         .btn-mp4 {
-            background: white;
-            color: var(--text-main);
-            border: 2px solid #e5e7eb;
+            background-color: var(--yt-light-gray);
+            color: var(--yt-black);
+            border: 1px solid #ddd;
         }
         .btn-mp4:hover {
-            border-color: #d1d5db;
-            background: #f9fafb;
+            background-color: #e5e5e5;
         }
-
-        .btn i { font-size: 1.1em; }
-
-        /* Loading Spinner inside Button */
-        .spinner {
-            animation: spin 1s linear infinite;
-        }
+        
+        /* Spinner */
+        .fa-spinner { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- Utilities --- */
-        .loading-state {
-            text-align: center;
-            padding: 60px;
-            display: none;
-        }
-        .loading-state i {
-            font-size: 3rem;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-        }
-
-        .error-card {
-            background: #fef2f2;
-            color: #991b1b;
-            padding: 20px;
-            border-radius: var(--radius);
-            text-align: center;
-            border: 1px solid #fee2e2;
-            margin-bottom: 20px;
-            display: none;
-        }
-
+        /* --- Footer --- */
         .footer {
             text-align: center;
             padding: 30px;
-            color: var(--text-sub);
-            font-size: 0.9rem;
-            margin-top: auto;
-            border-top: 1px solid #e5e7eb;
+            color: var(--yt-gray);
+            font-size: 0.85rem;
             background: white;
+            border-top: 1px solid #e5e5e5;
         }
 
-        .footer a {
-            color: var(--accent-mp3);
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Toast Notification */
+        /* --- Toast Notification --- */
         .toast {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #1f2937;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px); /* Center bottom */
+            background: #333;
             color: white;
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateY(150%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 12px 24px;
+            border-radius: 4px; /* YouTube snackbar style */
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s;
             z-index: 1000;
         }
-        .toast.show { transform: translateY(0); }
-        .toast i { color: #34d399; font-size: 1.2rem; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* --- Loading State --- */
+        .loading-state { text-align: center; padding: 40px; display: none; }
+        .loading-state i { color: var(--yt-red); font-size: 2.5rem; margin-bottom: 10px; }
 
         @media (max-width: 768px) {
-            header { padding: 50px 20px 60px; margin-bottom: 30px; }
             header h1 { font-size: 2rem; }
-            .search-container { margin-top: -40px; }
-            .search-box { flex-direction: column; padding: 10px; border-radius: 20px; }
-            #searchInput { padding: 12px; text-align: center; margin-bottom: 10px; }
-            #searchButton { width: 100%; }
+            .search-box { padding: 4px; }
+            #searchButton span { display: none; } /* Hide text on mobile search btn */
+            #searchButton { padding: 0 20px; }
         }
     </style>
 </head>
@@ -402,43 +316,34 @@
 
     <div class="container">
         <header>
-            <h1>YouTube Converter</h1>
-            <p>Download High Quality MP3 & MP4 instantly</p>
+            <h1><i class="fab fa-youtube"></i> Converter</h1>
+            <p>Download MP3 audio & MP4 video</p>
         </header>
 
         <div class="search-container">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Paste YouTube link or type keywords...">
-                <button id="searchButton"><i class="fas fa-search"></i> Search</button>
+                <input type="text" id="searchInput" placeholder="Paste YouTube link or search...">
+                <button id="searchButton"><i class="fas fa-search"></i> <span>Search</span></button>
             </div>
             <div class="status-text" id="resultCount"></div>
         </div>
 
-        <div class="error-card" id="errorMessage">
-            <i class="fas fa-exclamation-circle"></i> <span id="errorText">Error message here</span>
-        </div>
-
         <div class="loading-state" id="loading">
             <i class="fas fa-circle-notch fa-spin"></i>
-            <p>Searching the archives...</p>
+            <p>Processing...</p>
         </div>
 
         <div class="results-grid" id="resultsContainer"></div>
     </div>
 
     <div class="footer">
-        <a href="https://ameen-api.vercel.app">
-            <i class="fas fa-code-branch"></i> Powered by Team Keiko Media
-        </a>
+        <p>YouTube Downloader &copy; 2024</p>
     </div>
 
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toastText">Download started successfully!</span>
-    </div>
+    <div class="toast" id="toast">Download started</div>
 
     <script>
-        // --- Configuration ---
+        // --- Config ---
         const CONFIG = {
             mp3Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp3?url=',
             mp4Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
@@ -450,14 +355,11 @@
             btn: document.getElementById('searchButton'),
             grid: document.getElementById('resultsContainer'),
             loader: document.getElementById('loading'),
-            error: document.getElementById('errorMessage'),
-            errorText: document.getElementById('errorText'),
             status: document.getElementById('resultCount'),
-            toast: document.getElementById('toast'),
-            toastText: document.getElementById('toastText')
+            toast: document.getElementById('toast')
         };
 
-        // --- Utilities ---
+        // --- Utils ---
         const utils = {
             formatTime: (s) => {
                 if (!s) return '';
@@ -468,21 +370,14 @@
                     ? `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}` 
                     : `${m}:${sec.toString().padStart(2,'0')}`;
             },
-            formatViews: (n) => {
-                if (!n) return '0';
-                if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-                if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-                if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-                return n;
-            },
             extractID: (url) => {
                 const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
                 return (match && match[2].length === 11) ? match[2] : null;
             },
-            notify: (msg) => {
-                ui.toastText.textContent = msg;
+            showToast: (msg) => {
+                ui.toast.textContent = msg;
                 ui.toast.classList.add('show');
-                setTimeout(() => ui.toast.classList.remove('show'), 4000);
+                setTimeout(() => ui.toast.classList.remove('show'), 3000);
             }
         };
 
@@ -490,74 +385,77 @@
         async function handleSearch() {
             const rawQuery = ui.input.value.trim();
             if (!rawQuery) {
-                showError("Please enter a link or search term.");
+                ui.status.textContent = "Please enter a link or keyword";
                 return;
             }
 
-            // UI Reset
             ui.loader.style.display = 'block';
             ui.grid.innerHTML = '';
-            ui.error.style.display = 'none';
-            ui.status.textContent = 'Searching...';
+            ui.status.textContent = '';
+            ui.grid.className = 'results-grid'; // Reset class
 
-            // Determine if ID or Keyword
+            // Check if input is a Link/ID
             const vidId = utils.extractID(rawQuery);
             const finalQuery = vidId || rawQuery;
 
             try {
-                // Fetch Data
-                // NOTE: Replace this with your actual local or backend API route
+                // Fetch data
                 const response = await fetch(`/api/search?q=${encodeURIComponent(finalQuery)}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                
                 const data = await response.json();
                 
                 ui.loader.style.display = 'none';
-                
+
                 if (data.videos && data.videos.length > 0) {
-                    renderCards(data.videos);
-                    ui.status.textContent = vidId ? 'Video found' : `Found ${data.videos.length} results`;
+                    
+                    let videosToRender = data.videos;
+
+                    // *** LOGIC UPDATE: If it was a link (vidId found), only show the FIRST result ***
+                    if (vidId) {
+                        videosToRender = [data.videos[0]]; // Slice array to keep only the first item
+                        ui.grid.classList.add('single-result'); // Add class for centering
+                        ui.status.textContent = 'Video found';
+                    } else {
+                        ui.status.textContent = `Found ${data.videos.length} results`;
+                    }
+
+                    renderCards(videosToRender);
+                    
                 } else {
-                    ui.status.textContent = 'No results found.';
-                    showError('We couldn\'t find any videos matching your search.');
+                    ui.status.textContent = 'No videos found.';
                 }
 
             } catch (e) {
-                console.error(e);
                 ui.loader.style.display = 'none';
-                ui.status.textContent = '';
-                showError('Something went wrong. Please try again later.');
+                ui.status.textContent = 'Error searching. Please try again.';
+                console.error(e);
             }
         }
 
         function renderCards(videos) {
-            ui.grid.innerHTML = videos.slice(0, 12).map(v => {
+            ui.grid.innerHTML = videos.map(v => {
                 const id = v.videoId;
                 const title = v.title.replace(/"/g, '&quot;');
                 const thumb = v.thumbnail || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
                 const duration = utils.formatTime(v.duration?.seconds || v.duration);
-                const views = utils.formatViews(v.views);
-                const author = v.author?.name || 'Unknown';
+                const author = v.author?.name || 'Unknown Channel';
                 const url = `https://www.youtube.com/watch?v=${id}`;
 
                 return `
                 <div class="media-card">
                     <div class="thumbnail-wrapper">
                         <img src="${thumb}" alt="${title}">
-                        <div class="play-overlay"><i class="fas fa-play"></i></div>
                         ${duration ? `<span class="duration-badge">${duration}</span>` : ''}
                     </div>
                     <div class="card-content">
                         <h3 class="card-title" title="${title}">${title}</h3>
                         <div class="card-meta">
-                            <span class="channel-name"><i class="fas fa-check-circle" style="color:#6b7280; font-size:0.8em;"></i> ${author}</span>
-                            <span>${views} views</span>
+                            <span>${author}</span>
                         </div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="startDownload(this, '${url}', '${title}', 'mp3')">
+                            <button class="btn btn-mp3" onclick="download(this, '${url}', '${title}', 'mp3')">
                                 <i class="fas fa-music"></i> Download MP3
                             </button>
-                            <button class="btn btn-mp4" onclick="startDownload(this, '${url}', '${title}', 'mp4')">
+                            <button class="btn btn-mp4" onclick="download(this, '${url}', '${title}', 'mp4')">
                                 <i class="fas fa-video"></i> Download MP4
                             </button>
                         </div>
@@ -566,53 +464,39 @@
             }).join('');
         }
 
-        async function startDownload(btn, url, title, format) {
+        async function download(btn, url, title, format) {
             if (btn.disabled) return;
+            const originalText = btn.innerHTML;
             
-            // UI State: Loading
-            const originalContent = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-circle-notch spinner"></i> Converting...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
             
             const api = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
-            const targetUrl = api + url;
+            const target = api + url;
 
             try {
-                // 1. Fetch Blob
-                const res = await fetch(targetUrl);
+                const res = await fetch(target);
                 if (!res.ok) throw new Error('API Error');
                 const blob = await res.blob();
-
-                // 2. Create Download Link
+                
                 const link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
-                link.download = `${title.replace(/[^a-z0-9]/gi, '_').substring(0, 50)}.${format}`;
+                link.download = `${title.substring(0,50)}.${format}`;
                 document.body.appendChild(link);
                 link.click();
                 
-                // 3. Cleanup
                 window.URL.revokeObjectURL(link.href);
                 document.body.removeChild(link);
-                utils.notify(`${format.toUpperCase()} Download Started!`);
-
+                utils.showToast(`${format.toUpperCase()} Download Started`);
             } catch (e) {
-                console.error(e);
-                utils.notify('Download failed. Opening backup link...');
-                // Fallback: Open in new tab if blob fails (e.g. CORS issues)
-                window.open(targetUrl, '_blank');
+                utils.showToast('Download failed. Opening backup...');
+                window.open(target, '_blank');
             } finally {
-                // UI State: Reset
+                btn.innerHTML = originalText;
                 btn.disabled = false;
-                btn.innerHTML = originalContent;
             }
         }
 
-        function showError(msg) {
-            ui.errorText.textContent = msg;
-            ui.error.style.display = 'block';
-        }
-
-        // --- Event Listeners ---
         ui.btn.addEventListener('click', handleSearch);
         ui.input.addEventListener('keypress', e => e.key === 'Enter' && handleSearch());
     </script>
