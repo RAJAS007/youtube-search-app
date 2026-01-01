@@ -181,7 +181,6 @@
             object-fit: cover;
         }
 
-        /* --- YOUTUBE DURATION BADGE --- */
         .duration-badge {
             position: absolute;
             bottom: 8px;
@@ -461,10 +460,7 @@
                 const title = v.title.replace(/"/g, '&quot;');
                 const thumb = v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
                 const url = `https://www.youtube.com/watch?v=${v.videoId}`;
-                
-                // Format Duration using new logic
                 const duration = formatYoutubeTime(v.duration?.seconds || v.duration);
-                
                 const safeName = v.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 
                 return `
@@ -489,22 +485,26 @@
             }).join('');
         }
 
-        // --- DOWNLOAD LOGIC ---
+        // --- DIRECT DOWNLOAD LOGIC (NO REDIRECTS) ---
         async function triggerDownload(url, format, filename) {
+            // Setup Popup UI
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
-            ui.popBar.className = 'progress-fill'; 
-            ui.popStatus.textContent = 'Connecting...';
+            ui.popBar.className = 'progress-fill';
+            ui.popStatus.textContent = 'Connecting to API...';
             ui.popPercent.textContent = '0%';
             
             const api = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
             const targetUrl = api + url;
 
             try {
+                // Fetch Directly
                 const response = await fetch(targetUrl);
-                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
                 
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                
+                // Stream Reader
                 const reader = response.body.getReader();
                 const contentLength = +response.headers.get('Content-Length');
                 let receivedLength = 0;
@@ -522,6 +522,7 @@
                         ui.popPercent.textContent = `${percent}%`;
                         ui.popStatus.textContent = 'Downloading...';
                     } else {
+                        // Indeterminate if size unknown
                         if(!ui.popBar.classList.contains('indeterminate')) {
                             ui.popBar.classList.add('indeterminate');
                             ui.popPercent.textContent = '';
@@ -530,22 +531,26 @@
                     }
                 }
 
-                ui.popStatus.textContent = 'Finalizing...';
+                // File Ready
+                ui.popStatus.textContent = 'Saving file...';
                 const blob = new Blob(chunks);
                 const blobUrl = window.URL.createObjectURL(blob);
                 
+                // Success UI
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('complete');
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
                 ui.popStatus.textContent = 'Download Complete';
 
+                // Trigger Save Dialog
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `${filename}.${format}`;
                 document.body.appendChild(a);
                 a.click();
                 
+                // Cleanup
                 setTimeout(() => {
                     window.URL.revokeObjectURL(blobUrl);
                     document.body.removeChild(a);
@@ -554,6 +559,8 @@
 
             } catch (error) {
                 console.error("Download failed:", error);
+                
+                // FAILURE UI (STAYS ON PAGE)
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('error');
                 ui.popBar.style.width = '100%';
@@ -571,24 +578,14 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        // --- UPDATED TIME FORMATTER (YouTube Style) ---
         function formatYoutubeTime(s) {
             if (!s) return '';
             const h = Math.floor(s / 3600);
             const m = Math.floor((s % 3600) / 60);
             const sec = Math.floor(s % 60);
-            
             const pad = (num) => num.toString().padStart(2, '0');
-            
-            // Logic:
-            // If hours > 0 -> H:MM:SS (e.g. 1:05:30)
-            // If hours == 0 -> M:SS (e.g. 5:30)
-            
-            if (h > 0) {
-                return `${h}:${pad(m)}:${pad(sec)}`;
-            } else {
-                return `${m}:${pad(sec)}`;
-            }
+            if (h > 0) return `${h}:${pad(m)}:${pad(sec)}`;
+            return `${m}:${pad(sec)}`;
         }
 
         ui.btn.addEventListener('click', handleSearch);
