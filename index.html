@@ -3,498 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Converter & Downloader</title>
+    <title>YouTube Converter</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* YouTube Brand Colors */
-            --yt-red: #FF0000;
-            --yt-black: #0f0f0f;
-            --yt-gray: #606060;
-            --yt-light-gray: #f2f2f2;
-            --yt-white: #ffffff;
-            
-            --bg-color: #f9f9f9;
-            --card-bg: #ffffff;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --radius: 12px;
+            /* Modern YouTube Palette */
+            --yt-spec-base-background: #ffffff;
+            --yt-spec-text-primary: #0f0f0f;
+            --yt-spec-text-secondary: #606060;
+            --yt-spec-static-brand-red: #ff0000;
+            --yt-spec-general-background-a: #f9f9f9;
+            --yt-search-btn-bg: #f8f8f8;
+            --yt-search-border: #d3d3d3;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', Arial, sans-serif; }
         
         body {
-            background-color: var(--bg-color);
-            color: var(--yt-black);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background-color: var(--yt-spec-base-background);
+            color: var(--yt-spec-text-primary);
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            width: 100%;
-            flex: 1;
-        }
-
-        /* --- Header (YouTube Style) --- */
+        /* --- Header --- */
         header {
-            text-align: center;
-            padding: 40px 20px 80px; /* Extra padding bottom for search bar overlap */
-            background-color: var(--yt-red);
-            color: white;
-            border-radius: 0 0 var(--radius) var(--radius); /* Rounded bottom only */
-            margin-bottom: 20px;
-            margin-top: -20px; /* Pull to top */
-            box-shadow: var(--shadow);
-            position: relative;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 5px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            letter-spacing: -1px;
-        }
-        
-        header h1 i {
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 56px;
             background: white;
-            color: var(--yt-red);
-            border-radius: 50%;
-            padding: 2px; /* White circle background behind play icon */
-            font-size: 0.9em;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        header p {
-            font-size: 1rem;
-            opacity: 0.9;
-            font-weight: 400;
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        
+        .logo-icon {
+            color: var(--yt-spec-static-brand-red);
+            font-size: 28px;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            top: -1px;
         }
 
         /* --- Search Bar --- */
-        .search-container {
-            max-width: 700px;
-            margin: -60px auto 40px; /* Pull up into header */
-            position: relative;
-            z-index: 10;
-            padding: 0 20px;
+        .search-center {
+            flex: 0 1 732px;
+            display: flex;
+            justify-content: center;
         }
 
         .search-box {
             display: flex;
-            background: white;
-            padding: 5px;
-            border-radius: 50px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            transition: transform 0.2s;
-        }
-
-        .search-box:focus-within {
-            transform: translateY(-2px);
+            width: 100%;
+            margin-left: 40px;
         }
 
         #searchInput {
-            flex: 1;
-            padding: 15px 25px;
-            border: none;
+            width: 100%;
+            background-color: white;
+            border: 1px solid var(--yt-search-border);
+            border-right: none;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0);
+            padding: 2px 6px 2px 16px;
+            border-radius: 40px 0 0 40px;
+            height: 40px;
+            font-size: 16px;
             outline: none;
-            font-size: 1.1rem;
-            background: transparent;
-            color: var(--yt-black);
+            color: var(--yt-spec-text-primary);
         }
+
+        #searchInput:focus { border-color: #1c62b9; }
 
         #searchButton {
-            background-color: var(--yt-black); /* Dark Search Button */
-            color: white;
-            border: none;
-            padding: 0 35px;
-            border-radius: 50px;
-            font-weight: 500;
+            background-color: var(--yt-search-btn-bg);
+            border: 1px solid var(--yt-search-border);
+            border-radius: 0 40px 40px 0;
             cursor: pointer;
-            font-size: 1rem;
+            height: 40px;
+            width: 64px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
+            justify-content: center;
+            margin: 0;
         }
 
-        #searchButton:hover {
-            background-color: #333;
-        }
+        #searchButton:hover { background-color: #f0f0f0; }
+        #searchButton i { font-size: 19px; font-weight: 100; color: var(--yt-spec-text-primary); }
 
-        .status-text {
-            text-align: center;
-            margin-top: 20px;
-            color: var(--yt-gray);
-            font-size: 0.9rem;
-            min-height: 20px;
+        /* --- Grid & Cards --- */
+        .container {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .status-bar {
+            margin-bottom: 20px;
+            color: var(--yt-spec-text-secondary);
+            font-size: 14px;
             font-weight: 500;
         }
 
-        /* --- Results Grid --- */
-        .results-grid {
+        .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-            padding: 10px 0;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 40px 16px;
         }
 
-        /* Center the grid if there is only 1 result (Link search) */
-        .results-grid.single-result {
+        .video-grid.single-mode {
             display: flex;
             justify-content: center;
         }
-        .results-grid.single-result .media-card {
-            max-width: 450px; /* Larger card for single result */
+        .video-grid.single-mode .video-card {
+            max-width: 360px;
             width: 100%;
         }
 
-        /* --- Card Design --- */
-        .media-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
+        .video-card {
+            cursor: pointer;
             display: flex;
             flex-direction: column;
-            border: 1px solid #e5e5e5;
+            background: transparent;
+            border: none;
         }
 
-        .media-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .thumbnail-wrapper {
+        .thumbnail-container {
             position: relative;
-            padding-top: 56.25%; /* 16:9 */
-            background: #000;
+            width: 100%;
+            padding-top: 56.25%;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #e5e5e5;
         }
 
-        .thumbnail-wrapper img {
+        .thumbnail-container img {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
         }
 
-        .duration-badge {
+        .duration {
             position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.8);
+            bottom: 6px;
+            right: 6px;
+            background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 3px 6px;
+            padding: 3px 4px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 12px;
             font-weight: 500;
         }
 
-        .card-content {
-            padding: 15px;
-            flex: 1;
+        .details {
+            margin-top: 12px;
             display: flex;
             flex-direction: column;
+            gap: 4px;
         }
 
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600; /* Roboto Medium */
-            color: var(--yt-black);
-            margin-bottom: 6px;
-            line-height: 1.4;
+        .video-title {
+            color: var(--yt-spec-text-primary);
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 22px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 2.8em;
+            max-height: 44px;
         }
 
-        .card-meta {
-            font-size: 0.85rem;
-            color: var(--yt-gray);
-            margin-bottom: 15px;
+        .metadata {
+            color: var(--yt-spec-text-secondary);
+            font-size: 14px;
+            line-height: 20px;
+        }
+        
+        .channel-name {
             display: flex;
-            flex-direction: column;
-            gap: 2px;
+            align-items: center;
+            gap: 4px;
         }
 
         /* --- Buttons --- */
-        .actions {
-            margin-top: auto;
+        .actions-row {
+            margin-top: 12px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .btn {
-            width: 100%;
-            padding: 10px;
-            border-radius: 20px; /* YouTube Pill Style */
-            border: none;
-            font-size: 0.9rem;
+        .yt-btn {
+            flex: 1;
+            height: 36px;
+            border-radius: 18px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: filter 0.2s;
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            gap: 6px;
+            transition: background-color 0.2s;
+            text-decoration: none; /* Ensure link behaves like button */
         }
 
-        /* Primary: Red (Like Subscribe Button) */
+        /* Primary: Black */
         .btn-mp3 {
-            background-color: var(--yt-red);
+            background-color: #0f0f0f;
             color: white;
         }
-        .btn-mp3:hover {
-            background-color: #cc0000;
-        }
+        .btn-mp3:hover { background-color: #272727; }
 
-        /* Secondary: Dark Gray/Black */
+        /* Secondary: Gray */
         .btn-mp4 {
-            background-color: var(--yt-light-gray);
-            color: var(--yt-black);
-            border: 1px solid #ddd;
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #0f0f0f;
         }
-        .btn-mp4:hover {
-            background-color: #e5e5e5;
+        .btn-mp4:hover { background-color: rgba(0, 0, 0, 0.1); }
+
+        /* --- Loading & Toast --- */
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 50px;
         }
-        
-        /* Spinner */
-        .fa-spinner { animation: spin 1s linear infinite; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top-color: var(--yt-spec-text-secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- Footer --- */
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: var(--yt-gray);
-            font-size: 0.85rem;
-            background: white;
-            border-top: 1px solid #e5e5e5;
-        }
-
-        /* --- Toast Notification --- */
         .toast {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px); /* Center bottom */
-            background: #333;
+            bottom: 24px;
+            left: 24px;
+            background-color: #0f0f0f;
             color: white;
-            padding: 12px 24px;
-            border-radius: 4px; /* YouTube snackbar style */
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: all 0.3s;
+            padding: 14px 24px;
+            border-radius: 4px;
+            font-size: 14px;
             z-index: 1000;
+            transform: translateY(100px);
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
         }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.show { transform: translateY(0); }
 
-        /* --- Loading State --- */
-        .loading-state { text-align: center; padding: 40px; display: none; }
-        .loading-state i { color: var(--yt-red); font-size: 2.5rem; margin-bottom: 10px; }
-
-        @media (max-width: 768px) {
-            header h1 { font-size: 2rem; }
-            .search-box { padding: 4px; }
-            #searchButton span { display: none; } /* Hide text on mobile search btn */
-            #searchButton { padding: 0 20px; }
+        @media (max-width: 600px) {
+            header { height: auto; flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 10px; }
+            .search-center { display: flex; width: 100%; margin: 0; flex: 1; }
+            .search-box { margin: 0; }
+            .video-grid { grid-template-columns: 1fr; gap: 24px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1><i class="fab fa-youtube"></i> Converter</h1>
-            <p>Download MP3 audio & MP4 video</p>
-        </header>
-
-        <div class="search-container">
+    <header>
+        <div class="logo-section" onclick="location.reload()">
+            <i class="fab fa-youtube logo-icon"></i>
+            <span class="logo-text">Premium</span>
+        </div>
+        
+        <div class="search-center">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Paste YouTube link or search...">
-                <button id="searchButton"><i class="fas fa-search"></i> <span>Search</span></button>
+                <input type="text" id="searchInput" placeholder="Search">
+                <button id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
-            <div class="status-text" id="resultCount"></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="status-bar" id="resultStatus"></div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
         </div>
 
-        <div class="loading-state" id="loading">
-            <i class="fas fa-circle-notch fa-spin"></i>
-            <p>Processing...</p>
-        </div>
-
-        <div class="results-grid" id="resultsContainer"></div>
+        <div class="video-grid" id="grid"></div>
     </div>
 
-    <div class="footer">
-        <p>YouTube Downloader &copy; 2024</p>
-    </div>
-
-    <div class="toast" id="toast">Download started</div>
+    <div class="toast" id="toast">Check your browser downloads!</div>
 
     <script>
-        // --- Config ---
         const CONFIG = {
             mp3Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp3?url=',
             mp4Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
         };
 
-        // --- Elements ---
         const ui = {
             input: document.getElementById('searchInput'),
             btn: document.getElementById('searchButton'),
-            grid: document.getElementById('resultsContainer'),
-            loader: document.getElementById('loading'),
-            status: document.getElementById('resultCount'),
+            grid: document.getElementById('grid'),
+            loading: document.getElementById('loading'),
+            status: document.getElementById('resultStatus'),
             toast: document.getElementById('toast')
         };
 
-        // --- Utils ---
         const utils = {
+            extractID: (url) => {
+                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+                return (match && match[2].length === 11) ? match[2] : null;
+            },
             formatTime: (s) => {
                 if (!s) return '';
                 const h = Math.floor(s / 3600);
                 const m = Math.floor((s % 3600) / 60);
                 const sec = Math.floor(s % 60);
-                return h > 0 
-                    ? `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}` 
-                    : `${m}:${sec.toString().padStart(2,'0')}`;
+                const pad = (n) => n.toString().padStart(2, '0');
+                return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
             },
-            extractID: (url) => {
-                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
-                return (match && match[2].length === 11) ? match[2] : null;
+            formatViews: (n) => {
+                if (!n) return '0 views';
+                if (n >= 1e9) return (n/1e9).toFixed(1) + 'B views';
+                if (n >= 1e6) return (n/1e6).toFixed(1) + 'M views';
+                if (n >= 1e3) return (n/1e3).toFixed(0) + 'K views';
+                return n + ' views';
             },
             showToast: (msg) => {
                 ui.toast.textContent = msg;
                 ui.toast.classList.add('show');
-                setTimeout(() => ui.toast.classList.remove('show'), 3000);
+                setTimeout(() => ui.toast.classList.remove('show'), 4000);
             }
         };
 
-        // --- Main Logic ---
         async function handleSearch() {
-            const rawQuery = ui.input.value.trim();
-            if (!rawQuery) {
-                ui.status.textContent = "Please enter a link or keyword";
-                return;
-            }
+            const query = ui.input.value.trim();
+            if(!query) return;
 
-            ui.loader.style.display = 'block';
+            ui.loading.style.display = 'block';
             ui.grid.innerHTML = '';
             ui.status.textContent = '';
-            ui.grid.className = 'results-grid'; // Reset class
+            ui.grid.className = 'video-grid';
 
-            // Check if input is a Link/ID
-            const vidId = utils.extractID(rawQuery);
-            const finalQuery = vidId || rawQuery;
+            const vidId = utils.extractID(query);
+            const searchQ = vidId || query;
 
             try {
-                // Fetch data
-                const response = await fetch(`/api/search?q=${encodeURIComponent(finalQuery)}`);
-                const data = await response.json();
-                
-                ui.loader.style.display = 'none';
+                const res = await fetch(`/api/search?q=${encodeURIComponent(searchQ)}`);
+                const data = await res.json();
+                ui.loading.style.display = 'none';
 
-                if (data.videos && data.videos.length > 0) {
-                    
-                    let videosToRender = data.videos;
-
-                    // *** LOGIC UPDATE: If it was a link (vidId found), only show the FIRST result ***
-                    if (vidId) {
-                        videosToRender = [data.videos[0]]; // Slice array to keep only the first item
-                        ui.grid.classList.add('single-result'); // Add class for centering
-                        ui.status.textContent = 'Video found';
+                if(data.videos && data.videos.length > 0) {
+                    let videos = data.videos;
+                    if(vidId) {
+                        videos = [data.videos[0]];
+                        ui.grid.classList.add('single-mode');
+                        ui.status.textContent = '';
                     } else {
-                        ui.status.textContent = `Found ${data.videos.length} results`;
+                        ui.status.textContent = `Results for "${query}"`;
                     }
-
-                    renderCards(videosToRender);
-                    
+                    render(videos);
                 } else {
-                    ui.status.textContent = 'No videos found.';
+                    ui.status.textContent = 'No videos found';
                 }
-
-            } catch (e) {
-                ui.loader.style.display = 'none';
-                ui.status.textContent = 'Error searching. Please try again.';
-                console.error(e);
+            } catch(e) {
+                ui.loading.style.display = 'none';
+                ui.status.textContent = 'Search failed. Please try again.';
             }
         }
 
-        function renderCards(videos) {
+        function render(videos) {
             ui.grid.innerHTML = videos.map(v => {
-                const id = v.videoId;
                 const title = v.title.replace(/"/g, '&quot;');
-                const thumb = v.thumbnail || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+                const thumb = v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
                 const duration = utils.formatTime(v.duration?.seconds || v.duration);
-                const author = v.author?.name || 'Unknown Channel';
-                const url = `https://www.youtube.com/watch?v=${id}`;
+                const views = utils.formatViews(v.views);
+                const author = v.author?.name || 'Unknown';
+                const url = `https://www.youtube.com/watch?v=${v.videoId}`;
 
                 return `
-                <div class="media-card">
-                    <div class="thumbnail-wrapper">
-                        <img src="${thumb}" alt="${title}">
-                        ${duration ? `<span class="duration-badge">${duration}</span>` : ''}
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title" title="${title}">${title}</h3>
-                        <div class="card-meta">
-                            <span>${author}</span>
+                    <div class="video-card">
+                        <div class="thumbnail-container">
+                            <img src="${thumb}" alt="thumb">
+                            ${duration ? `<div class="duration">${duration}</div>` : ''}
                         </div>
-                        <div class="actions">
-                            <button class="btn btn-mp3" onclick="download(this, '${url}', '${title}', 'mp3')">
-                                <i class="fas fa-music"></i> Download MP3
-                            </button>
-                            <button class="btn btn-mp4" onclick="download(this, '${url}', '${title}', 'mp4')">
-                                <i class="fas fa-video"></i> Download MP4
-                            </button>
+                        <div class="details">
+                            <h3 class="video-title" title="${title}">${title}</h3>
+                            <div class="metadata">
+                                <div class="channel-name">${author} <i class="fas fa-check-circle" style="font-size:10px; margin-left:4px;"></i></div>
+                                <div>${views} • 2 days ago</div>
+                            </div>
+                            <div class="actions-row">
+                                <button class="yt-btn btn-mp3" onclick="downloadLink(this, '${url}', 'mp3')">
+                                    <i class="fas fa-music"></i> Audio
+                                </button>
+                                <button class="yt-btn btn-mp4" onclick="downloadLink(this, '${url}', 'mp4')">
+                                    <i class="fas fa-video"></i> Video
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>`;
+                `;
             }).join('');
         }
 
-        async function download(btn, url, title, format) {
-            if (btn.disabled) return;
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
-            
+        // --- UPDATED DOWNLOAD FUNCTION ---
+        function downloadLink(btn, url, format) {
+            // 1. Get API URL
             const api = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
-            const target = api + url;
+            const finalUrl = api + url;
 
-            try {
-                const res = await fetch(target);
-                if (!res.ok) throw new Error('API Error');
-                const blob = await res.blob();
-                
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = `${title.substring(0,50)}.${format}`;
-                document.body.appendChild(link);
-                link.click();
-                
-                window.URL.revokeObjectURL(link.href);
-                document.body.removeChild(link);
-                utils.showToast(`${format.toUpperCase()} Download Started`);
-            } catch (e) {
-                utils.showToast('Download failed. Opening backup...');
-                window.open(target, '_blank');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+            // 2. Notify User
+            utils.showToast(`Starting ${format.toUpperCase()} Download... Check your browser!`);
+
+            // 3. Open in new tab (This forces the browser to handle the download natively)
+            window.open(finalUrl, '_blank');
         }
 
         ui.btn.addEventListener('click', handleSearch);
