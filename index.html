@@ -6,7 +6,6 @@
     <title>YouTube Downloader</title>
     
     <link rel="preconnect" href="https://i.ytimg.com">
-    <link rel="preconnect" href="https://co.wuk.sh">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -146,6 +145,14 @@
             popPercent: document.getElementById('popPercent')
         };
 
+        // --- NEW: List of reliable API mirrors ---
+        const API_SERVERS = [
+            'https://cobalt.154.53.56.154.nip.io/api/json',
+            'https://cobalt.xy2401.com/api/json', 
+            'https://cobalt.kwiatekmiki.pl/api/json',
+            'https://api.cobalt.tools/api/json' // Official backup
+        ];
+
         function showSkeletons(count = 8) {
             let html = '';
             for(let i=0; i<count; i++) {
@@ -167,7 +174,7 @@
             const searchQuery = videoId || query;
 
             try {
-                // Using your local server for search
+                // Local search API
                 const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
 
@@ -207,84 +214,82 @@
                         <div class="title">${title}</div>
                         <div class="meta">${v.author?.name || 'Unknown'}</div>
                         <div class="actions">
-                            <button class="btn btn-mp3" onclick="triggerDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
-                            <button class="btn btn-mp4" onclick="triggerDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
+                            <button class="btn btn-mp3" onclick="startSmartDownload('${v.videoId}', 'mp3')"><i class="fas fa-music"></i> Audio</button>
+                            <button class="btn btn-mp4" onclick="startSmartDownload('${v.videoId}', 'mp4')"><i class="fas fa-video"></i> Video</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- FIXED DOWNLOAD LOGIC (Stable API + No Redirects) ---
-        async function triggerDownload(videoId, format) {
+        // --- SMART DOWNLOADER WITH AUTO-RETRY ---
+        async function startSmartDownload(videoId, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill indeterminate';
-            ui.popStatus.textContent = 'Preparing File...';
             ui.popPercent.textContent = '';
             
-            // Using a more stable Cobalt instance
-            const apiUrl = 'https://co.wuk.sh/api/json';
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        url: `https://www.youtube.com/watch?v=${videoId}`,
-                        vCodec: 'h264',
-                        vQuality: '720',
-                        aFormat: 'mp3',
-                        isAudioOnly: format === 'mp3'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!data.url) throw new Error('No URL returned');
-
-                // Success! We found the file.
-                ui.popStatus.textContent = 'Downloading...';
-                ui.popBar.classList.remove('indeterminate');
-                ui.popBar.style.width = '50%'; 
-
-                // Fetch the file as a blob to avoid redirecting the user
-                const fileRes = await fetch(data.url);
+            // Try servers one by one
+            for (let i = 0; i < API_SERVERS.length; i++) {
+                const server = API_SERVERS[i];
+                ui.popStatus.textContent = `Connecting to Server ${i + 1}...`;
                 
-                if(!fileRes.ok) throw new Error('File fetch failed');
-
-                const blob = await fileRes.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const filename = `download.${format}`; 
-
-                ui.popBar.style.width = '100%';
-                ui.popStatus.textContent = 'Saving to Device...';
-
-                // Trigger the save dialog
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                
-                // Cleanup
-                setTimeout(() => {
-                    window.URL.revokeObjectURL(blobUrl);
-                    document.body.removeChild(a);
-                    closePopup();
-                }, 3000);
-
-            } catch (error) {
-                console.error(error);
-                ui.popBar.classList.remove('indeterminate');
-                ui.popBar.style.background = '#cc0000';
-                ui.popStatus.textContent = 'Server Busy. Try again later.';
-                // Removed the window.open fallback to prevent redirects
+                try {
+                    const success = await attemptDownload(server, videoId, format);
+                    if (success) return; // Stop if successful
+                } catch (e) {
+                    console.warn(`Server ${i+1} failed, trying next...`);
+                }
             }
+
+            // All failed
+            ui.popBar.classList.remove('indeterminate');
+            ui.popBar.style.background = '#cc0000';
+            ui.popStatus.textContent = 'All Servers Busy. Try again later.';
+        }
+
+        async function attemptDownload(apiUrl, videoId, format) {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: `https://www.youtube.com/watch?v=${videoId}`,
+                    vCodec: 'h264',
+                    vQuality: '720',
+                    aFormat: 'mp3',
+                    isAudioOnly: format === 'mp3'
+                })
+            });
+
+            const data = await response.json();
+            if (!data.url) throw new Error('Invalid response');
+
+            // Success! Start download
+            ui.popStatus.textContent = 'Downloading File...';
+            ui.popBar.classList.remove('indeterminate');
+            ui.popBar.style.width = '60%';
+
+            const fileRes = await fetch(data.url);
+            const blob = await fileRes.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            ui.popBar.style.width = '100%';
+            ui.popStatus.textContent = 'Saving...';
+
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `download.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+                closePopup();
+            }, 3000);
+            
+            return true;
         }
 
         function closePopup() { ui.popup.style.display = 'none'; }
