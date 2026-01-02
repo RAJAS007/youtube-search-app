@@ -1,13 +1,13 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const axios = require('axios');
 const ytSearch = require('yt-search');
 const NodeCache = require('node-cache');
+const ytdl = require('@distube/ytdl-core');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 
-// 1. Setup FFMPEG Path
+// 1. Setup FFmpeg
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 const app = express();
@@ -17,7 +17,7 @@ const searchCache = new NodeCache({ stdTTL: 3600 });
 app.use(cors());
 app.use(express.static(__dirname));
 
-// --- SEARCH API ---
+// --- 1. SEARCH API ---
 app.get('/api/search', async (req, res) => {
     try {
         const query = req.query.q;
@@ -39,8 +39,9 @@ app.get('/api/search', async (req, res) => {
             author: { name: v.author.name }
         }));
 
-        searchCache.set(cachedKey, { videos });
-        res.json({ videos });
+        const data = { videos };
+        searchCache.set(cachedKey, data);
+        res.json(data);
 
     } catch (error) {
         console.error('Search Error:', error.message);
@@ -48,52 +49,36 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
-// --- ROBUST DOWNLOAD API ---
+// --- 2. INTERNAL DOWNLOAD & CONVERT API ---
 app.get('/api/download', async (req, res) => {
     try {
-        const { url, type } = req.query; // type = 'mp3' or 'mp4'
-        if (!url) return res.status(400).send('URL required');
+        const { id, type } = req.query; // id = videoId, type = 'mp3' or 'mp4'
+        if (!id) return res.status(400).send('Video ID required');
 
-        console.log(`⬇️ Request: ${type.toUpperCase()} | URL: ${url}`);
+        console.log(`⬇️ Starting Internal Job: ${id} (${type})`);
 
-        // 1. Get Direct Link from API
-        const apiUrl = `https://ameen-api.vercel.app/v2/yts?url=${encodeURIComponent(url)}`;
-        const apiRes = await axios.get(apiUrl);
-        
-        const data = apiRes.data;
-        // Look for the download link in various possible properties
-        const directLink = data.dl || data.url || data.download_url || (data.data && data.data.url) || (data.data && data.data.dl);
-
-        if (!directLink) {
-            throw new Error('No valid download link found from API');
+        // Get Video Info
+        const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+        if (!ytdl.validateURL(videoUrl)) {
+            return res.status(400).send('Invalid Video ID');
         }
 
-        console.log(`🔗 Source Link Found. Starting Stream...`);
+        const info = await ytdl.getInfo(videoUrl);
+        const title = info.videoDetails.title.replace(/[^a-z0-9]/gi, '_');
+        const filename = `${title}.${type}`;
 
-        // 2. Prepare Headers
-        // Clean the title to prevent header errors
-        const safeTitle = `download_${Date.now()}`; 
-        const filename = `${safeTitle}.${type}`;
-
+        // Set Headers for Download
         res.header('Content-Disposition', `attachment; filename="${filename}"`);
 
-        // 3. FFMPEG STREAMING LOGIC
-        // We use FFmpeg for BOTH video and audio to ensure stability
-        
-        const command = ffmpeg(directLink);
-
-        // Add headers to mimic a browser (Helps avoid 403 Forbidden from YouTube servers)
-        command.inputOptions([
-            '-headers', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            '-reconnect', '1',
-            '-reconnect_streamed', '1',
-            '-reconnect_delay_max', '5'
-        ]);
-
+        // --- AUDIO MODE (MP3) ---
         if (type === 'mp3') {
-            // Audio Conversion
             res.header('Content-Type', 'audio/mpeg');
-            command
+            
+            // Get highest audio quality stream
+            const audioStream = ytdl(videoUrl, { quality: 'highestaudio' });
+
+            // Convert to MP3 using FFmpeg
+            ffmpeg(audioStream)
                 .format('mp3')
                 .audioBitrate(128)
                 .on('error', (err) => {
@@ -102,22 +87,27 @@ app.get('/api/download', async (req, res) => {
                 })
                 .pipe(res, { end: true });
 
-        } else {
-            // Video Stream (Copy mode = Fast & CPU efficient)
+        } 
+        // --- VIDEO MODE (MP4) ---
+        else {
             res.header('Content-Type', 'video/mp4');
-            command
-                .format('mp4')
-                .outputOptions('-c copy') // Directly copy video/audio streams (No re-encoding)
+            
+            // Download video with audio (Quality 18 is standard 360p/MP4 which is safest for streaming)
+            // For higher quality, we would need to merge streams, but that requires temporary files (disk space).
+            // Quality '18' is the most reliable single-file stream.
+            const videoStream = ytdl(videoUrl, { quality: '18' });
+
+            videoStream
                 .on('error', (err) => {
-                    console.error('FFmpeg Video Error:', err.message);
+                    console.error('Stream Error:', err.message);
                     if (!res.headersSent) res.end();
                 })
-                .pipe(res, { end: true });
+                .pipe(res);
         }
 
     } catch (error) {
-        console.error('Server Error:', error.message);
-        if (!res.headersSent) res.status(500).send('Download Failed');
+        console.error('Handler Error:', error.message);
+        if (!res.headersSent) res.status(500).send('Server Error');
     }
 });
 
