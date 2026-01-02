@@ -7,6 +7,15 @@ const port = process.env.PORT || 3000;
 
 // Enable CORS
 app.use(cors());
+
+// --- NEW: REQUIRED HEADERS FOR FFMPEG.WASM ---
+app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    next();
+});
+// ---------------------------------------------
+
 // Serve static files
 app.use(express.static(__dirname));
 
