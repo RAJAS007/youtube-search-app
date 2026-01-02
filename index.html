@@ -7,56 +7,98 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #3ea6ff; --bg: #f9f9f9; }
+        :root { --accent: #3ea6ff; --bg: #f9f9f9; --yt-red: #ff0000; }
         * { box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         body { margin: 0; background: var(--bg); display: flex; flex-direction: column; min-height: 100vh; }
         
         /* HEADER */
-        header { background: white; padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; align-items: center; position: sticky; top: 0; z-index: 10; }
-        .logo { color: red; font-size: 24px; }
-        .search-box { flex: 1; display: flex; background: #eee; border-radius: 40px; overflow: hidden; max-width: 600px; margin: 0 auto; }
-        input { border: none; background: transparent; padding: 10px 20px; flex: 1; outline: none; }
-        button#searchBtn { border: none; background: #ddd; px: 20px; cursor: pointer; width: 60px; }
+        header { background: white; padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .logo { color: var(--yt-red); font-size: 28px; }
+        
+        /* Search Form - Uses Flex to fit screens */
+        .search-form { flex: 1; display: flex; background: #eee; border-radius: 40px; overflow: hidden; max-width: 600px; margin: 0 auto; border: 1px solid transparent; transition: 0.3s; }
+        .search-form:focus-within { background: white; border-color: #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { border: none; background: transparent; padding: 12px 20px; flex: 1; outline: none; font-size: 16px; }
+        button#searchBtn { border: none; background: #f0f0f0; padding: 0 20px; cursor: pointer; border-left: 1px solid #ddd; }
+        button#searchBtn:hover { background: #e0e0e0; }
 
         /* GRID */
-        .container { padding: 20px; flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .container { padding: 15px; flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
+        /* Mobile First Grid: 1 column by default, expands on larger screens */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+        }
+        
+        /* Tablet & PC: Auto-fill columns */
+        @media (min-width: 600px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        }
         
         /* CARDS */
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; }
-        .card:hover { transform: translateY(-5px); }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-4px); }
+        
         .thumb { padding-top: 56.25%; background: #000; position: relative; }
         .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        .info { padding: 15px; }
-        .title { font-weight: 500; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; }
-        .btns { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-mp3 { background: #333; color: white; }
-        .btn-mp4 { background: #eee; color: #333; }
+        
+        /* Time Badge */
+        .time-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+
+        .info { padding: 12px; display: flex; flex-direction: column; flex: 1; }
+        .title { font-weight: 500; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 15px; line-height: 1.4; color: #0f0f0f; }
+        .meta { font-size: 12px; color: #606060; margin-bottom: 12px; }
+        
+        .btns { display: flex; gap: 8px; margin-top: auto; }
+        .btn { flex: 1; padding: 10px 0; border: none; border-radius: 18px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+        .btn-mp3 { background: #0f0f0f; color: white; }
+        .btn-mp3:hover { opacity: 0.8; }
+        .btn-mp4 { background: #f2f2f2; color: #0f0f0f; }
+        .btn-mp4:hover { background: #e5e5e5; }
 
         /* POPUP */
-        .popup { position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); width: 300px; display: none; z-index: 100; }
-        .bar-bg { background: #eee; height: 5px; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        .popup { position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); width: 320px; display: none; z-index: 1000; animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .bar-bg { background: #eee; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden; }
         .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
-        .bar-fill.anim { width: 100%; animation: load 1.5s infinite; background: linear-gradient(90deg, var(--accent), #8ecae6, var(--accent)); background-size: 200%; }
+        .bar-fill.anim { width: 100%; animation: load 1.5s infinite linear; background: linear-gradient(90deg, var(--accent) 0%, #8ecae6 50%, var(--accent) 100%); background-size: 200%; }
         @keyframes load { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
         
-        .empty { text-align: center; margin-top: 50px; color: #777; }
+        /* Mobile Popup Adjustment */
+        @media (max-width: 500px) {
+            .popup { width: 90%; left: 5%; right: 5%; bottom: 15px; }
+        }
+
+        .empty { text-align: center; margin-top: 80px; color: #777; padding: 20px; }
+        .empty i { font-size: 50px; margin-bottom: 20px; opacity: 0.2; }
     </style>
 </head>
 <body>
 
 <header>
     <i class="fab fa-youtube logo"></i>
-    <div class="search-box">
-        <input type="text" id="input" placeholder="Search or paste link...">
-        <button id="searchBtn"><i class="fas fa-search"></i></button>
-    </div>
+    <form class="search-form" onsubmit="event.preventDefault(); search()">
+        <input type="text" id="input" placeholder="Search song or paste link..." autocomplete="off">
+        <button type="submit" id="searchBtn"><i class="fas fa-search"></i></button>
+    </form>
 </header>
 
 <div class="container">
     <div id="grid" class="grid"></div>
     <div id="empty" class="empty">
+        <i class="fas fa-cloud-download-alt"></i>
         <h2>Ready to Download</h2>
         <p>Paste a YouTube/Spotify link or search for music.</p>
     </div>
@@ -64,8 +106,8 @@
 
 <div class="popup" id="popup">
     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-        <strong id="pStatus">Downloading...</strong>
-        <span id="pPct">0%</span>
+        <strong id="pStatus" style="font-size:14px;">Downloading...</strong>
+        <span id="pPct" style="font-size:12px; color:#666;">0%</span>
     </div>
     <div class="bar-bg"><div class="bar-fill" id="pBar"></div></div>
 </div>
@@ -86,42 +128,62 @@
         let q = ui.input.value.trim();
         if(!q) return;
         
+        ui.input.blur(); // Close keyboard on mobile
         ui.grid.innerHTML = '';
-        ui.empty.style.display = 'none';
+        ui.empty.style.display = 'block';
+        ui.empty.innerHTML = '<i class="fas fa-spinner fa-spin"></i><h3>Searching...</h3>';
 
         // SPOTIFY RESOLVER
         if(q.includes('spotify.com')) {
-            ui.empty.innerText = 'Resolving Spotify Link...';
-            ui.empty.style.display = 'block';
+            ui.empty.innerHTML = '<i class="fab fa-spotify fa-spin" style="color:#1db954"></i><h3>Resolving Spotify...</h3>';
             try {
                 const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`);
                 const data = await res.json();
                 if(data.title) q = data.title;
-            } catch(e) { alert('Could not resolve Spotify link'); return; }
+            } catch(e) { 
+                alert('Could not resolve Spotify link'); 
+                ui.empty.innerHTML = '<h2>Error</h2><p>Try searching manually.</p>';
+                return; 
+            }
         }
 
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-        const data = await res.json();
-        
-        if(!data.videos || !data.videos.length) {
-            ui.empty.innerText = 'No results found';
-            ui.empty.style.display = 'block';
-            return;
-        }
+        try {
+            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            
+            if(!data.videos || !data.videos.length) {
+                ui.empty.innerHTML = '<h2>No results found</h2>';
+                return;
+            }
 
-        ui.empty.style.display = 'none';
-        ui.grid.innerHTML = data.videos.map(v => `
-            <div class="card">
-                <div class="thumb"><img src="${v.thumbnail}"></div>
-                <div class="info">
-                    <div class="title">${v.title}</div>
-                    <div class="btns">
-                        <button class="btn btn-mp3" onclick="dl('${v.url}', 'mp3', '${v.title.replace(/'/g,"")}')"><i class="fas fa-music"></i> MP3</button>
-                        <button class="btn btn-mp4" onclick="dl('${v.url}', 'mp4', '${v.title.replace(/'/g,"")}')"><i class="fas fa-video"></i> MP4</button>
+            ui.empty.style.display = 'none';
+            
+            // MAP RESULTS TO HTML
+            ui.grid.innerHTML = data.videos.map(v => {
+                const safeTitle = v.title.replace(/'/g, "").replace(/"/g, "");
+                return `
+                <div class="card">
+                    <div class="thumb">
+                        <img src="${v.thumbnail}" loading="lazy">
+                        <div class="time-badge">${v.timestamp}</div>
                     </div>
-                </div>
-            </div>
-        `).join('');
+                    <div class="info">
+                        <div class="title">${v.title}</div>
+                        <div class="meta">by ${v.author.name} • ${v.ago}</div>
+                        <div class="btns">
+                            <button class="btn btn-mp3" onclick="dl('${v.url}', 'mp3', '${safeTitle}')">
+                                <i class="fas fa-music"></i> MP3
+                            </button>
+                            <button class="btn btn-mp4" onclick="dl('${v.url}', 'mp4', '${safeTitle}')">
+                                <i class="fas fa-video"></i> MP4
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            ui.empty.innerHTML = '<h2>Connection Error</h2>';
+        }
     }
 
     // DOWNLOAD LOGIC
@@ -129,9 +191,9 @@
         ui.popup.style.display = 'block';
         ui.bar.className = 'bar-fill';
         ui.bar.style.width = '0%';
-        ui.status.innerText = type === 'mp3' ? 'Converting...' : 'Downloading...';
+        ui.status.innerText = type === 'mp3' ? 'Converting (Wait)...' : 'Starting Download...';
+        ui.pct.innerText = '';
         
-        // MP3 = Use OUR Server (Convert) | MP4 = Use External API directly
         let api = type === 'mp3' 
             ? `/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
             : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
@@ -144,6 +206,9 @@
             const total = +res.headers.get('Content-Length');
             let received = 0;
             let chunks = [];
+            
+            // If it's MP3 conversion, we don't know total size, so show animation
+            if(type === 'mp3') ui.bar.classList.add('anim');
 
             while(true) {
                 const {done, value} = await reader.read();
@@ -151,35 +216,37 @@
                 chunks.push(value);
                 received += value.length;
                 
-                if(total) {
+                // Only show percentage for MP4 (known size)
+                if(total && type !== 'mp3') {
                     const pct = Math.floor((received / total) * 100);
                     ui.bar.style.width = pct + '%';
                     ui.pct.innerText = pct + '%';
-                } else {
-                    ui.bar.classList.add('anim');
-                    ui.pct.innerText = '';
+                    ui.status.innerText = 'Downloading...';
                 }
             }
 
-            // Save File
-            ui.status.innerText = 'Saving...';
+            ui.status.innerText = 'Saving File...';
+            ui.bar.classList.remove('anim');
+            ui.bar.style.width = '100%';
+            
             const blob = new Blob(chunks);
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `${title}.${type}`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             
             setTimeout(() => { ui.popup.style.display = 'none'; }, 2000);
 
         } catch(e) {
-            ui.status.innerText = 'Error!';
-            ui.bar.style.background = 'red';
+            console.error(e);
+            ui.status.innerText = 'Download Failed!';
+            ui.bar.style.background = '#ff4444';
             ui.bar.style.width = '100%';
+            ui.pct.innerText = '!';
         }
     }
-
-    document.getElementById('searchBtn').onclick = search;
-    ui.input.onkeypress = e => e.key === 'Enter' && search();
 </script>
 
 </body>
