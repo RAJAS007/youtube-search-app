@@ -16,12 +16,12 @@
 
     <style>
         :root {
-            --bg: #09090b; /* Deep Dark */
+            --bg: #09090b;
             --surface: #18181b;
             --surface-2: #27272a;
             --text-main: #ffffff;
             --text-sub: #a1a1aa;
-            --accent: #6366f1; /* Indigo */
+            --accent: #6366f1;
             --accent-hover: #4f46e5;
             --gold: #fbbf24;
             --danger: #ef4444;
@@ -44,9 +44,10 @@
         header {
             padding: 16px 24px;
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(9, 9, 11, 0.8);
+            background: rgba(9, 9, 11, 0.9);
             backdrop-filter: blur(12px);
             position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
         }
 
         .brand {
@@ -66,10 +67,10 @@
             border: 1px solid rgba(99, 102, 241, 0.2);
             cursor: pointer; transition: 0.2s;
         }
-        .points-badge:hover { background: rgba(99, 102, 241, 0.2); }
+        .points-badge:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.02); }
         .points-badge i { color: var(--gold); }
 
-        /* --- SIDEBAR (SLIDE-IN) --- */
+        /* --- SIDEBAR --- */
         .sidebar-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6);
             backdrop-filter: blur(4px); z-index: 998;
@@ -83,31 +84,33 @@
             padding: 24px; display: flex; flex-direction: column;
             box-shadow: -10px 0 30px rgba(0,0,0,0.5);
             transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 1px solid var(--border);
         }
         .sidebar.active { right: 0; }
 
         .sb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .sb-title { font-size: 20px; font-weight: 700; }
-        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 20px; }
+        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 24px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 50%; }
 
         .sb-card {
             background: var(--surface-2); border-radius: 16px; padding: 20px;
             margin-bottom: 16px; border: 1px solid var(--border);
         }
         .sb-stat-label { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; }
-        .sb-stat-val { font-size: 24px; font-weight: 800; color: var(--text-main); }
+        .sb-stat-val { font-size: 24px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         
         .sb-btn {
             width: 100%; padding: 14px; border: none; border-radius: 12px;
             font-weight: 600; font-size: 14px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.2s; margin-top: 10px;
+            transition: 0.2s; margin-top: 15px;
         }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-gold:hover { opacity: 0.9; }
         .btn-accent { background: var(--accent); color: #fff; }
+        .btn-accent:hover { background: var(--accent-hover); }
 
-        /* --- HERO SECTION --- */
+        /* --- HERO --- */
         .hero {
             text-align: center; padding: 60px 20px 40px 20px;
             max-width: 800px; margin: 0 auto;
@@ -115,27 +118,22 @@
 
         .hero h1 {
             font-size: 42px; font-weight: 800; letter-spacing: -1.5px;
-            margin-bottom: 16px; line-height: 1.1;
+            margin-bottom: 16px; line-height: 1.1; color: var(--text-main);
         }
-        .hero-highlight { color: var(--accent); }
+        .hero-highlight { 
+            background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
         .hero p { color: var(--text-sub); font-size: 16px; margin-bottom: 40px; }
 
-        .search-container {
-            position: relative; max-width: 580px; margin: 0 auto 30px auto;
-        }
+        .search-container { position: relative; max-width: 580px; margin: 0 auto 30px auto; }
         .search-box {
             background: var(--surface); border: 2px solid var(--border);
             border-radius: 100px; padding: 6px 6px 6px 24px;
-            display: flex; align-items: center; height: 56px;
-            transition: 0.3s;
+            display: flex; align-items: center; height: 56px; transition: 0.3s;
         }
         .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); }
-        
-        .search-input {
-            flex: 1; border: none; background: transparent;
-            font-size: 16px; color: white; outline: none; height: 100%;
-        }
-        
+        .search-input { flex: 1; border: none; background: transparent; font-size: 16px; color: white; outline: none; height: 100%; }
         .search-btn {
             width: 44px; height: 44px; border-radius: 50%;
             border: none; background: var(--accent); color: white;
@@ -146,21 +144,18 @@
 
         .stats-row {
             display: flex; justify-content: center; gap: 24px;
-            font-size: 13px; font-weight: 600; color: var(--text-sub);
-            margin-bottom: 30px;
+            font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 30px;
         }
         .stats-row i { color: var(--accent); margin-right: 6px; }
 
-        .chips-row {
-            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
-        }
+        .chips-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .chip {
             background: var(--surface-2); border: 1px solid var(--border);
             padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
-            cursor: pointer; transition: 0.2s; color: var(--text-sub);
+            cursor: pointer; transition: 0.2s; color: var(--text-sub); display: flex; align-items: center;
         }
         .chip:hover { color: white; border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
-        .chip i { margin-right: 6px; }
+        .chip i { margin-right: 6px; font-size: 12px; }
 
         /* --- GRID --- */
         .container { flex: 1; padding: 0 24px 60px 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
@@ -169,6 +164,7 @@
         .card {
             background: var(--surface); border-radius: 16px; overflow: hidden;
             border: 1px solid transparent; transition: 0.3s; position: relative;
+            display: flex; flex-direction: column;
         }
         @media(min-width: 640px) { .card:hover { transform: translateY(-8px); border-color: var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); } }
 
@@ -177,11 +173,11 @@
         .pill-dur { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
         .pill-views { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; }
 
-        .details { padding: 16px; }
-        .title { font-size: 15px; font-weight: 700; margin-bottom: 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .details { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+        .title { font-size: 15px; font-weight: 700; margin-bottom: 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-main); }
         .author { font-size: 13px; color: var(--text-sub); margin-bottom: 16px; }
         
-        .actions { display: flex; gap: 10px; }
+        .actions { margin-top: auto; display: flex; gap: 10px; }
         .btn {
             flex: 1; height: 38px; border: none; border-radius: 10px;
             font-size: 13px; font-weight: 600; cursor: pointer;
@@ -193,33 +189,46 @@
         .btn-mp4 { background: var(--surface-2); color: var(--text-main); }
         .btn-mp4:hover { background: var(--border); }
 
-        /* --- DOWNLOAD MODAL --- */
-        .dl-modal-overlay {
+        /* --- MODALS --- */
+        .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000;
-            display: none; align-items: center; justify-content: center;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
-        .dl-card {
+        .modal-card {
             background: var(--surface); padding: 30px; border-radius: 20px;
             width: 90%; max-width: 400px; text-align: center;
-            border: 1px solid var(--border);
+            border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s;
         }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
         .loader { width: 100%; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 20px; }
         .loader-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
         .loader-bar.anim { width: 50%; animation: load 1s infinite alternate; }
         @keyframes load { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
 
-        /* Mobile */
+        /* --- TOAST --- */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: #1e1e1e; color: white; padding: 12px 24px; border-radius: 50px;
+            font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            z-index: 2000; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast i { color: var(--gold); }
+
         @media (max-width: 640px) {
             .hero h1 { font-size: 32px; }
             .grid { grid-template-columns: 1fr; gap: 16px; }
-            .card { flex-direction: row; height: 110px; padding: 10px; gap: 12px; align-items: center; }
-            .thumb { width: 130px; height: 100%; padding-top: 0; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+            .card { flex-direction: row; height: 120px; padding: 10px; gap: 12px; align-items: center; }
+            .thumb { width: 120px; height: 100%; padding-top: 0; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
             .details { padding: 0; justify-content: space-between; height: 100%; flex: 1; display: flex; flex-direction: column; }
             .title { font-size: 14px; margin-bottom: 0; }
             .author { margin-bottom: 0; font-size: 12px; }
             .actions { margin-top: auto; }
             .btn { height: 32px; font-size: 12px; }
-            .pill-views { display: none; } /* Hide views on small mobile cards to save space */
+            .pill-views { display: none; }
         }
     </style>
 </head>
@@ -236,7 +245,7 @@
 <div class="sidebar" id="sidebar">
     <div class="sb-header">
         <div class="sb-title">My Rewards</div>
-        <div class="sb-close" onclick="toggleSidebar()">&times;</div>
+        <div class="sb-close" onclick="toggleSidebar()">×</div>
     </div>
 
     <div class="sb-card">
@@ -251,9 +260,7 @@
 
     <div class="sb-card">
         <div class="sb-stat-label">Daily Downloads</div>
-        <div class="sb-stat-val">
-            <span id="sbLimit">0/5</span>
-        </div>
+        <div class="sb-stat-val"><span id="sbLimit">0/5</span></div>
         <div style="height:6px; background:var(--bg); border-radius:3px; margin:10px 0; overflow:hidden;">
             <div id="sbBar" style="height:100%; background:var(--accent); width:0%;"></div>
         </div>
@@ -294,22 +301,40 @@
     </div>
 </div>
 
-<div id="dlModal" class="dl-modal-overlay">
-    <div class="dl-card">
-        <h2 style="margin-bottom:10px;">Downloading...</h2>
+<div id="limitModal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="font-size:48px; margin-bottom:15px;">⛔</div>
+        <h2 style="margin-bottom:10px; color:var(--text-main);">Daily Limit Reached</h2>
+        <p style="color:var(--text-sub); font-size:14px; margin-bottom:25px; line-height:1.5;">
+            You have used all your free downloads for today.<br>Increase your limit to continue.
+        </p>
+        <button onclick="openRewards()" class="sb-btn btn-accent" style="margin-top:0;">
+            Increase Limit
+        </button>
+        <button onclick="closeLimitModal()" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
+    </div>
+</div>
+
+<div id="dlModal" class="modal-overlay">
+    <div class="modal-card">
+        <h2 style="margin-bottom:10px; color:var(--text-main);">Downloading...</h2>
         <p id="dlStatus" style="color:var(--text-sub); font-size:14px;">Connecting to server...</p>
         <div class="loader"><div id="dlBar" class="loader-bar"></div></div>
         <button onclick="closeDl()" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
 
+<div id="toast" class="toast">
+    <i class="fas fa-check-circle"></i> <span id="toastMsg">Notification</span>
+</div>
+
 <script>
-    // --- CONFIG & STATE ---
     const CONFIG = {
         dailyFree: 5,
         ptsPerAd: 50,
         ptsPerDl: 10,
         costUnlock: 100,
+        // REPLACE THIS LINK WITH YOUR ADSTERRA DIRECT LINK
         adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee"
     };
 
@@ -320,7 +345,6 @@
         date: localStorage.getItem('mh_date') || ''
     };
 
-    // --- UI REFS ---
     const ui = {
         pts: document.getElementById('ptsDisplay'),
         sbPts: document.getElementById('sbPts'),
@@ -335,10 +359,12 @@
         totalDl: document.getElementById('totalDl'),
         dlModal: document.getElementById('dlModal'),
         dlStatus: document.getElementById('dlStatus'),
-        dlBar: document.getElementById('dlBar')
+        dlBar: document.getElementById('dlBar'),
+        limitModal: document.getElementById('limitModal'),
+        toast: document.getElementById('toast'),
+        toastMsg: document.getElementById('toastMsg')
     };
 
-    // --- INIT ---
     function init() {
         const today = new Date().toDateString();
         if(state.date !== today) {
@@ -348,7 +374,7 @@
             saveState();
         }
         updateUI();
-        setInterval(simStats, 4000); // Live stats
+        setInterval(simStats, 4000); 
         simStats();
     }
 
@@ -369,10 +395,27 @@
         ui.sbBar.style.background = state.count >= state.limit ? 'var(--danger)' : 'var(--accent)';
     }
 
-    // --- SIDEBAR ACTIONS ---
+    function showToast(msg, type='success') {
+        ui.toastMsg.innerText = msg;
+        ui.toast.querySelector('i').className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+        ui.toast.querySelector('i').style.color = type === 'error' ? 'var(--danger)' : 'var(--gold)';
+        ui.toast.classList.add('show');
+        setTimeout(() => ui.toast.classList.remove('show'), 3000);
+    }
+
     function toggleSidebar() {
         ui.sidebar.classList.toggle('active');
         ui.overlay.classList.toggle('active');
+    }
+
+    // --- NEW LIMIT LOGIC ---
+    function openRewards() {
+        ui.limitModal.style.display = 'none';
+        toggleSidebar(); // Open the side slide
+    }
+
+    function closeLimitModal() {
+        ui.limitModal.style.display = 'none';
     }
 
     function watchAd() {
@@ -381,8 +424,8 @@
             state.points += CONFIG.ptsPerAd;
             saveState();
             triggerConfetti();
-            alert(`Reward: +${CONFIG.ptsPerAd} Points!`);
-        }, 8000); // Simulate watching time
+            showToast(`Reward: +${CONFIG.ptsPerAd} Points!`);
+        }, 8000);
     }
 
     function buyLimit() {
@@ -391,9 +434,9 @@
             state.limit += 5;
             saveState();
             triggerConfetti();
-            alert("Unlocked 5 more downloads!");
+            showToast("Unlocked 5 more downloads!");
         } else {
-            alert("Not enough points!");
+            showToast("Not enough points!", 'error');
         }
     }
 
@@ -401,7 +444,6 @@
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
 
-    // --- SEARCH ---
     function quickSearch(t) { ui.input.value = t; handleSearch(); }
 
     async function handleSearch() {
@@ -410,7 +452,6 @@
         ui.input.blur();
         ui.empty.style.display = 'none';
         
-        // Skeleton
         ui.grid.innerHTML = Array(8).fill(0).map(()=>`
             <div class="card" style="pointer-events:none;">
                 <div class="thumb" style="background:#222;"></div>
@@ -421,7 +462,6 @@
             </div>
         `).join('');
 
-        // Spotify Check
         if(q.includes('spotify.com')) {
              try {
                 const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`);
@@ -466,15 +506,14 @@
             }).join('');
         } catch(e) {
             ui.grid.innerHTML = ''; 
-            alert("Search failed");
+            showToast("Search failed", 'error');
         }
     }
 
-    // --- DOWNLOAD ---
     function checkDl(url, type, title) {
         if(state.count >= state.limit) {
-            toggleSidebar(); // Open sidebar to show they need to buy limit
-            alert("Daily Limit Reached! Use points to unlock more.");
+            // Show new Limit Modal instead of sidebar directly
+            ui.limitModal.style.display = 'flex';
             return;
         }
         startDl(url, type, title);
@@ -507,20 +546,18 @@
 
             ui.dlStatus.innerText = "Saving file...";
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([''])); // Mock blob
+            a.href = URL.createObjectURL(new Blob([''])); 
             a.download = `${title}.${type}`;
-            // a.click(); // Enable in prod
             setTimeout(() => { closeDl(); }, 1500);
 
         } catch(e) {
             closeDl();
-            alert("Download Error");
+            showToast("Download Error", 'error');
         }
     }
 
     function closeDl() { ui.dlModal.style.display = 'none'; }
 
-    // --- UTILS ---
     function formatStats(n) {
         if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
         if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
@@ -535,7 +572,6 @@
         ui.totalDl.innerText = dls.toLocaleString();
     }
     
-    // Animation CSS
     const style = document.createElement('style');
     style.innerHTML = `@keyframes fadeIn { to { opacity:1; transform:translateY(0); } }`;
     document.head.appendChild(style);
