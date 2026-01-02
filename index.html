@@ -17,21 +17,18 @@
             --text-main: #0f0f0f;
             --text-sub: #606060;
             --bg: #ffffff;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
             --font: 'Roboto', sans-serif;
-            --skel-base: #e5e5e5;
-            --skel-highlight: #f0f0f0;
+            --skel-bg: #e5e5e5;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
         
         body {
-            background-color: #f9f9f9;
+            background-color: var(--bg);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-y: scroll; /* Prevent layout shift */
         }
 
         /* --- HEADER --- */
@@ -40,29 +37,26 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 12px 16px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            padding: 10px 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
             display: flex;
             justify-content: center;
         }
 
         .search-wrapper {
             width: 100%;
-            max-width: 680px;
-            position: relative;
-        }
-
-        .search-form {
+            max-width: 700px;
             display: flex;
             align-items: center;
-            background: #fff;
-            border: 1px solid #ccc;
+            background: #f1f1f1;
             border-radius: 40px;
-            padding: 2px 2px 2px 16px;
-            box-shadow: inset 0 1px 2px #eee;
+            padding: 4px 4px 4px 16px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
         }
 
-        .search-form:focus-within {
+        .search-wrapper:focus-within {
+            background: #fff;
             border-color: #1c62b9;
             box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
@@ -71,88 +65,74 @@
             flex: 1;
             border: none;
             background: transparent;
-            padding: 10px 0;
+            padding: 8px 0;
             font-size: 16px;
             outline: none;
-            color: #0f0f0f;
         }
 
         .clear-btn {
-            display: none;
+            padding: 10px;
             color: #606060;
             cursor: pointer;
-            padding: 10px;
-            font-size: 16px;
+            display: none;
         }
         .search-input:not(:placeholder-shown) + .clear-btn { display: block; }
 
         .search-btn {
-            background: #f8f8f8;
+            background: #e5e5e5;
             border: none;
-            border-left: 1px solid #ccc;
-            border-radius: 0 40px 40px 0;
-            width: 60px;
-            height: 42px;
+            border-radius: 40px;
+            width: 50px;
+            height: 38px;
             cursor: pointer;
             color: #333;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            margin-left: 5px;
         }
-        .search-btn:hover { background: #f0f0f0; }
 
-        /* --- MAIN CONTENT --- */
+        /* --- CONTAINER --- */
         .container {
             flex: 1;
-            padding: 24px;
+            padding: 20px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
+        /* --- GRID/LIST SWITCHER --- */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 20px;
         }
 
-        @media (max-width: 600px) {
-            .container { padding: 12px; }
-            .grid { grid-template-columns: 1fr; gap: 16px; }
-            header { padding: 8px 12px; }
-        }
-
-        /* --- CARDS --- */
+        /* --- CARD DESIGN --- */
         .card {
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
-            border: 1px solid #eee;
+            transition: transform 0.2s;
         }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        /* Desktop Hover Effect */
+        @media(min-width: 601px) {
+            .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+            .card { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         }
 
         .thumbnail {
             position: relative;
-            padding-top: 56.25%;
+            padding-top: 56.25%; /* 16:9 */
             background: #ddd;
-            overflow: hidden;
         }
-
         .thumbnail img {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.3s;
+            opacity: 0; transition: opacity 0.3s;
         }
         .thumbnail img.loaded { opacity: 1; }
 
@@ -162,23 +142,17 @@
             right: 6px;
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
-            padding: 2px 6px;
+            padding: 2px 4px;
             border-radius: 4px;
         }
 
-        .details {
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
+        .details { padding: 12px; display: flex; flex-direction: column; flex: 1; }
+        
         .title {
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 1.4;
+            font-size: 15px; font-weight: 500;
+            line-height: 1.3;
             color: var(--text-main);
             margin-bottom: 6px;
             display: -webkit-box;
@@ -188,246 +162,219 @@
         }
 
         .meta {
-            font-size: 13px;
-            color: var(--text-sub);
+            font-size: 12px; color: var(--text-sub);
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
         }
 
-        .actions {
-            margin-top: auto;
-            display: flex;
-            gap: 8px;
-        }
+        .actions { margin-top: auto; display: flex; gap: 8px; }
 
         .btn {
-            flex: 1;
-            height: 36px;
-            border: none;
-            border-radius: 18px;
-            font-size: 13px;
-            font-weight: 500;
+            flex: 1; height: 32px;
+            border: none; border-radius: 16px;
+            font-size: 12px; font-weight: 500;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            background: #f2f2f2; color: #0f0f0f;
         }
-
         .btn-audio { background: #0f0f0f; color: white; }
-        .btn-audio:hover { opacity: 0.9; }
-        .btn-video { background: #f2f2f2; color: #0f0f0f; }
-        .btn-video:hover { background: #e5e5e5; }
 
-        /* --- MODERN SKELETON LOADER (No Surf) --- */
-        .skel-card {
-            background: white; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        /* --- MOBILE LIST VIEW (The "Better UX" Part) --- */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .grid { grid-template-columns: 1fr; gap: 12px; }
+
+            .card {
+                flex-direction: row;
+                height: 100px;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none !important;
+                border-bottom: 1px solid #f0f0f0;
+                padding-bottom: 12px;
+            }
+
+            .thumbnail {
+                width: 160px;
+                padding-top: 0;
+                height: 100%;
+                border-radius: 8px;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+
+            .details { padding: 0 0 0 12px; justify-content: space-between; }
+            .title { font-size: 14px; margin-bottom: 2px; -webkit-line-clamp: 2; }
+            .meta { margin-bottom: 6px; font-size: 11px; }
+            
+            .actions { margin-top: 0; }
+            .btn { height: 28px; font-size: 11px; }
         }
-        
-        /* The base container for animation */
-        .skel-shimmer {
-            background: #f6f7f8;
-            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-            background-repeat: no-repeat;
-            background-size: 800px 100%; 
-            animation: shimmer 1s linear infinite forwards;
+
+        /* --- SKELETON (Loading State) --- */
+        .skel-card { background: white; border-radius: 8px; overflow: hidden; }
+        .skel-anim { 
+            background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%); 
+            background-size: 200% 100%; animation: load 1.5s infinite; 
+        }
+        @keyframes load { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+        /* Mobile Skeleton */
+        @media (max-width: 600px) {
+            .skel-card { display: flex; height: 100px; gap: 12px; margin-bottom: 12px; }
+            .skel-thumb { width: 160px; height: 100%; border-radius: 8px; }
+            .skel-content { flex: 1; padding: 8px 0; }
+            .skel-line { height: 12px; margin-bottom: 8px; border-radius: 4px; }
+        }
+        /* Desktop Skeleton */
+        @media (min-width: 601px) {
+            .skel-card { height: 260px; display: flex; flex-direction: column; }
+            .skel-thumb { height: 160px; width: 100%; }
+            .skel-content { padding: 12px; flex: 1; }
+            .skel-line { height: 14px; margin-bottom: 10px; border-radius: 4px; width: 80%; }
         }
 
-        @keyframes shimmer {
-            0% { background-position: -468px 0; }
-            100% { background-position: 468px 0; } 
-        }
-
-        .skel-thumb {
-            padding-top: 56.25%; width: 100%;
-            display: block;
-        }
-
-        .skel-details { padding: 12px; }
-
-        .skel-text {
-            height: 16px;
-            margin-bottom: 8px;
-            width: 90%;
-            border-radius: 4px;
-            display: block;
-        }
-        .skel-text.short { width: 60%; margin-bottom: 16px; }
-
-        .skel-btns { display: flex; gap: 8px; }
-        .skel-btn { height: 36px; flex: 1; border-radius: 18px; display: block; }
-
-
-        /* --- EMPTY STATE --- */
-        .empty-state { text-align: center; margin-top: 80px; color: #888; }
-        .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.2; }
-
-        /* --- TOAST --- */
+        /* --- TOAST & POPUP --- */
         .toast {
-            position: fixed; top: 20px; left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: #222; color: white;
-            padding: 10px 20px; border-radius: 4px;
-            font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 2000; opacity: 0;
-            transition: all 0.3s ease;
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(30,30,30,0.95); color: white; padding: 12px 24px;
+            border-radius: 30px; font-size: 13px; opacity: 0; pointer-events: none;
+            transition: 0.3s; z-index: 2000;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.show { opacity: 1; bottom: 100px; }
 
-        /* --- POPUP --- */
-        .popup-overlay {
-            position: fixed; bottom: 30px; right: 30px; width: 340px;
-            background: white; border-radius: 12px; padding: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 1000;
-            display: none; animation: slideUp 0.3s;
-            border: 1px solid #eee;
+        .popup {
+            position: fixed; bottom: 20px; right: 20px; background: white;
+            padding: 16px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            width: 320px; z-index: 1000; display: none; border: 1px solid #eee;
+            animation: slideUp 0.3s;
         }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .progress { height: 4px; background: #eee; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .bar { height: 100%; background: #0f0f0f; width: 0%; transition: width 0.2s; }
+        .bar.indeterminate { width: 30%; animation: pingpong 1s infinite alternate; }
+        @keyframes pingpong { from { margin-left: 0; } to { margin-left: 70%; } }
 
-        .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .status-text { font-size: 14px; font-weight: 500; color: #333; }
-        .close-btn { cursor: pointer; color: #999; padding: 5px; }
-
-        .progress-container { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; }
-        .progress-bar { height: 100%; background: #065fd4; width: 0%; transition: width 0.2s; }
-        .progress-bar.indeterminate {
-            width: 100%;
-            background: linear-gradient(90deg, #065fd4 25%, #4da3ff 50%, #065fd4 75%);
-            background-size: 200% 100%;
-            animation: stripe 1.5s infinite linear;
-        }
-        @keyframes stripe { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-
-        @media (max-width: 600px) { .popup-overlay { width: 92%; left: 4%; bottom: 16px; } }
+        @media (max-width: 600px) { .popup { width: 92%; left: 4%; bottom: 16px; } }
+        
+        .empty { text-align: center; margin-top: 60px; color: #888; }
+        .empty i { font-size: 40px; margin-bottom: 10px; opacity: 0.3; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="search-wrapper">
-            <form class="search-form" onsubmit="event.preventDefault(); handleSearch();">
-                <input type="text" class="search-input" id="searchInput" placeholder="Search" autocomplete="off">
-                <i class="fas fa-times clear-btn" onclick="clearSearch()"></i>
-                <button type="submit" class="search-btn">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
-        </div>
-    </header>
+<header>
+    <form class="search-wrapper" onsubmit="event.preventDefault(); handleSearch();">
+        <i class="fas fa-search" style="color:#888;"></i>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search song or paste link..." autocomplete="off">
+        <i class="fas fa-times clear-btn" onclick="clearSearch()"></i>
+        <button type="submit" class="search-btn">Go</button>
+    </form>
+</header>
 
-    <div class="container">
-        <div class="empty-state" id="emptyState">
-            <i class="fab fa-youtube empty-icon"></i>
-            <h2>YouTube Downloader</h2>
-            <p style="margin-top:8px; font-size:14px;">Search and download seamlessly</p>
-        </div>
-        
-        <div class="grid" id="grid"></div>
+<div class="container">
+    <div id="emptyState" class="empty">
+        <i class="fab fa-youtube"></i>
+        <p>Search for music or paste a link</p>
     </div>
+    <div id="grid" class="grid"></div>
+</div>
 
-    <div class="toast" id="toast">Message</div>
+<div id="toast" class="toast">Notification</div>
 
-    <div class="popup-overlay" id="popup">
-        <div class="popup-header">
-            <span class="status-text" id="statusText">Downloading...</span>
-            <i class="fas fa-times close-btn" onclick="closePopup()"></i>
-        </div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
+<div id="popup" class="popup">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="pStatus" style="font-weight:500; font-size:14px;">Downloading...</span>
+        <i class="fas fa-times" style="cursor:pointer; color:#999;" onclick="closePopup()"></i>
     </div>
+    <div class="progress"><div id="pBar" class="bar"></div></div>
+</div>
 
-    <script>
-        const ui = {
-            input: document.getElementById('searchInput'),
-            grid: document.getElementById('grid'),
-            empty: document.getElementById('emptyState'),
-            popup: document.getElementById('popup'),
-            status: document.getElementById('statusText'),
-            bar: document.getElementById('progressBar'),
-            toast: document.getElementById('toast')
-        };
+<script>
+    const ui = {
+        input: document.getElementById('searchInput'),
+        grid: document.getElementById('grid'),
+        empty: document.getElementById('emptyState'),
+        toast: document.getElementById('toast'),
+        popup: document.getElementById('popup'),
+        status: document.getElementById('pStatus'),
+        bar: document.getElementById('pBar')
+    };
 
-        function clearSearch() {
-            ui.input.value = '';
-            ui.input.focus();
+    function clearSearch() {
+        ui.input.value = '';
+        ui.input.focus();
+    }
+
+    function showToast(msg) {
+        ui.toast.innerText = msg;
+        ui.toast.classList.add('show');
+        setTimeout(() => ui.toast.classList.remove('show'), 3000);
+    }
+
+    function formatViews(n) {
+        if(!n) return '';
+        if (n < 1e3) return n;
+        if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + "K";
+        if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + "M";
+        if (n >= 1e9) return +(n / 1e9).toFixed(1) + "B";
+        return n;
+    }
+
+    function showSkeletons() {
+        ui.empty.style.display = 'none';
+        let html = '';
+        for(let i=0; i<8; i++) {
+            html += `
+            <div class="skel-card">
+                <div class="skel-thumb skel-anim"></div>
+                <div class="skel-content">
+                    <div class="skel-line skel-anim" style="width:90%"></div>
+                    <div class="skel-line skel-anim" style="width:50%"></div>
+                </div>
+            </div>`;
         }
+        ui.grid.innerHTML = html;
+    }
 
-        function showToast(msg) {
-            ui.toast.innerText = msg;
-            ui.toast.classList.add('show');
-            setTimeout(() => ui.toast.classList.remove('show'), 3000);
-        }
+    async function handleSearch() {
+        let query = ui.input.value.trim();
+        if(!query) return;
 
-        // --- NEW SKELETON RENDERER ---
-        function showSkeletons() {
-            ui.empty.style.display = 'none';
-            let html = '';
-            for(let i=0; i<8; i++) {
-                html += `
-                <div class="skel-card">
-                    <div class="skel-thumb skel-shimmer"></div>
-                    <div class="skel-details">
-                        <div class="skel-text skel-shimmer"></div>
-                        <div class="skel-text short skel-shimmer"></div>
-                        <div class="skel-btns">
-                            <div class="skel-btn skel-shimmer"></div>
-                            <div class="skel-btn skel-shimmer"></div>
-                        </div>
-                    </div>
-                </div>`;
-            }
-            ui.grid.innerHTML = html;
-        }
+        ui.input.blur();
+        showSkeletons();
 
-        async function handleSearch() {
-            let query = ui.input.value.trim();
-            if(!query) return;
-
-            ui.input.blur();
-            showSkeletons();
-
-            // Spotify Check
-            if(query.includes('spotify.com')) {
-                try {
-                    const res = await fetch(`/api/resolve?url=${encodeURIComponent(query)}`);
-                    const data = await res.json();
-                    if(data.title) {
-                        query = data.title;
-                        showToast('Spotify Link Resolved');
-                    }
-                } catch(e) {
-                    showToast('Spotify Error');
-                    return;
-                }
-            }
-
+        // Check Spotify
+        if(query.includes('spotify.com')) {
             try {
-                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const res = await fetch(`/api/resolve?url=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                
-                if(!data.videos || data.videos.length === 0) {
-                    ui.grid.innerHTML = '';
-                    ui.empty.style.display = 'block';
-                    ui.empty.innerHTML = '<h2>No results found</h2>';
-                    return;
+                if(data.title) {
+                    query = data.title;
+                    showToast('Spotify Link Resolved');
                 }
-
-                renderGrid(data.videos);
             } catch(e) {
+                showToast('Could not resolve Spotify link');
+                return;
+            }
+        }
+
+        try {
+            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+
+            if(!data.videos || !data.videos.length) {
                 ui.grid.innerHTML = '';
                 ui.empty.style.display = 'block';
-                showToast('Connection Failed');
+                showToast('No results found');
+                return;
             }
-        }
 
-        function renderGrid(videos) {
-            ui.grid.innerHTML = videos.map(v => {
+            // Render Results
+            ui.grid.innerHTML = data.videos.map(v => {
                 const safeTitle = v.title.replace(/'/g, "").replace(/"/g, "");
+                const views = formatViews(v.views);
                 return `
                 <div class="card">
                     <div class="thumbnail">
@@ -435,78 +382,82 @@
                         <div class="duration">${v.timestamp || '0:00'}</div>
                     </div>
                     <div class="details">
-                        <div class="title" title="${safeTitle}">${v.title}</div>
-                        <div class="meta">
-                            <span>${v.author?.name}</span> • <span>${v.ago}</span>
+                        <div>
+                            <div class="title">${v.title}</div>
+                            <div class="meta">
+                                ${v.author.name} 
+                                ${views ? `• ${views} views` : ''} 
+                                • ${v.ago}
+                            </div>
                         </div>
                         <div class="actions">
-                            <button class="btn btn-audio" onclick="startDownload('${v.url}', 'mp3', '${safeTitle}')">
-                                <i class="fas fa-headphones"></i> Audio
+                            <button class="btn btn-audio" onclick="dl('${v.url}', 'mp3', '${safeTitle}')">
+                                <i class="fas fa-music"></i> Audio
                             </button>
-                            <button class="btn btn-video" onclick="startDownload('${v.url}', 'mp4', '${safeTitle}')">
+                            <button class="btn" onclick="dl('${v.url}', 'mp4', '${safeTitle}')">
                                 <i class="fas fa-video"></i> Video
                             </button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
+
+        } catch(e) {
+            ui.grid.innerHTML = '';
+            ui.empty.style.display = 'block';
+            showToast('Connection Failed');
         }
+    }
 
-        async function startDownload(url, type, title) {
-            ui.popup.style.display = 'block';
-            ui.status.innerText = 'Downloading...';
-            ui.bar.className = 'progress-bar indeterminate';
-            ui.bar.style.width = '100%';
+    async function dl(url, type, title) {
+        ui.popup.style.display = 'block';
+        ui.status.innerText = 'Downloading...';
+        ui.bar.className = 'bar indeterminate';
+        ui.bar.style.width = '100%';
 
-            let apiURL = type === 'mp3' 
-                ? `/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
-                : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
+        let api = type === 'mp3' 
+            ? `/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
+            : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
 
-            try {
-                const response = await fetch(apiURL);
-                if(!response.ok) throw new Error("Fail");
+        try {
+            const res = await fetch(api);
+            if(!res.ok) throw new Error();
 
-                const reader = response.body.getReader();
-                const total = +response.headers.get('Content-Length');
-                let received = 0;
-                let chunks = [];
+            const reader = res.body.getReader();
+            const total = +res.headers.get('Content-Length');
+            let received = 0;
+            let chunks = [];
 
-                while(true) {
-                    const {done, value} = await reader.read();
-                    if(done) break;
-                    chunks.push(value);
-                    received += value.length;
+            while(true) {
+                const {done, value} = await reader.read();
+                if(done) break;
+                chunks.push(value);
+                received += value.length;
 
-                    if(total && type !== 'mp3') {
-                        const pct = Math.floor((received / total) * 100);
-                        ui.bar.className = 'progress-bar';
-                        ui.bar.style.width = pct + '%';
-                        ui.status.innerText = `Downloading... ${pct}%`;
-                    }
+                if(total && type !== 'mp3') {
+                    ui.bar.className = 'bar';
+                    const pct = Math.floor((received/total)*100);
+                    ui.bar.style.width = pct + '%';
+                    ui.status.innerText = `Downloading... ${pct}%`;
                 }
-
-                ui.status.innerText = "Saving...";
-                const blob = new Blob(chunks);
-                const urlObj = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = urlObj;
-                a.download = `${title}.${type}`;
-                document.body.appendChild(a);
-                a.click();
-                
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(urlObj);
-                    closePopup();
-                }, 1000);
-
-            } catch(e) {
-                closePopup();
-                showToast('Download Failed');
             }
-        }
 
-        function closePopup() { ui.popup.style.display = 'none'; }
-    </script>
+            ui.status.innerText = 'Saving...';
+            const blob = new Blob(chunks);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${title}.${type}`;
+            a.click();
+            
+            setTimeout(() => { closePopup(); }, 2000);
+        } catch(e) {
+            showToast('Download Failed');
+            closePopup();
+        }
+    }
+
+    function closePopup() { ui.popup.style.display = 'none'; }
+</script>
+
 </body>
 </html>
