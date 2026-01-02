@@ -11,6 +11,9 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
     <style>
         :root {
             --bg-color: #f9f9f9;
@@ -95,7 +98,7 @@
             padding: 0 16px;
             font-size: 16px;
             outline: none;
-            min-width: 0; /* Critical for flexbox shrinking */
+            min-width: 0;
         }
 
         #searchButton {
@@ -107,7 +110,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0; /* Prevent button from squashing */
+            flex-shrink: 0;
         }
         #searchButton i { color: #333; font-size: 18px; }
 
@@ -276,46 +279,17 @@
         .progress-fill.indeterminate { width: 100%; background: linear-gradient(90deg, var(--accent-blue) 25%, #85cbfd 50%, var(--accent-blue) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-        /* --- MOBILE OPTIMIZATION (THE FIX) --- */
+        /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 600px) {
-            header { 
-                padding: 0 12px; /* Smaller padding */
-                gap: 8px; /* Tighter gap */
-            }
-
-            /* HIDE TEXT LOGO ON MOBILE to make room for search */
-            .logo-text-main, .logo-text-sub {
-                display: none; 
-            }
-            
-            /* Logo icon stays, but small */
-            .logo-icon {
-                font-size: 24px;
-            }
-
-            .search-center { 
-                margin: 0; 
-                flex: 1; /* Take all remaining space */
-            }
-            
-            .search-box {
-                width: 100%;
-            }
-            
-            #searchButton {
-                width: 50px; /* Smaller button */
-            }
-
+            header { padding: 0 12px; gap: 8px; }
+            .logo-text-main, .logo-text-sub { display: none; }
+            .logo-icon { font-size: 24px; }
+            .search-center { margin: 0; flex: 1; }
+            .search-box { width: 100%; }
+            #searchButton { width: 50px; }
             .container { padding: 12px; }
             .video-grid { grid-template-columns: 1fr; gap: 20px; }
-            
-            .mini-popup {
-                width: 100%;
-                right: 0; bottom: 0; left: 0;
-                border-radius: 20px 20px 0 0;
-                padding: 20px 20px 40px 20px;
-                box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
-            }
+            .mini-popup { width: 100%; right: 0; bottom: 0; left: 0; border-radius: 20px 20px 0 0; padding: 20px 20px 40px 20px; box-shadow: 0 -5px 30px rgba(0,0,0,0.15); }
         }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -370,9 +344,9 @@
     </div>
 
     <script>
+        // Use ONLY the video API
         const CONFIG = {
-            mp3Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp3?url=',
-            mp4Api: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
+            videoApi: 'https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url='
         };
 
         const ui = {
@@ -386,6 +360,13 @@
             popStatus: document.getElementById('popStatus'),
             popPercent: document.getElementById('popPercent')
         };
+
+        // --- FFMPEG SETUP ---
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({ 
+            log: true,
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+        });
 
         // --- SKELETON LOADER ---
         function showSkeletons(count = 8) {
@@ -478,19 +459,20 @@
             }).join('');
         }
 
-        // --- SECURE DOWNLOAD (No Redirects) ---
+        // --- SECURE DOWNLOAD & CONVERSION ---
         async function triggerDownload(url, format, filename) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill';
-            ui.popStatus.textContent = 'Connecting...';
+            ui.popStatus.textContent = 'Connecting to Video Server...';
             ui.popPercent.textContent = '0%';
             
-            const api = format === 'mp3' ? CONFIG.mp3Api : CONFIG.mp4Api;
-            const targetUrl = api + url;
+            // ALWAYS use Video API
+            const targetUrl = CONFIG.videoApi + url;
 
             try {
+                // 1. Download the Video Blob
                 const response = await fetch(targetUrl);
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 
@@ -507,31 +489,61 @@
 
                     if(contentLength) {
                         const percent = Math.floor((receivedLength / contentLength) * 100);
-                        ui.popBar.style.width = `${percent}%`;
-                        ui.popPercent.textContent = `${percent}%`;
-                        ui.popStatus.textContent = 'Downloading...';
+                        // If we are converting, we only show up to 50% for download
+                        const visualPercent = format === 'mp3' ? Math.floor(percent / 2) : percent;
+                        ui.popBar.style.width = `${visualPercent}%`;
+                        ui.popPercent.textContent = `${visualPercent}%`;
+                        ui.popStatus.textContent = 'Downloading Video...';
                     } else {
                         if(!ui.popBar.classList.contains('indeterminate')) {
                             ui.popBar.classList.add('indeterminate');
-                            ui.popPercent.textContent = '';
-                            ui.popStatus.textContent = 'Downloading...';
                         }
                     }
                 }
 
+                const videoBlob = new Blob(chunks, { type: 'video/mp4' });
+
+                // 2. Conversion Logic
+                let finalBlob = videoBlob;
+                let finalFilename = `${filename}.mp4`;
+
+                if(format === 'mp3') {
+                    ui.popBar.classList.remove('indeterminate');
+                    ui.popStatus.textContent = 'Loading Converter Engine...';
+                    
+                    if(!ffmpeg.isLoaded()) {
+                        await ffmpeg.load();
+                    }
+
+                    ui.popStatus.textContent = 'Converting to Audio...';
+                    ui.popBar.style.width = '75%';
+                    ui.popPercent.textContent = '75%';
+
+                    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(videoBlob));
+                    
+                    // Run FFMPEG command to extract audio
+                    await ffmpeg.run('-i', 'input.mp4', '-q:a', '0', '-map', 'a', 'output.mp3');
+
+                    const data = ffmpeg.FS('readFile', 'output.mp3');
+                    finalBlob = new Blob([data.buffer], { type: 'audio/mp3' });
+                    finalFilename = `${filename}.mp3`;
+                    
+                    // Cleanup
+                    ffmpeg.FS('unlink', 'input.mp4');
+                    ffmpeg.FS('unlink', 'output.mp3');
+                }
+
+                // 3. Save File
                 ui.popStatus.textContent = 'Saving file...';
-                const blob = new Blob(chunks);
-                const blobUrl = window.URL.createObjectURL(blob);
-                
-                ui.popBar.classList.remove('indeterminate');
-                ui.popBar.classList.add('complete');
                 ui.popBar.style.width = '100%';
                 ui.popPercent.textContent = '100%';
-                ui.popStatus.textContent = 'Download Complete';
+                ui.popBar.classList.remove('indeterminate');
+                ui.popBar.classList.add('complete');
 
+                const blobUrl = window.URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
-                a.download = `${filename}.${format}`;
+                a.download = finalFilename;
                 document.body.appendChild(a);
                 a.click();
                 
@@ -542,11 +554,11 @@
                 }, 4000);
 
             } catch (error) {
-                console.error("Download failed:", error);
+                console.error("Task failed:", error);
                 ui.popBar.classList.remove('indeterminate');
                 ui.popBar.classList.add('error');
                 ui.popBar.style.width = '100%';
-                ui.popStatus.textContent = 'Download Failed (API Error)';
+                ui.popStatus.textContent = 'Failed: ' + error.message;
                 ui.popPercent.textContent = '!';
             }
         }
