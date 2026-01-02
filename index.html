@@ -7,19 +7,24 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://pl28387331.effectivegatecpm.com/c9/e0/7e/c9e07e9faa21a69c0b85843260b8a157.js"></script>
+
     <style>
         :root {
-            --primary: #0f0f0f;
-            --secondary: #f2f2f2;
-            --text-main: #0f0f0f;
-            --text-sub: #606060;
-            --bg: #ffffff;
-            --font: 'Roboto', sans-serif;
-            --skel-bg: #e5e5e5;
+            --primary: #1a1a1a;
+            --accent: #2563eb; /* Modern Blue */
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            --font: 'Inter', sans-serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
@@ -30,130 +35,170 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
-        /* --- HEADER --- */
+        /* --- MODERN HEADER --- */
         header {
-            background: rgba(255, 255, 255, 0.98);
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 10px 15px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             display: flex;
             justify-content: center;
         }
 
         .search-wrapper {
             width: 100%;
-            max-width: 700px;
-            display: flex;
-            align-items: center;
-            background: #f1f1f1;
-            border-radius: 40px;
-            padding: 4px 4px 4px 16px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
+            max-width: 600px;
+            position: relative;
+            transform: translateZ(0);
         }
 
-        .search-wrapper:focus-within {
-            background: #fff;
-            border-color: #1c62b9;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 6px 6px 6px 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .search-container:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .search-icon { color: #9ca3af; font-size: 18px; margin-right: 12px; }
 
         .search-input {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 8px 0;
             font-size: 16px;
+            padding: 8px 0;
             outline: none;
+            color: var(--text-main);
+            font-weight: 500;
         }
+        .search-input::placeholder { color: #9ca3af; font-weight: 400; }
+
+        .search-actions { display: flex; align-items: center; gap: 8px; }
 
         .clear-btn {
-            padding: 10px;
-            color: #606060;
+            color: #9ca3af;
             cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 14px;
             display: none;
+            transition: background 0.2s;
         }
-        .search-input:not(:placeholder-shown) + .clear-btn { display: block; }
+        .clear-btn:hover { background: #f3f4f6; color: #4b5563; }
+        .search-input:not(:placeholder-shown) + .search-actions .clear-btn { display: block; }
 
         .search-btn {
-            background: #e5e5e5;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 40px;
-            width: 50px;
-            height: 38px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             cursor: pointer;
-            color: #333;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-left: 5px;
+            transition: transform 0.2s;
         }
+        .search-btn:active { transform: scale(0.95); }
 
-        /* --- CONTAINER --- */
+        /* --- MAIN CONTENT --- */
         .container {
             flex: 1;
-            padding: 20px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 24px;
         }
 
-        /* --- GRID/LIST SWITCHER --- */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
         }
 
         /* --- CARD DESIGN --- */
         .card {
-            background: white;
-            border-radius: 12px;
+            background: var(--surface);
+            border-radius: var(--radius);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: transform 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        /* Desktop Hover Effect */
-        @media(min-width: 601px) {
-            .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            /* Animation Setup */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.5s forwards;
         }
 
-        .thumbnail {
-            position: relative;
-            padding-top: 56.25%; /* 16:9 */
-            background: #ddd;
+        @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+
+        @media(min-width: 640px) {
+            .card:hover {
+                transform: translateY(-6px);
+                box-shadow: var(--shadow-md);
+                border-color: transparent;
+            }
         }
-        .thumbnail img {
+
+        .thumbnail-wrapper {
+            position: relative;
+            padding-top: 56.25%;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .thumbnail-img {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
-            opacity: 0; transition: opacity 0.3s;
+            transition: transform 0.5s ease;
         }
-        .thumbnail img.loaded { opacity: 1; }
+        .card:hover .thumbnail-img { transform: scale(1.05); }
 
-        .duration {
+        .duration-pill {
             position: absolute;
-            bottom: 6px;
-            right: 6px;
-            background: rgba(0, 0, 0, 0.8);
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
             color: white;
             font-size: 11px;
-            font-weight: 500;
-            padding: 2px 4px;
-            border-radius: 4px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
         }
 
-        .details { padding: 12px; display: flex; flex-direction: column; flex: 1; }
-        
-        .title {
-            font-size: 15px; font-weight: 500;
-            line-height: 1.3;
+        .card-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.4;
             color: var(--text-main);
             margin-bottom: 6px;
             display: -webkit-box;
@@ -162,134 +207,190 @@
             overflow: hidden;
         }
 
-        .meta {
-            font-size: 12px; color: var(--text-sub);
-            margin-bottom: 12px;
-            display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+        .card-meta {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .card-meta i { font-size: 3px; color: #d1d5db; }
+
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
         }
 
-        .actions { margin-top: auto; display: flex; gap: 8px; }
-
-        .btn {
-            flex: 1; height: 32px;
-            border: none; border-radius: 16px;
-            font-size: 12px; font-weight: 500;
+        .action-btn {
+            flex: 1;
+            height: 38px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 5px;
-            background: #f2f2f2; color: #0f0f0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
         }
-        .btn-audio { background: #0f0f0f; color: white; }
 
-        /* --- MOBILE LIST VIEW --- */
-        @media (max-width: 600px) {
-            .container { padding: 10px; }
+        .btn-audio {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-audio:hover { background: #000; transform: translateY(-1px); }
+        .btn-audio:active { transform: translateY(0); }
+
+        .btn-video {
+            background: #f3f4f6;
+            color: var(--text-main);
+        }
+        .btn-video:hover { background: #e5e7eb; }
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 640px) {
+            .container { padding: 12px; }
             .grid { grid-template-columns: 1fr; gap: 12px; }
-
+            
             .card {
                 flex-direction: row;
-                height: 100px;
-                border-radius: 0;
-                background: transparent;
-                box-shadow: none !important;
-                border-bottom: 1px solid #f0f0f0;
-                padding-bottom: 12px;
+                height: 110px;
+                padding: 10px;
+                gap: 12px;
+                align-items: center;
             }
 
-            .thumbnail {
-                width: 160px;
-                padding-top: 0;
+            .thumbnail-wrapper {
+                width: 140px;
                 height: 100%;
-                border-radius: 8px;
-                overflow: hidden;
+                padding-top: 0;
+                border-radius: 10px;
                 flex-shrink: 0;
             }
-
-            .details { padding: 0 0 0 12px; justify-content: space-between; }
-            .title { font-size: 14px; margin-bottom: 2px; -webkit-line-clamp: 2; }
-            .meta { margin-bottom: 6px; font-size: 11px; }
             
-            .actions { margin-top: 0; }
-            .btn { height: 28px; font-size: 11px; }
+            .card-content { padding: 0; justify-content: space-between; }
+            .card-title { font-size: 14px; margin-bottom: 2px; }
+            .card-meta { margin-bottom: 6px; font-size: 12px; }
+            
+            .action-btn { height: 32px; font-size: 12px; border-radius: 8px; }
+            .search-input { font-size: 15px; }
         }
 
-        /* --- SKELETON (Loading State) --- */
-        .skel-card { background: white; border-radius: 8px; overflow: hidden; }
-        .skel-anim { 
-            background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%); 
-            background-size: 200% 100%; animation: load 1.5s infinite; 
+        /* --- SKELETON LOADING --- */
+        .skeleton {
+            background: #e5e7eb;
+            background-image: linear-gradient(to right, #e5e7eb 0%, #f3f4f6 20%, #e5e7eb 40%, #e5e7eb 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 100%; 
+            animation: shimmer 1.5s infinite linear forwards;
         }
-        @keyframes load { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+        @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
 
-        /* Mobile Skeleton */
-        @media (max-width: 600px) {
-            .skel-card { display: flex; height: 100px; gap: 12px; margin-bottom: 12px; }
-            .skel-thumb { width: 160px; height: 100%; border-radius: 8px; }
-            .skel-content { flex: 1; padding: 8px 0; }
-            .skel-line { height: 12px; margin-bottom: 8px; border-radius: 4px; }
+        /* --- EMPTY STATE --- */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--text-sub);
+            text-align: center;
         }
-        /* Desktop Skeleton */
-        @media (min-width: 601px) {
-            .skel-card { height: 260px; display: flex; flex-direction: column; }
-            .skel-thumb { height: 160px; width: 100%; }
-            .skel-content { padding: 12px; flex: 1; }
-            .skel-line { height: 14px; margin-bottom: 10px; border-radius: 4px; width: 80%; }
+        .empty-icon-bg {
+            width: 80px; height: 80px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
         }
+        .empty-icon-bg i { font-size: 32px; color: #9ca3af; }
+        .empty-state h2 { color: var(--text-main); margin-bottom: 8px; font-size: 1.25rem; }
 
-        /* --- TOAST & POPUP --- */
+        /* --- UI COMPONENTS --- */
         .toast {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: rgba(30,30,30,0.95); color: white; padding: 12px 24px;
-            border-radius: 30px; font-size: 13px; opacity: 0; pointer-events: none;
-            transition: 0.3s; z-index: 2000;
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(8px);
+            color: white; padding: 12px 24px; border-radius: 50px;
+            font-size: 14px; font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 2000; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; gap: 8px;
         }
-        .toast.show { opacity: 1; bottom: 100px; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        .popup {
-            position: fixed; bottom: 20px; right: 20px; background: white;
-            padding: 16px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            width: 320px; z-index: 1000; display: none; border: 1px solid #eee;
-            animation: slideUp 0.3s;
+        .popup-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(2px); z-index: 999; display: none;
+            opacity: 0; transition: opacity 0.3s;
         }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .progress { height: 4px; background: #eee; border-radius: 2px; margin-top: 10px; overflow: hidden; }
-        .bar { height: 100%; background: #0f0f0f; width: 0%; transition: width 0.2s; }
-        .bar.indeterminate { width: 30%; animation: pingpong 1s infinite alternate; }
-        @keyframes pingpong { from { margin-left: 0; } to { margin-left: 70%; } }
+        .popup-overlay.active { opacity: 1; }
 
-        @media (max-width: 600px) { .popup { width: 92%; left: 4%; bottom: 16px; } }
-        
-        .empty { text-align: center; margin-top: 60px; color: #888; }
-        .empty i { font-size: 40px; margin-bottom: 10px; opacity: 0.3; }
+        .popup-card {
+            position: fixed; bottom: 30px; right: 30px; width: 340px;
+            background: var(--surface); border-radius: 16px; padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15); z-index: 1000;
+            transform: translateY(20px); opacity: 0; transition: all 0.3s;
+            border: 1px solid var(--border);
+        }
+        .popup-card.active { transform: translateY(0); opacity: 1; }
+
+        .progress-track { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; margin-top: 12px; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
+        .progress-fill.indeterminate { width: 30%; animation: pingpong 1.2s infinite ease-in-out alternate; }
+        @keyframes pingpong { from { transform: translateX(-100%); } to { transform: translateX(350%); } }
+
+        @media (max-width: 600px) { 
+            .popup-card { width: 92%; left: 4%; right: 4%; bottom: 20px; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <form class="search-wrapper" onsubmit="event.preventDefault(); handleSearch();">
-        <i class="fas fa-search" style="color:#888;"></i>
-        <input type="text" class="search-input" id="searchInput" placeholder="Search song or paste link..." autocomplete="off">
-        <i class="fas fa-times clear-btn" onclick="clearSearch()"></i>
-        <button type="submit" class="search-btn">Go</button>
-    </form>
+    <div class="search-wrapper">
+        <form class="search-container" onsubmit="event.preventDefault(); handleSearch();">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search song, artist, or paste link..." autocomplete="off">
+            <div class="search-actions">
+                <i class="fas fa-times clear-btn" onclick="clearSearch()"></i>
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
 </header>
 
 <div class="container">
-    <div id="emptyState" class="empty">
-        <i class="fab fa-youtube"></i>
-        <p>Search for music or paste a link</p>
+    <div id="emptyState" class="empty-state">
+        <div class="empty-icon-bg"><i class="fas fa-music"></i></div>
+        <h2>Discover Music</h2>
+        <p>Search for any song or paste a YouTube/Spotify link</p>
     </div>
+    
     <div id="grid" class="grid"></div>
 </div>
 
-<div id="toast" class="toast">Notification</div>
+<div id="toast" class="toast">
+    <i class="fas fa-info-circle"></i> <span id="toastMsg">Notification</span>
+</div>
 
-<div id="popup" class="popup">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="pStatus" style="font-weight:500; font-size:14px;">Downloading...</span>
-        <i class="fas fa-times" style="cursor:pointer; color:#999;" onclick="closePopup()"></i>
+<div id="popupOverlay" class="popup-overlay"></div>
+<div id="popupCard" class="popup-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <span style="font-weight:600; font-size:15px; color:var(--text-main);">Downloading...</span>
+        <div id="pPct" style="font-size:13px; color:var(--accent); font-weight:600;">0%</div>
     </div>
-    <div class="progress"><div id="pBar" class="bar"></div></div>
+    <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;" id="pStatus">Connecting to server...</div>
+    <div class="progress-track"><div id="pBar" class="progress-fill"></div></div>
+    <div style="text-align:right; margin-top:12px;">
+        <button onclick="closePopup()" style="background:none; border:none; color:var(--text-sub); font-weight:500; font-size:13px; cursor:pointer;">Cancel</button>
+    </div>
 </div>
 
 <script>
@@ -298,9 +399,12 @@
         grid: document.getElementById('grid'),
         empty: document.getElementById('emptyState'),
         toast: document.getElementById('toast'),
-        popup: document.getElementById('popup'),
+        toastMsg: document.getElementById('toastMsg'),
+        popup: document.getElementById('popupCard'),
+        overlay: document.getElementById('popupOverlay'),
         status: document.getElementById('pStatus'),
-        bar: document.getElementById('pBar')
+        bar: document.getElementById('pBar'),
+        pct: document.getElementById('pPct')
     };
 
     function clearSearch() {
@@ -308,8 +412,8 @@
         ui.input.focus();
     }
 
-    function showToast(msg) {
-        ui.toast.innerText = msg;
+    function showToast(msg, icon = 'info-circle') {
+        ui.toast.innerHTML = `<i class="fas fa-${icon}"></i> <span>${msg}</span>`;
         ui.toast.classList.add('show');
         setTimeout(() => ui.toast.classList.remove('show'), 3000);
     }
@@ -319,20 +423,27 @@
         if (n < 1e3) return n;
         if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + "K";
         if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + "M";
-        if (n >= 1e9) return +(n / 1e9).toFixed(1) + "B";
-        return n;
+        return +(n / 1e9).toFixed(1) + "B";
     }
 
+    // --- RENDER SKELETONS ---
     function showSkeletons() {
         ui.empty.style.display = 'none';
         let html = '';
+        // Create 8 skeleton cards
         for(let i=0; i<8; i++) {
+            // Mobile vs Desktop skeleton layout handled by CSS classes mostly, 
+            // but we use generic structure here
             html += `
-            <div class="skel-card">
-                <div class="skel-thumb skel-anim"></div>
-                <div class="skel-content">
-                    <div class="skel-line skel-anim" style="width:90%"></div>
-                    <div class="skel-line skel-anim" style="width:50%"></div>
+            <div class="card" style="pointer-events:none;">
+                <div class="thumbnail-wrapper skeleton" style="animation-delay: ${i*0.1}s"></div>
+                <div class="card-content">
+                    <div class="skeleton" style="height:16px; width:90%; border-radius:4px; margin-bottom:8px;"></div>
+                    <div class="skeleton" style="height:12px; width:60%; border-radius:4px; margin-bottom:16px;"></div>
+                    <div style="margin-top:auto; display:flex; gap:10px;">
+                        <div class="skeleton" style="flex:1; height:38px; border-radius:10px;"></div>
+                        <div class="skeleton" style="flex:1; height:38px; border-radius:10px;"></div>
+                    </div>
                 </div>
             </div>`;
         }
@@ -353,11 +464,11 @@
                 const data = await res.json();
                 if(data.title) {
                     query = data.title;
-                    showToast('Spotify Link Resolved');
+                    showToast('Spotify Link Resolved', 'spotify');
                 }
             } catch(e) {
-                showToast('Could not resolve Spotify link');
-                return;
+                showToast('Could not resolve Spotify link', 'exclamation-triangle');
+                // Continue anyway with original query as fallback
             }
         }
 
@@ -367,35 +478,33 @@
 
             if(!data.videos || !data.videos.length) {
                 ui.grid.innerHTML = '';
-                ui.empty.style.display = 'block';
-                showToast('No results found');
+                ui.empty.style.display = 'flex';
+                showToast('No results found', 'search');
                 return;
             }
 
-            // Render Results
-            ui.grid.innerHTML = data.videos.map(v => {
+            // Render Real Cards with Staggered Animation
+            ui.grid.innerHTML = data.videos.map((v, index) => {
                 const safeTitle = v.title.replace(/'/g, "").replace(/"/g, "");
                 const views = formatViews(v.views);
                 return `
-                <div class="card">
-                    <div class="thumbnail">
-                        <img src="${v.thumbnail}" loading="lazy" onload="this.classList.add('loaded')">
-                        <div class="duration">${v.timestamp || '0:00'}</div>
+                <div class="card" style="animation-delay: ${index * 0.05}s">
+                    <div class="thumbnail-wrapper">
+                        <img src="${v.thumbnail}" class="thumbnail-img" loading="lazy" onload="this.style.opacity=1">
+                        <div class="duration-pill">${v.timestamp || '0:00'}</div>
                     </div>
-                    <div class="details">
-                        <div>
-                            <div class="title">${v.title}</div>
-                            <div class="meta">
-                                ${v.author.name} 
-                                ${views ? `• ${views} views` : ''} 
-                                • ${v.ago}
-                            </div>
+                    <div class="card-content">
+                        <div class="card-title" title="${safeTitle}">${v.title}</div>
+                        <div class="card-meta">
+                            <span>${v.author.name}</span>
+                            <i class="fas fa-circle"></i>
+                            <span>${views} views</span>
                         </div>
-                        <div class="actions">
-                            <button class="btn btn-audio" onclick="dl('${v.url}', 'mp3', '${safeTitle}')">
+                        <div class="card-actions">
+                            <button class="action-btn btn-audio" onclick="dl('${v.url}', 'mp3', '${safeTitle}')">
                                 <i class="fas fa-music"></i> Audio
                             </button>
-                            <button class="btn" onclick="dl('${v.url}', 'mp4', '${safeTitle}')">
+                            <button class="action-btn btn-video" onclick="dl('${v.url}', 'mp4', '${safeTitle}')">
                                 <i class="fas fa-video"></i> Video
                             </button>
                         </div>
@@ -405,15 +514,25 @@
 
         } catch(e) {
             ui.grid.innerHTML = '';
-            ui.empty.style.display = 'block';
-            showToast('Connection Failed');
+            ui.empty.style.display = 'flex';
+            showToast('Connection Failed', 'wifi-slash');
         }
     }
 
+    // --- DOWNLOAD LOGIC ---
     async function dl(url, type, title) {
+        ui.overlay.style.display = 'block';
         ui.popup.style.display = 'block';
-        ui.status.innerText = 'Downloading...';
-        ui.bar.className = 'bar indeterminate';
+        
+        // Trigger reflow for transition
+        setTimeout(() => {
+            ui.overlay.classList.add('active');
+            ui.popup.classList.add('active');
+        }, 10);
+
+        ui.status.innerText = 'Preparing stream...';
+        ui.pct.innerText = '';
+        ui.bar.className = 'progress-fill indeterminate';
         ui.bar.style.width = '100%';
 
         let api = type === 'mp3' 
@@ -429,6 +548,9 @@
             let received = 0;
             let chunks = [];
 
+            ui.bar.className = 'progress-fill'; // Remove indeterminate for actual progress if known
+            if(!total && type !== 'mp3') ui.bar.className = 'progress-fill indeterminate'; // MP3 often unknown size
+
             while(true) {
                 const {done, value} = await reader.read();
                 if(done) break;
@@ -436,30 +558,45 @@
                 received += value.length;
 
                 if(total && type !== 'mp3') {
-                    ui.bar.className = 'bar';
                     const pct = Math.floor((received/total)*100);
                     ui.bar.style.width = pct + '%';
-                    ui.status.innerText = `Downloading... ${pct}%`;
+                    ui.pct.innerText = pct + '%';
+                    ui.status.innerText = `Downloading content...`;
+                } else if (type === 'mp3') {
+                     ui.status.innerText = `Converting & Downloading... ${(received/1024/1024).toFixed(1)}MB`;
                 }
             }
 
-            ui.status.innerText = 'Saving...';
+            ui.status.innerText = 'Finalizing file...';
+            ui.bar.style.width = '100%';
+            ui.pct.innerText = '100%';
+            
             const blob = new Blob(chunks);
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `${title}.${type}`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             
-            setTimeout(() => { closePopup(); }, 2000);
+            setTimeout(() => { closePopup(); }, 1500);
         } catch(e) {
-            showToast('Download Failed');
             closePopup();
+            showToast('Download Failed', 'times-circle');
         }
     }
 
-    function closePopup() { ui.popup.style.display = 'none'; }
+    function closePopup() {
+        ui.overlay.classList.remove('active');
+        ui.popup.classList.remove('active');
+        setTimeout(() => {
+            ui.overlay.style.display = 'none';
+            ui.popup.style.display = 'none';
+        }, 300);
+    }
 </script>
 
 <script src="https://pl28387402.effectivegatecpm.com/86/26/f4/8626f40c509f69bd9c5c70dbbacea3a6.js"></script>
+
 </body>
 </html>
