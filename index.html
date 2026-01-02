@@ -93,10 +93,20 @@
             margin-left: 5px;
         }
 
+        /* --- AD BANNER CONTAINER --- */
+        .ad-banner-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            background: transparent;
+        }
+        
         /* --- CONTAINER --- */
         .container {
             flex: 1;
-            padding: 20px;
+            padding: 0 20px 20px 20px;
             width: 100%;
             max-width: 1100px;
             margin: 0 auto;
@@ -117,11 +127,11 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         /* Desktop Hover Effect */
         @media(min-width: 601px) {
             .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-            .card { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         }
 
         .thumbnail {
@@ -182,7 +192,7 @@
 
         /* --- MOBILE LIST VIEW --- */
         @media (max-width: 600px) {
-            .container { padding: 10px; }
+            .container { padding: 0 10px 10px 10px; }
             .grid { grid-template-columns: 1fr; gap: 12px; }
 
             .card {
@@ -220,14 +230,12 @@
         }
         @keyframes load { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-        /* Mobile Skeleton */
         @media (max-width: 600px) {
             .skel-card { display: flex; height: 100px; gap: 12px; margin-bottom: 12px; }
             .skel-thumb { width: 160px; height: 100%; border-radius: 8px; }
             .skel-content { flex: 1; padding: 8px 0; }
             .skel-line { height: 12px; margin-bottom: 8px; border-radius: 4px; }
         }
-        /* Desktop Skeleton */
         @media (min-width: 601px) {
             .skel-card { height: 260px; display: flex; flex-direction: column; }
             .skel-thumb { height: 160px; width: 100%; }
@@ -274,6 +282,18 @@
     </form>
 </header>
 
+<div class="ad-banner-wrapper">
+    <script type="text/javascript">
+        atOptions = {
+            'key' : 'eb635459eaba7db25eac25ac177147c7',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+        };
+    </script>
+    <script type="text/javascript" src="https://www.highperformanceformat.com/eb635459eaba7db25eac25ac177147c7/invoke.js"></script>
+</div>
 <div class="container">
     <div id="emptyState" class="empty">
         <i class="fab fa-youtube"></i>
