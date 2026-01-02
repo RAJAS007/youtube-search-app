@@ -244,7 +244,7 @@
     <div class="modal-card">
         <div class="modal-icon"><i class="fas fa-spinner fa-spin" style="color:var(--accent)"></i></div>
         <div class="modal-title">Watching Ad...</div>
-        <div class="modal-desc">Please wait <span id="adTimer">5</span> seconds to get your reward.</div>
+        <div class="modal-desc">Please wait <span id="adTimer">10</span> seconds to get your reward.</div>
     </div>
 </div>
 
@@ -268,7 +268,8 @@
         ptsPerDl: 10,
         ptsPerAd: 50,
         costUnlock: 100,
-        unlockAmount: 5
+        unlockAmount: 5,
+        adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee" // YOUR LINK
     };
 
     // --- STATE ---
@@ -288,13 +289,9 @@
         grid: document.getElementById('grid'),
         empty: document.getElementById('emptyState'),
         toast: document.getElementById('toast'),
-        
-        // Modals
         limitModal: document.getElementById('limitModal'),
         adModal: document.getElementById('adModal'),
         dlPopup: document.getElementById('dlPopup'),
-        
-        // Popup Internals
         pStatus: document.getElementById('pStatus'),
         pBar: document.getElementById('pBar'),
         adTimer: document.getElementById('adTimer')
@@ -303,11 +300,10 @@
     // --- INIT ---
     function init() {
         const today = new Date().toDateString();
-        
         // Reset Logic if New Day
         if (state.date !== today) {
             state.count = 0;
-            state.limit = CONFIG.dailyFree; // Reset limit to default 5
+            state.limit = CONFIG.dailyFree;
             state.date = today;
             saveState();
         }
@@ -326,15 +322,10 @@
     function updateUI() {
         ui.points.innerText = state.points;
         ui.limitText.innerText = `${state.count}/${state.limit} Daily DLs`;
-        
         const pct = (state.count / state.limit) * 100;
         ui.limitBar.style.width = `${Math.min(pct, 100)}%`;
-        
-        if(state.count >= state.limit) {
-            ui.limitBar.classList.add('danger');
-        } else {
-            ui.limitBar.classList.remove('danger');
-        }
+        if(state.count >= state.limit) ui.limitBar.classList.add('danger');
+        else ui.limitBar.classList.remove('danger');
     }
 
     // --- POINTS & REWARDS SYSTEM ---
@@ -346,15 +337,13 @@
     }
 
     function watchAd() {
-        // Close other modals
-        closeModals();
-        
-        // 1. Trigger Adsterra Popunder/Social Bar (It will happen naturally by script)
-        // Ideally we would trigger a specific link, but passive observation is safe here.
-        
+        // 1. Open the Direct Link in new tab (Money Maker)
+        window.open(CONFIG.adLink, '_blank');
+
         // 2. Show UI Simulation
+        closeModals();
         ui.adModal.style.display = 'flex';
-        let timeLeft = 5;
+        let timeLeft = 10;
         ui.adTimer.innerText = timeLeft;
         
         const timer = setInterval(() => {
@@ -363,7 +352,6 @@
             if(timeLeft <= 0) {
                 clearInterval(timer);
                 closeModals();
-                // Reward
                 state.points += CONFIG.ptsPerAd;
                 saveState();
                 showToast(`+${CONFIG.ptsPerAd} Points Received!`);
@@ -395,7 +383,7 @@
         ui.dlPopup.style.display = 'none';
     }
 
-    // --- SEARCH LOGIC (Standard) ---
+    // --- SEARCH LOGIC ---
     async function handleSearch() {
         let query = ui.input.value.trim();
         if(!query) return;
@@ -439,13 +427,10 @@
 
     // --- DOWNLOAD FLOW ---
     function tryDownload(url, type, title) {
-        // 1. Check Limit
         if(state.count >= state.limit) {
             ui.limitModal.style.display = 'flex';
             return;
         }
-
-        // 2. Start Download Process
         startDl(url, type, title);
     }
 
@@ -465,9 +450,8 @@
             const total = +res.headers.get('Content-Length');
             let received = 0;
 
-            // Increment Count immediately on successful connect
             state.count++;
-            state.points += CONFIG.ptsPerDl; // Reward user
+            state.points += CONFIG.ptsPerDl; 
             saveState();
             showToast(`+${CONFIG.ptsPerDl} Points!`);
 
@@ -477,18 +461,14 @@
                 const {done, value} = await reader.read();
                 if(done) break;
                 received += value.length;
-                // Animation continues via CSS
             }
 
             ui.pStatus.innerText = "Saving file...";
             const a = document.createElement('a');
-            // Mock blob handling for this example structure
-            // In real app, you accumulate chunks
-            closeModals();
-            
-            // NOTE: In this simplified view, we assume the download finishes.
-            // Re-use logic from previous artifacts for Blob creation if needed.
-            // For now, alerting success to keep code clean.
+            a.href = URL.createObjectURL(new Blob([''])); // Mock blob for simulation
+            a.download = `${title}.${type}`;
+            // a.click(); // Uncomment in prod
+            setTimeout(() => closeModals(), 1000);
             
         } catch(e) {
             closeModals();
