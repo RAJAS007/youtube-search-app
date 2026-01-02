@@ -2,93 +2,122 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const axios = require('axios');
+const ytSearch = require('yt-search');
+const NodeCache = require('node-cache');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 
-// Configure FFMPEG path automatically
+// 1. Setup FFMPEG Path
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 const app = express();
 const port = process.env.PORT || 3000;
+const searchCache = new NodeCache({ stdTTL: 3600 });
 
 app.use(cors());
 app.use(express.static(__dirname));
 
-// --- 1. SEARCH API (Using Ameen API) ---
+// --- SEARCH API ---
 app.get('/api/search', async (req, res) => {
     try {
         const query = req.query.q;
         if (!query) return res.status(400).json({ error: 'Query required' });
 
-        // Call Ameen API for search results
-        const apiUrl = `https://ameen-api.vercel.app/v2/yts?q=${encodeURIComponent(query)}`;
-        const response = await axios.get(apiUrl);
+        const cachedKey = `search_${query.toLowerCase().trim()}`;
+        if (searchCache.has(cachedKey)) {
+            return res.json(searchCache.get(cachedKey));
+        }
+
+        console.log(`🔍 Searching: ${query}`);
+        const result = await ytSearch(query);
         
-        // Return the data directly to frontend
-        res.json(response.data);
+        const videos = result.videos.slice(0, 15).map(v => ({
+            videoId: v.videoId,
+            title: v.title,
+            thumbnail: v.thumbnail,
+            duration: v.duration,
+            author: { name: v.author.name }
+        }));
+
+        searchCache.set(cachedKey, { videos });
+        res.json({ videos });
+
     } catch (error) {
         console.error('Search Error:', error.message);
         res.status(500).json({ error: 'Search failed' });
     }
 });
 
-// --- 2. DOWNLOAD & CONVERT API ---
+// --- ROBUST DOWNLOAD API ---
 app.get('/api/download', async (req, res) => {
     try {
         const { url, type } = req.query; // type = 'mp3' or 'mp4'
         if (!url) return res.status(400).send('URL required');
 
-        console.log(`⬇️ Processing: ${type.toUpperCase()} for ${url}`);
+        console.log(`⬇️ Request: ${type.toUpperCase()} | URL: ${url}`);
 
-        // 1. Get the Direct Download Link from Ameen API
-        // We assume the API returns a JSON with 'dl' or 'url' when passed a YouTube link
+        // 1. Get Direct Link from API
         const apiUrl = `https://ameen-api.vercel.app/v2/yts?url=${encodeURIComponent(url)}`;
         const apiRes = await axios.get(apiUrl);
         
-        // Extract the actual video file URL from the API response
-        // Note: We check multiple common property names just in case
-        const videoData = apiRes.data;
-        const directLink = videoData.dl || videoData.url || videoData.download_url || (videoData.data && videoData.data.url);
+        const data = apiRes.data;
+        // Look for the download link in various possible properties
+        const directLink = data.dl || data.url || data.download_url || (data.data && data.data.url) || (data.data && data.data.dl);
 
         if (!directLink) {
-            throw new Error('Could not retrieve download link from API');
+            throw new Error('No valid download link found from API');
         }
 
-        const filename = `download.${type}`;
+        console.log(`🔗 Source Link Found. Starting Stream...`);
 
-        // 2. Set Headers for Download
+        // 2. Prepare Headers
+        // Clean the title to prevent header errors
+        const safeTitle = `download_${Date.now()}`; 
+        const filename = `${safeTitle}.${type}`;
+
         res.header('Content-Disposition', `attachment; filename="${filename}"`);
 
-        // 3. Handle Conversion based on Type
+        // 3. FFMPEG STREAMING LOGIC
+        // We use FFmpeg for BOTH video and audio to ensure stability
+        
+        const command = ffmpeg(directLink);
+
+        // Add headers to mimic a browser (Helps avoid 403 Forbidden from YouTube servers)
+        command.inputOptions([
+            '-headers', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            '-reconnect', '1',
+            '-reconnect_streamed', '1',
+            '-reconnect_delay_max', '5'
+        ]);
+
         if (type === 'mp3') {
-            // --- CONVERT VIDEO TO AUDIO ---
+            // Audio Conversion
             res.header('Content-Type', 'audio/mpeg');
-            
-            ffmpeg(directLink)
+            command
                 .format('mp3')
                 .audioBitrate(128)
                 .on('error', (err) => {
-                    console.error('Conversion Error:', err.message);
-                    if (!res.headersSent) res.status(500).end();
+                    console.error('FFmpeg Audio Error:', err.message);
+                    if (!res.headersSent) res.end();
                 })
                 .pipe(res, { end: true });
 
         } else {
-            // --- STREAM VIDEO DIRECTLY ---
+            // Video Stream (Copy mode = Fast & CPU efficient)
             res.header('Content-Type', 'video/mp4');
-            
-            const videoStream = await axios({
-                url: directLink,
-                method: 'GET',
-                responseType: 'stream'
-            });
-            
-            videoStream.data.pipe(res);
+            command
+                .format('mp4')
+                .outputOptions('-c copy') // Directly copy video/audio streams (No re-encoding)
+                .on('error', (err) => {
+                    console.error('FFmpeg Video Error:', err.message);
+                    if (!res.headersSent) res.end();
+                })
+                .pipe(res, { end: true });
         }
 
     } catch (error) {
-        console.error('Download/Convert Error:', error.message);
-        if (!res.headersSent) res.status(500).send('Server Error: ' + error.message);
+        console.error('Server Error:', error.message);
+        if (!res.headersSent) res.status(500).send('Download Failed');
     }
 });
 
@@ -98,5 +127,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
+    console.log(`✅ Server running on port ${port}`);
 });
