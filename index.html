@@ -18,7 +18,7 @@
         .logo-section { display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; flex-shrink: 0; }
         .logo-icon { color: var(--yt-red); font-size: 24px; }
         .logo-text-main { font-size: 18px; font-weight: 700; letter-spacing: -1px; color: #212121; }
-        .logo-text-sub { font-size: 18px; font-weight: 400; letter-spacing: -0.5px; color: #212121; }
+        .logo-text-sub { display: none; }
         .search-center { flex: 1; display: flex; justify-content: center; max-width: 600px; margin: 0 10px; }
         .search-box { display: flex; width: 100%; height: 40px; border-radius: 40px; border: 1px solid #ccc; overflow: hidden; background: #fff; box-shadow: inset 0 1px 2px #eee; transition: box-shadow 0.2s, border 0.2s; }
         .search-box:focus-within { border-color: #1c62b9; box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28); }
@@ -64,6 +64,7 @@
         .skel-line { height: 16px; border-radius: 4px; width: 90%; }
         .skel-btns { display: flex; gap: 10px; margin-top: 10px; }
         .skel-btn { flex: 1; height: 36px; border-radius: 8px; }
+        
         @media (max-width: 600px) {
             .logo-text-sub { display: none; } 
             .mini-popup { width: 100%; right: 0; bottom: 0; left: 0; border-radius: 20px 20px 0 0; padding: 20px 20px 40px 20px; box-shadow: 0 -5px 30px rgba(0,0,0,0.15); }
@@ -195,17 +196,17 @@
             }).join('');
         }
 
+        // --- INTERNAL DOWNLOAD LOGIC ---
         async function startDownload(videoId, format) {
             ui.popup.style.display = 'block';
             ui.popFormat.textContent = format.toUpperCase();
             ui.popBar.style.width = '0%';
             ui.popBar.className = 'progress-fill indeterminate';
+            ui.popStatus.textContent = format === 'mp3' ? 'Converting...' : 'Preparing...';
+            ui.popPercent.textContent = '';
             
-            ui.popStatus.textContent = format === 'mp3' ? 'Converting...' : 'Preparing Stream...';
-            
-            const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-            // Point to OUR server, not external API directly
-            const downloadUrl = `/api/download?url=${encodeURIComponent(youtubeUrl)}&type=${format}`;
+            // Point to OUR internal server
+            const downloadUrl = `/api/download?id=${videoId}&type=${format}`;
 
             try {
                 const response = await fetch(downloadUrl);
@@ -228,7 +229,6 @@
                 const blobUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
-                // Try to respect content-disposition if possible, or fallback
                 a.download = `download.${format}`;
                 document.body.appendChild(a);
                 a.click();
