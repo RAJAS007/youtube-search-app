@@ -9,8 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script src="https://pl28387331.effectivegatecpm.com/c9/e0/7e/c9e07e9faa21a69c0b85843260b8a157.js"></script>
 
@@ -280,7 +278,7 @@
 
     <div class="stats-bar">
         <span class="stat-item"><i class="fas fa-cloud-download-alt"></i> <span id="dlCount">0</span> Downloads Today</span>
-        <span class="stat-item"><i class="fas fa-user-friends"></i> 1.2k Online</span>
+        <span class="stat-item"><i class="fas fa-user-friends"></i> <span id="onlineCount">1,240</span> Online</span>
     </div>
 
     <div class="chips">
@@ -321,11 +319,23 @@
         popup: document.getElementById('popup'),
         status: document.getElementById('pStatus'),
         bar: document.getElementById('pBar'),
-        dlCount: document.getElementById('dlCount')
+        dlCount: document.getElementById('dlCount'),
+        onlineCount: document.getElementById('onlineCount')
     };
 
     let downloadsToday = parseInt(localStorage.getItem('dl_count') || '0');
     ui.dlCount.innerText = downloadsToday;
+
+    // --- DYNAMIC ONLINE COUNT SIMULATION ---
+    let currentUsers = 1200 + Math.floor(Math.random() * 500); 
+    function updateOnlineCount() {
+        const change = Math.floor(Math.random() * 20) - 10; 
+        currentUsers += change;
+        if(currentUsers < 1000) currentUsers = 1000; 
+        ui.onlineCount.innerText = currentUsers.toLocaleString();
+    }
+    setInterval(updateOnlineCount, 3500);
+    updateOnlineCount();
 
     // --- THEME LOGIC ---
     function toggleTheme() {
@@ -415,17 +425,9 @@
         }
     }
 
-    // --- DOWNLOAD + CONFETTI ---
+    // --- DOWNLOAD LOGIC (UPDATED: Connect -> Download) ---
     async function dl(url, type, title) {
-        // 1. Confetti Explosion
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#3b82f6', '#a855f7', '#ffffff']
-        });
-
-        // 2. Update Counter
+        // Update Counter
         downloadsToday++;
         localStorage.setItem('dl_count', downloadsToday);
         ui.dlCount.innerText = downloadsToday;
@@ -433,6 +435,8 @@
         ui.popup.style.display = 'block';
         ui.bar.className = 'prog-fill anim';
         ui.bar.style.width = '100%';
+        
+        // STEP 1: CONNECTING
         ui.status.innerText = 'Connecting to server...';
 
         let api = type === 'mp3' 
@@ -448,6 +452,9 @@
             let received = 0;
             let chunks = [];
 
+            // STEP 2: DOWNLOADING (Data Started)
+            ui.status.innerText = 'Downloading...';
+
             while(true) {
                 const {done, value} = await reader.read();
                 if(done) break;
@@ -459,6 +466,9 @@
                     const pct = Math.floor((received/total)*100);
                     ui.bar.style.width = pct + '%';
                     ui.status.innerText = `Downloading... ${pct}%`;
+                } else {
+                    // Show MB progress for streams
+                    ui.status.innerText = `Downloading... ${(received/1024/1024).toFixed(1)}MB`;
                 }
             }
 
