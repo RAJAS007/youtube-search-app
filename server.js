@@ -51,33 +51,46 @@ app.get('/api/resolve', async (req, res) => {
   }
 });
 
-// 3. CONVERSION API (Fixed for "0B" error)
-app.get('/api/convert-to-mp3', (req, res) => {
+// 3. CONVERSION API (Stream-to-Pipe Method)
+app.get('/api/convert-to-mp3', async (req, res) => {
     const { url, title } = req.query;
     if (!url) return res.status(400).send('URL required');
 
     const externalMp4Api = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
     const safeFilename = (title || 'audio').replace(/[^a-z0-9]/gi, '_');
 
-    console.log(`Converting stream: ${safeFilename}`);
+    console.log(`Connecting to stream for: ${safeFilename}`);
 
-    // Header fix: We DO NOT set Content-Length because streaming size is unknown
-    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
-    res.setHeader('Content-Type', 'audio/mpeg');
+    try {
+        // Step A: Fetch the video stream manually using Axios
+        // This is more reliable than letting ffmpeg fetch it
+        const response = await axios({
+            method: 'get',
+            url: externalMp4Api,
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
 
-    // Add User-Agent to input options so the source doesn't block ffmpeg
-    ffmpeg(externalMp4Api)
-        .inputOptions([
-            '-headers', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        ])
-        .format('mp3')
-        .audioBitrate(128)
-        .on('error', (err) => {
-            console.error('FFmpeg Error:', err.message);
-            // Only convert error if stream hasn't started
-            if (!res.headersSent) res.status(500).send('Conversion failed');
-        })
-        .pipe(res, { end: true });
+        // Step B: Prepare the response headers
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
+        res.setHeader('Content-Type', 'audio/mpeg');
+
+        // Step C: Feed the Axios stream into FFmpeg -> Output to User
+        ffmpeg(response.data)
+            .format('mp3')
+            .audioBitrate(128)
+            .on('error', (err) => {
+                console.error('Conversion Error:', err.message);
+                if (!res.headersSent) res.status(500).send('Conversion Failed');
+            })
+            .pipe(res, { end: true });
+
+    } catch (error) {
+        console.error("Source Stream Error:", error.message);
+        res.status(500).send("Could not fetch source video");
+    }
 });
 
 // Serve node_modules and fallback to index.html
