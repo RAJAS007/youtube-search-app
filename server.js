@@ -4,73 +4,82 @@ const ytSearch = require('yt-search');
 const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS
+// Tell the app where to find the FFmpeg engine
+ffmpeg.setFfmpegPath(ffmpegPath);
+
+// Enable CORS and serve static files
 app.use(cors());
-// Serve static files
 app.use(express.static(__dirname));
 
-// API endpoint for YouTube search
+// 1. SEARCH API
 app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q;
-    if (!query) {
-      return res.status(400).json({ error: 'Search query required' });
-    }
+    if (!query) return res.status(400).json({ error: 'Query required' });
     
-    console.log(`Searching YouTube for: ${query}`);
+    console.log(`Searching: ${query}`);
     const searchResult = await ytSearch(query);
     res.json(searchResult);
   } catch (error) {
-    console.error('Search error:', error);
-    res.status(500).json({ error: 'Failed to search YouTube' });
+    res.status(500).json({ error: 'Search failed' });
   }
 });
 
-// NEW: API endpoint to resolve Spotify Links to Song Titles
+// 2. SPOTIFY RESOLVER API
 app.get('/api/resolve', async (req, res) => {
   try {
     const { url } = req.query;
-    // Basic validation for spotify links
-    if (!url || (!url.includes('spotify.com') && !url.includes('googleusercontent'))) {
-      return res.status(400).json({ error: 'Invalid Spotify URL' });
-    }
+    if (!url) return res.status(400).json({ error: 'URL required' });
 
-    console.log(`Resolving Spotify Link: ${url}`);
-    
-    // Fetch the Spotify page
+    console.log(`Resolving Spotify: ${url}`);
     const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36' }
     });
 
-    // Parse metadata
     const $ = cheerio.load(response.data);
+    let title = $('title').text().replace('| Spotify', '').replace('- song by', '-').trim();
+    console.log(`Resolved: ${title}`);
     
-    // Spotify titles usually look like: "Song Name - song by Artist | Spotify"
-    let rawTitle = $('title').text();
-    let cleanTitle = rawTitle.replace('| Spotify', '').replace('- song by', '-').trim();
-
-    console.log(`Resolved to: ${cleanTitle}`);
-    
-    res.json({ title: cleanTitle });
+    res.json({ title });
   } catch (error) {
-    console.error('Spotify resolution error:', error.message);
-    res.status(500).json({ error: 'Failed to resolve Spotify link' });
+    res.status(500).json({ error: 'Resolve failed' });
   }
 });
 
-// Serve node_modules
+// 3. CONVERSION API (The magic part)
+app.get('/api/convert-to-mp3', (req, res) => {
+    const { url, title } = req.query;
+    if (!url) return res.status(400).send('URL required');
+
+    // We use the EXTERNAL API to get the video stream (MP4)
+    const externalMp4Api = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
+    
+    const safeFilename = (title || 'audio').replace(/[^a-z0-9]/gi, '_');
+    console.log(`Converting ${safeFilename}...`);
+
+    // Set headers to trigger browser download
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
+    res.setHeader('Content-Type', 'audio/mpeg');
+
+    // Use FFmpeg: Input (External MP4) -> Convert -> Output (Response)
+    ffmpeg(externalMp4Api)
+        .format('mp3')
+        .audioBitrate(128)
+        .on('error', (err) => {
+            console.error('FFmpeg Error:', err.message);
+            if (!res.headersSent) res.status(500).send('Conversion failed');
+        })
+        .pipe(res, { end: true });
+});
+
+// Serve node_modules and fallback to index.html
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-// All other routes go to index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.listen(port, () => {
-  console.log(`✅ Server running on port ${port}`);
-});
+app.listen(port, () => console.log(`✅ Server running on port ${port}`));
