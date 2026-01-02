@@ -317,7 +317,7 @@
 
 <div id="dlModal" class="modal-overlay">
     <div class="modal-card">
-        <h2 style="margin-bottom:10px; color:var(--text-main);">Downloading...</h2>
+        <h2 id="modalTitle" style="margin-bottom:10px; color:var(--text-main);">Downloading...</h2>
         <p id="dlStatus" style="color:var(--text-sub); font-size:14px;">Connecting to server...</p>
         <div class="loader"><div id="dlBar" class="loader-bar"></div></div>
         <button onclick="closeDl()" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
@@ -334,7 +334,6 @@
         ptsPerAd: 50,
         ptsPerDl: 10,
         costUnlock: 100,
-        // REPLACE THIS LINK WITH YOUR ADSTERRA DIRECT LINK
         adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee"
     };
 
@@ -358,6 +357,7 @@
         online: document.getElementById('onlineUsers'),
         totalDl: document.getElementById('totalDl'),
         dlModal: document.getElementById('dlModal'),
+        modalTitle: document.getElementById('modalTitle'),
         dlStatus: document.getElementById('dlStatus'),
         dlBar: document.getElementById('dlBar'),
         limitModal: document.getElementById('limitModal'),
@@ -365,6 +365,7 @@
         toastMsg: document.getElementById('toastMsg')
     };
 
+    // --- INIT ---
     function init() {
         const today = new Date().toDateString();
         if(state.date !== today) {
@@ -408,24 +409,68 @@
         ui.overlay.classList.toggle('active');
     }
 
-    // --- NEW LIMIT LOGIC ---
+    // --- REWARDS LOGIC (ANTI-CHEAT) ---
     function openRewards() {
         ui.limitModal.style.display = 'none';
-        toggleSidebar(); // Open the side slide
+        toggleSidebar(); 
     }
 
-    function closeLimitModal() {
-        ui.limitModal.style.display = 'none';
-    }
+    function closeLimitModal() { ui.limitModal.style.display = 'none'; }
+
+    let adTimer = null;
+    let verifyListener = null;
 
     function watchAd() {
+        // 1. Open Ad
         window.open(CONFIG.adLink, '_blank');
+        
+        // 2. Setup UI
+        toggleSidebar(); 
+        ui.dlModal.style.display = 'flex';
+        ui.modalTitle.innerText = "Verifying Ad...";
+        ui.dlStatus.innerText = "Keep the ad open for 10s...";
+        ui.dlBar.className = "loader-bar";
+        ui.dlBar.style.transition = "none"; 
+        ui.dlBar.style.width = "0%";
+        
+        // Start Bar Animation
         setTimeout(() => {
-            state.points += CONFIG.ptsPerAd;
-            saveState();
-            triggerConfetti();
-            showToast(`Reward: +${CONFIG.ptsPerAd} Points!`);
-        }, 8000);
+            ui.dlBar.style.transition = "width 10s linear";
+            ui.dlBar.style.width = "100%";
+        }, 10);
+
+        let remaining = 10;
+
+        // 3. Logic to detect early return
+        if (verifyListener) document.removeEventListener('visibilitychange', verifyListener);
+        
+        verifyListener = () => {
+            if (document.visibilityState === 'visible' && remaining > 0) {
+                // CAUGHT CHEATING
+                clearInterval(adTimer);
+                document.removeEventListener('visibilitychange', verifyListener);
+                closeDl(); 
+                showToast("Failed! You closed the ad too early.", 'error');
+            }
+        };
+        document.addEventListener('visibilitychange', verifyListener);
+
+        // 4. Countdown
+        if (adTimer) clearInterval(adTimer);
+        adTimer = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+                // SUCCESS
+                clearInterval(adTimer);
+                document.removeEventListener('visibilitychange', verifyListener);
+                closeDl();
+                
+                state.points += CONFIG.ptsPerAd;
+                saveState();
+                triggerConfetti();
+                showToast(`Success! +${CONFIG.ptsPerAd} Points.`);
+            }
+        }, 1000);
     }
 
     function buyLimit() {
@@ -444,6 +489,7 @@
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
 
+    // --- SEARCH ---
     function quickSearch(t) { ui.input.value = t; handleSearch(); }
 
     async function handleSearch() {
@@ -510,9 +556,9 @@
         }
     }
 
+    // --- DOWNLOAD ---
     function checkDl(url, type, title) {
         if(state.count >= state.limit) {
-            // Show new Limit Modal instead of sidebar directly
             ui.limitModal.style.display = 'flex';
             return;
         }
@@ -521,7 +567,11 @@
 
     async function startDl(url, type, title) {
         ui.dlModal.style.display = 'flex';
+        ui.modalTitle.innerText = "Downloading...";
         ui.dlStatus.innerText = "Connecting...";
+        
+        // Reset bar for downloading animation
+        ui.dlBar.style.transition = "width 0.3s";
         ui.dlBar.className = "loader-bar anim";
         ui.dlBar.style.width = "100%";
 
@@ -556,7 +606,12 @@
         }
     }
 
-    function closeDl() { ui.dlModal.style.display = 'none'; }
+    function closeDl() { 
+        ui.dlModal.style.display = 'none'; 
+        // Cleanup verification listeners just in case
+        if(verifyListener) document.removeEventListener('visibilitychange', verifyListener);
+        if(adTimer) clearInterval(adTimer);
+    }
 
     function formatStats(n) {
         if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
