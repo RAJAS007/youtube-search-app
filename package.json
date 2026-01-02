@@ -1,7 +1,7 @@
 {
   "name": "youtube-search-app",
-  "version": "2.0.0",
-  "description": "YouTube & Spotify Video Search Application",
+  "version": "2.2.0",
+  "description": "YouTube Search & Converter",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,12 +11,14 @@
     "yt-search": "^2.10.3",
     "cors": "^2.8.5",
     "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "fluent-ffmpeg": "^2.1.2",
+    "ffmpeg-static": "^5.2.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
-  "keywords": ["youtube", "spotify", "search", "video", "download"],
+  "keywords": ["youtube", "download", "mp3", "converter"],
   "author": "YouTube Search App",
   "license": "MIT"
 }
