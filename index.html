@@ -93,7 +93,8 @@
         .hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 12px; line-height: 1.1; }
         .hero-highlight { background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .search-container { position: relative; max-width: 580px; margin: 0 auto 24px auto; }
-        .search-box { background: var(--surface); border: 2px solid var(--border); border-radius: 100px; padding: 4px 4px 4px 20px; display: flex; align-items: center; height: 50px; }
+        .search-box { background: var(--surface); border: 2px solid var(--border); border-radius: 100px; padding: 4px 4px 4px 20px; display: flex; align-items: center; height: 50px; transition:0.3s; }
+        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
         .search-input { flex: 1; border: none; background: transparent; font-size: 15px; color: white; outline: none; height: 100%; }
         .search-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: white; cursor: pointer; font-size: 14px; }
         
@@ -108,7 +109,7 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid transparent; transition: 0.3s; display: flex; flex-direction: column; }
         .thumb { position: relative; padding-top: 56.25%; background: #111; }
-        .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity:0; transition:opacity 0.3s; }
         .details { padding: 14px; flex: 1; display: flex; flex-direction: column; }
         .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .author { font-size: 12px; color: var(--text-sub); margin-bottom: 12px; }
@@ -192,7 +193,6 @@
                 Ad (+40)
             </button>
         </div>
-
         <div class="mini-card">
             <div class="mini-label">Downloads</div>
             <div class="mini-val"><span id="sbLimit">0/5</span></div>
@@ -253,15 +253,11 @@
         <h2 style="margin-bottom:15px;">Help Center</h2>
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">How do I download? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Search for a song, click 'Audio' or 'Video', wait for the connection.</div>
+            <div class="faq-a">Search for a song, click 'Audio' or 'Video'.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">Why limits? <i class="fas fa-chevron-down"></i></div>
             <div class="faq-a">To keep servers fast. Earn points to unlock more.</div>
-        </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">How do I get points? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Downloading, daily streak, and watching ads.</div>
         </div>
         <div class="contact-form">
             <textarea id="supportMsg" rows="3" placeholder="Describe your issue..."></textarea>
@@ -343,6 +339,9 @@
         streakCount: document.getElementById('streakCount'),
         streakDays: document.getElementById('streakDays')
     };
+
+    // CACHE SYSTEM
+    const searchCache = new Map();
 
     function init() {
         const today = new Date().toDateString();
@@ -501,6 +500,23 @@
         if(!q) return;
         ui.input.blur(); ui.empty.style.display = 'none';
         
+        // CACHE CHECK
+        if(searchCache.has(q)) {
+            renderResults(searchCache.get(q));
+            return;
+        }
+
+        // Show Skeleton
+        ui.grid.innerHTML = Array(8).fill(0).map(()=>`
+            <div class="card" style="pointer-events:none;">
+                <div class="thumb" style="background:#222;"></div>
+                <div class="details">
+                    <div style="height:14px; background:#333; width:80%; margin-bottom:8px; border-radius:4px;"></div>
+                    <div style="height:12px; background:#333; width:50%; margin-bottom:12px; border-radius:4px;"></div>
+                </div>
+            </div>
+        `).join('');
+
         if(q.includes('spotify.com')) {
              try { const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if(d.title) q = d.title; } catch(e){}
         }
@@ -509,21 +525,28 @@
             const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             if(!data.videos || !data.videos.length) { ui.grid.innerHTML=''; ui.empty.style.display='block'; return; }
+            
+            // Save to Cache
+            searchCache.set(q, data.videos);
+            renderResults(data.videos);
 
-            ui.grid.innerHTML = data.videos.map(v => `
-                <div class="card">
-                    <div class="thumb"><img src="${v.thumbnail}"></div>
-                    <div class="details">
-                        <div class="title">${v.title}</div>
-                        <div class="author">${v.author.name}</div>
-                        <div class="actions">
-                            <button class="btn btn-mp3" onclick="checkDl('${v.url}','mp3','${v.title.replace(/'/g,"")}')"><i class="fas fa-music"></i> Audio</button>
-                            <button class="btn btn-mp4" onclick="checkDl('${v.url}','mp4','${v.title.replace(/'/g,"")}')"><i class="fas fa-video"></i> Video</button>
-                        </div>
+        } catch(e) { showToast("Search Failed", 'error'); }
+    }
+
+    function renderResults(videos) {
+        ui.grid.innerHTML = videos.map(v => `
+            <div class="card">
+                <div class="thumb"><img src="${v.thumbnail}" onload="this.style.opacity=1"></div>
+                <div class="details">
+                    <div class="title">${v.title}</div>
+                    <div class="author">${v.author.name}</div>
+                    <div class="actions">
+                        <button class="btn btn-mp3" onclick="checkDl('${v.url}','mp3','${v.title.replace(/'/g,"")}')"><i class="fas fa-music"></i> Audio</button>
+                        <button class="btn btn-mp4" onclick="checkDl('${v.url}','mp4','${v.title.replace(/'/g,"")}')"><i class="fas fa-video"></i> Video</button>
                     </div>
                 </div>
-            `).join('');
-        } catch(e) { showToast("Search Failed", 'error'); }
+            </div>
+        `).join('');
     }
 
     function checkDl(url, type, title) {
