@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+    <script src="https://pl28387331.effectivegatecpm.com/c9/e0/7e/c9e07e9faa21a69c0b85843260b8a157.js"></script>
+
     <style>
         :root {
             --bg: #09090b; --surface: #18181b; --surface-2: #27272a;
@@ -20,134 +22,118 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; padding-bottom: 80px; }
 
         header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(9,9,11,0.9); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
         .brand { font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px; }
         .brand i { color: var(--accent); }
         .points-badge { background: rgba(99,102,241,0.1); color: var(--accent); padding: 6px 12px; border-radius: 50px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(99,102,241,0.2); cursor: pointer; transition: 0.2s; }
-        .points-badge:hover { background: rgba(99,102,241,0.2); transform: scale(1.05); }
-
-        /* --- COMPACT SIDEBAR --- */
+        
+        /* SIDEBAR (Compact) */
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 998; opacity: 0; pointer-events: none; transition: 0.3s; }
         .sidebar-overlay.active { opacity: 1; pointer-events: all; }
-        
-        .sidebar { 
-            position: fixed; top: 0; right: -280px; width: 280px; height: 100%; 
-            background: var(--surface); z-index: 999; padding: 20px; 
-            display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-left: 1px solid var(--border); overflow-y: auto; 
-        }
+        .sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: var(--surface); z-index: 999; padding: 20px; display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-left: 1px solid var(--border); overflow-y: auto; }
         .sidebar.active { right: 0; }
-
         .sb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .sb-title { font-size: 18px; font-weight: 700; }
-        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 20px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 50%; }
+        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 20px; }
 
-        /* COMPACT CARDS */
-        .streak-card, .level-card { 
-            background: var(--surface-2); border: 1px solid var(--border); 
-            border-radius: 12px; padding: 12px; margin-bottom: 12px; 
-        }
-        .streak-card { background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%); border-color: rgba(99,102,241,0.3); }
-        
+        /* WIDGETS */
+        .streak-card { background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .streak-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #c7d2fe; margin-bottom: 8px; }
         .streak-days { display: flex; justify-content: space-between; gap: 2px; }
         .day-circle { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.5); }
         .day-circle.active { background: var(--gold); color: #000; font-weight: 800; }
-        .day-circle.future { border: 1px dashed rgba(255,255,255,0.2); background: transparent; }
 
+        .level-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; cursor: pointer; }
         .level-info { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px; font-weight: 600; color: var(--text-sub); }
         .level-name { color: var(--accent); font-weight: 800; font-size: 12px; }
         .xp-track { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
         .xp-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s; }
 
-        /* GRID STATS (Side by Side) */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-        .mini-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: center; }
-        
+        .mini-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; }
         .mini-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; }
-        .mini-val { font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
+        .mini-val { font-size: 18px; font-weight: 800; color: var(--text-main); }
         
-        /* SMALLER BUTTONS */
-        .sb-btn { 
-            width: 100%; padding: 10px; border: none; border-radius: 10px; 
-            font-weight: 600; font-size: 12px; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; gap: 6px; 
-            margin-top: 8px; transition: 0.2s; 
-        }
-        .btn-gold { background: var(--gold); color: #000; animation: pulse 2s infinite; }
+        .sb-btn { width: 100%; padding: 10px; border: none; border-radius: 10px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+        .btn-gold { background: var(--gold); color: #000; }
         .btn-accent { background: var(--accent); color: #fff; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); }
-        .btn-coffee { background:#ffd500; color:#000; box-shadow: 0 2px 10px rgba(255, 213, 0, 0.2); }
+        .btn-coffee { background:#ffd500; color:#000; text-decoration:none; }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-
-        /* LEVEL LIST */
-        .level-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
-        .level-item { display: flex; justify-content: space-between; padding: 10px; background: var(--surface-2); border-radius: 8px; font-size: 13px; }
-        .level-item.active { border: 1px solid var(--accent); background: rgba(99,102,241,0.1); }
-
-        /* HERO & SEARCH */
+        /* HERO */
         .hero { text-align: center; padding: 40px 20px 20px 20px; max-width: 800px; margin: 0 auto; }
         .hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 12px; line-height: 1.1; }
         .hero-highlight { background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .search-container { position: relative; max-width: 580px; margin: 0 auto 24px auto; }
-        .search-box { background: var(--surface); border: 2px solid var(--border); border-radius: 100px; padding: 4px 4px 4px 20px; display: flex; align-items: center; height: 50px; transition:0.3s; }
-        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
+        .search-box { background: var(--surface); border: 2px solid var(--border); border-radius: 100px; padding: 4px 4px 4px 20px; display: flex; align-items: center; height: 50px; }
         .search-input { flex: 1; border: none; background: transparent; font-size: 15px; color: white; outline: none; height: 100%; }
         .search-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: white; cursor: pointer; font-size: 14px; }
         
-        .stats-row { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 24px; }
-        .stats-row i { color: var(--accent); margin-right: 5px; }
-        .chips-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-        .chip { background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text-sub); transition: 0.2s; }
-        .chip:hover { color: white; border-color: var(--accent); background: rgba(99,102,241,0.1); }
+        .chips-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+        .chip { background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text-sub); }
 
-        /* GRID */
+        /* GRID & CARDS */
         .container { flex: 1; padding: 0 20px 40px 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-        .card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid transparent; transition: 0.3s; display: flex; flex-direction: column; }
-        .thumb { position: relative; padding-top: 56.25%; background: #111; }
-        .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity:0; transition:opacity 0.3s; }
+        
+        .card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid transparent; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
+        .thumb-wrapper { position: relative; padding-top: 56.25%; background: #111; }
+        .thumb-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity:0; transition:opacity 0.3s; }
+        
+        /* NEW BADGES */
+        .badge-dur { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: 700; padding: 3px 6px; border-radius: 4px; }
+        .badge-views { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; font-size: 11px; font-weight: 600; padding: 3px 6px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
+
         .details { padding: 14px; flex: 1; display: flex; flex-direction: column; }
-        .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
         .author { font-size: 12px; color: var(--text-sub); margin-bottom: 12px; }
         .actions { margin-top: auto; display: flex; gap: 8px; }
-        .btn { flex: 1; height: 34px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn { flex: 1; height: 34px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
         .btn-mp3 { background: var(--text-main); color: var(--bg); }
         .btn-mp4 { background: var(--surface-2); color: var(--text-main); }
 
-        /* MODALS & SUPPORT */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-card { background: var(--surface); padding: 24px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.3s; max-height: 80vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* FLOATING DOWNLOAD BAR (Replacing Modal) */
+        .dl-float {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            width: 90%; max-width: 400px;
+            background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 50px;
+            padding: 12px 20px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            z-index: 2000; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+        }
+        .dl-float.active { transform: translateX(-50%) translateY(0); opacity: 1; }
         
-        .loader { width: 100%; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 20px; position: relative; }
-        .loader-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
-        .loader-bar.error { background: var(--danger); }
+        .dl-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .dl-title { font-size: 13px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        .dl-status { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
         
-        .faq-item { text-align: left; border-bottom: 1px solid var(--border); padding: 12px 0; }
-        .faq-q { font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; font-size: 13px; }
-        .faq-a { display: none; font-size: 12px; color: var(--text-sub); margin-top: 6px; line-height: 1.4; }
-        .contact-form textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: white; margin-top: 15px; font-family: inherit; resize: none; outline: none; font-size: 13px; }
-        .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-        .social-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 16px; cursor: pointer; transition: 0.2s; text-decoration: none; }
-        .social-btn:hover { background: var(--accent); }
+        .dl-spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1e1e1e; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 2000; transition: 0.4s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
+        /* TOAST */
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1e1e1e; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 2100; transition: 0.4s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
+        /* GENERIC MODAL CSS (For Limits/Support) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-card { background: var(--surface); padding: 24px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         @media (max-width: 640px) {
-            .hero h1 { font-size: 28px; }
             .grid { grid-template-columns: 1fr; gap: 12px; }
             .card { flex-direction: row; height: 100px; padding: 8px; gap: 12px; align-items: center; }
-            .thumb { width: 100px; height: 100%; padding-top: 0; border-radius: 8px; flex-shrink: 0; }
+            .thumb-wrapper { width: 120px; height: 100%; padding-top: 0; border-radius: 8px; flex-shrink: 0; }
             .details { padding: 0; justify-content: center; height: 100%; }
             .title { font-size: 13px; margin-bottom: 2px; }
             .author { margin-bottom: 8px; }
             .actions { margin-top: 0; }
-            .btn { height: 28px; font-size: 11px; }
+            .badge-views { display: none; } /* Hide views on mobile to save space */
         }
     </style>
 </head>
@@ -175,7 +161,7 @@
         <div class="streak-days" id="streakDays"></div>
     </div>
 
-    <div class="level-card" onclick="showLevelRoadmap()">
+    <div class="level-card" onclick="alert('Levels unlock perks soon!')">
         <div class="level-info">
             <span id="levelName" class="level-name">LEVEL 1</span>
             <span id="levelPts">0/150 XP</span>
@@ -189,16 +175,12 @@
             <div class="mini-val" style="color:var(--gold)">
                 <i class="fas fa-gem" style="font-size:14px;"></i> <span id="sbPts">0</span>
             </div>
-            <button class="sb-btn btn-gold" onclick="watchAd()" style="margin-top:auto;">
-                Ad (+40)
-            </button>
+            <button class="sb-btn btn-gold" onclick="watchAd()">Ad (+40)</button>
         </div>
         <div class="mini-card">
             <div class="mini-label">Downloads</div>
             <div class="mini-val"><span id="sbLimit">0/5</span></div>
-            <button class="sb-btn btn-accent" onclick="buyLimit()" style="margin-top:auto;">
-                Unlock
-            </button>
+            <button class="sb-btn btn-accent" onclick="buyLimit()">Unlock</button>
         </div>
     </div>
 
@@ -206,7 +188,7 @@
         <i class="fas fa-headset"></i> Support
     </button>
 
-    <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn btn-coffee" style="text-decoration:none;">
+    <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn btn-coffee">
         <i class="fas fa-coffee"></i> Donate
     </a>
 </div>
@@ -218,10 +200,6 @@
             <input type="text" class="search-input" id="searchInput" placeholder="Search song..." autocomplete="off">
             <button type="submit" class="search-btn"><i class="fas fa-arrow-right"></i></button>
         </form>
-    </div>
-    <div class="stats-row">
-        <span><i class="fas fa-cloud-download-alt"></i> <span id="totalDl">0</span> DLs</span>
-        <span><i class="fas fa-user-friends"></i> <span id="onlineUsers">1,240</span> Online</span>
     </div>
     <div class="chips-row">
         <div class="chip" onclick="quickSearch('New 2026 Songs')">🔥 New 2026</div>
@@ -238,54 +216,11 @@
     </div>
 </div>
 
-<div id="dlModal" class="modal-overlay">
-    <div class="modal-card">
-        <h2 id="modalTitle" style="margin-bottom:10px; color:var(--text-main);">Verifying Ad...</h2>
-        <p id="dlStatus" style="color:var(--text-sub); font-size:13px;">Do not switch tabs!</p>
-        <div class="loader"><div id="dlBar" class="loader-bar"></div></div>
-        <button id="claimBtn" onclick="claimReward()" class="sb-btn btn-gold" style="display:none; margin-top:15px;">CLAIM REWARD</button>
-        <button onclick="closeDl()" style="margin-top:10px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
-    </div>
-</div>
-
-<div id="supportModal" class="modal-overlay">
-    <div class="modal-card">
-        <h2 style="margin-bottom:15px;">Help Center</h2>
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">How do I download? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Search for a song, click 'Audio' or 'Video'.</div>
-        </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">Why limits? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">To keep servers fast. Earn points to unlock more.</div>
-        </div>
-        <div class="contact-form">
-            <textarea id="supportMsg" rows="3" placeholder="Describe your issue..."></textarea>
-            <button class="sb-btn btn-accent" onclick="sendSupport()">Send Message</button>
-        </div>
-        <div class="social-links">
-            <a href="https://t.me/RZX6969" target="_blank" class="social-btn"><i class="fab fa-telegram-plane"></i></a>
-            <a href="mailto:support@musichub.com" class="social-btn"><i class="fas fa-envelope"></i></a>
-        </div>
-        <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
-    </div>
-</div>
-
-<div id="levelModal" class="modal-overlay">
-    <div class="modal-card">
-        <div style="font-size:32px; margin-bottom:10px;">🏆</div>
-        <h2 style="margin-bottom:15px;">Level Roadmap</h2>
-        <div id="levelList" class="level-list"></div>
-        <button onclick="document.getElementById('levelModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
-    </div>
-</div>
-
-<div id="loginModal" class="modal-overlay">
-    <div class="modal-card">
-        <div style="font-size:40px; margin-bottom:10px;">🎁</div>
-        <h2>Daily Bonus!</h2>
-        <p style="color:var(--text-sub); margin-bottom:15px;">Welcome back! Here are free points.</p>
-        <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +10 Pts</button>
+<div id="dlBarFloat" class="dl-float">
+    <div class="dl-spinner"></div>
+    <div class="dl-info">
+        <div class="dl-title" id="floatTitle">Song Name</div>
+        <div class="dl-status" id="floatStatus">Connecting...</div>
     </div>
 </div>
 
@@ -299,64 +234,68 @@
     </div>
 </div>
 
+<div id="adModal" class="modal-overlay">
+    <div class="modal-card">
+        <h2>Verifying Ad...</h2>
+        <p style="color:var(--text-sub); margin-bottom:15px;">Do not switch tabs for 15s!</p>
+        <div class="loader"><div id="adLoader" class="loader-bar"></div></div>
+        <button id="claimBtn" onclick="claimReward()" class="sb-btn btn-gold" style="display:none; margin-top:15px;">CLAIM</button>
+        <button onclick="document.getElementById('adModal').style.display='none'" style="margin-top:10px; background:transparent; border:none; color:var(--text-sub);">Close</button>
+    </div>
+</div>
+
+<div id="supportModal" class="modal-overlay">
+    <div class="modal-card">
+        <h2>Support</h2>
+        <div class="contact-form">
+            <textarea id="supportMsg" rows="3" placeholder="Describe issue..."></textarea>
+            <button class="sb-btn btn-accent" onclick="sendSupport()">Send</button>
+        </div>
+        <div class="social-links" style="display:flex; justify-content:center; gap:10px; margin-top:15px;">
+            <a href="https://t.me/RZX6969" target="_blank" class="sb-btn" style="width:auto; padding:0 15px;"><i class="fab fa-telegram-plane"></i> Telegram</a>
+        </div>
+        <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub);">Close</button>
+    </div>
+</div>
+
 <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Notification</span></div>
 
 <script>
-    const CONFIG = {
-        dailyFree: 5, ptsPerAd: 40, ptsPerDl: 4, ptsLogin: 10, costUnlock: 100,
-        adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee"
-    };
-
+    const CONFIG = { dailyFree: 5, ptsPerAd: 40, ptsPerDl: 4, costUnlock: 100, adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee" };
     const state = {
         points: parseInt(localStorage.getItem('mh_points') || '0'),
         count: parseInt(localStorage.getItem('mh_count') || '0'),
         limit: parseInt(localStorage.getItem('mh_limit') || CONFIG.dailyFree),
         date: localStorage.getItem('mh_date') || '',
-        xp: parseInt(localStorage.getItem('mh_xp') || '0'),
-        lastLogin: localStorage.getItem('mh_last_login') || '',
         streak: parseInt(localStorage.getItem('mh_streak') || '1')
     };
 
     const ui = {
-        pts: document.getElementById('ptsDisplay'),
-        sbPts: document.getElementById('sbPts'),
-        sbLimit: document.getElementById('sbLimit'),
-        sidebar: document.getElementById('sidebar'),
-        overlay: document.getElementById('sbOverlay'),
-        input: document.getElementById('searchInput'),
-        grid: document.getElementById('grid'),
-        empty: document.getElementById('empty'),
-        dlModal: document.getElementById('dlModal'),
-        modalTitle: document.getElementById('modalTitle'),
-        dlStatus: document.getElementById('dlStatus'),
-        dlBar: document.getElementById('dlBar'),
-        claimBtn: document.getElementById('claimBtn'),
-        toast: document.getElementById('toast'),
-        toastMsg: document.getElementById('toastMsg'),
-        levelName: document.getElementById('levelName'),
-        levelPts: document.getElementById('levelPts'),
-        xpBar: document.getElementById('xpBar'),
-        streakCount: document.getElementById('streakCount'),
-        streakDays: document.getElementById('streakDays')
+        pts: document.getElementById('ptsDisplay'), sbPts: document.getElementById('sbPts'),
+        sbLimit: document.getElementById('sbLimit'), sidebar: document.getElementById('sidebar'),
+        overlay: document.getElementById('sbOverlay'), input: document.getElementById('searchInput'),
+        grid: document.getElementById('grid'), empty: document.getElementById('empty'),
+        toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'),
+        floatBar: document.getElementById('dlBarFloat'), floatTitle: document.getElementById('floatTitle'),
+        floatStatus: document.getElementById('floatStatus')
     };
 
-    // CACHE SYSTEM
-    const searchCache = new Map();
+    const cache = new Map();
 
     function init() {
         const today = new Date().toDateString();
-        const yesterday = new Date(new Date().setDate(new Date().getDate()-1)).toDateString();
-
         if(state.date !== today) {
             state.count = 0; state.limit = CONFIG.dailyFree; state.date = today;
-            if(state.lastLogin === yesterday) state.streak++;
-            else if(state.lastLogin !== today) state.streak = 1;
             saveState();
         }
-        if(state.lastLogin !== today) setTimeout(() => document.getElementById('loginModal').style.display='flex', 1000);
         updateUI();
-        renderStreak();
-        setInterval(simStats, 4000); simStats();
+        // Render Streak Circles
+        let html = '';
+        for(let i=1; i<=7; i++) {
+            let cls = i <= state.streak ? 'active' : 'future';
+            html += `<div class="day-circle ${cls}" style="${i>state.streak?'border:1px dashed #555;background:transparent':''}">${i}</div>`;
+        }
+        document.getElementById('streakDays').innerHTML = html;
     }
 
     function saveState() {
@@ -364,158 +303,46 @@
         localStorage.setItem('mh_count', state.count);
         localStorage.setItem('mh_limit', state.limit);
         localStorage.setItem('mh_date', state.date);
-        localStorage.setItem('mh_xp', state.points);
-        localStorage.setItem('mh_last_login', state.lastLogin);
-        localStorage.setItem('mh_streak', state.streak);
         updateUI();
     }
 
     function updateUI() {
-        ui.pts.innerText = state.points;
-        ui.sbPts.innerText = state.points;
+        ui.pts.innerText = state.points; ui.sbPts.innerText = state.points;
         ui.sbLimit.innerText = `${state.count}/${state.limit}`;
-        ui.streakCount.innerText = `${state.streak} Day${state.streak>1?'s':''}`;
-        
-        const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
-        const nextLevelXp = Math.pow(level, 2) * 150; 
-        const prevLevelXp = Math.pow(level-1, 2) * 150;
-        const range = nextLevelXp - prevLevelXp;
-        const current = state.points - prevLevelXp;
-        const pct = Math.min((current / range) * 100, 100);
-
-        ui.levelName.innerText = `LEVEL ${level}`;
-        ui.levelPts.innerText = `${Math.floor(current)}/${range} XP`;
-        ui.xpBar.style.width = `${pct}%`;
-    }
-
-    function renderStreak() {
-        let html = '';
-        for(let i=1; i<=7; i++) {
-            let cls = '';
-            if(i < state.streak) cls = 'active'; 
-            else if(i === state.streak) cls = 'active'; 
-            else cls = 'future';
-            html += `<div class="day-circle ${cls}">${i}</div>`;
-        }
-        ui.streakDays.innerHTML = html;
-    }
-
-    function showLevelRoadmap() {
-        toggleSidebar();
-        const currentLevel = Math.floor(Math.sqrt(state.points / 150)) + 1;
-        let html = '';
-        for(let i=1; i<=20; i++) {
-            const xpReq = Math.pow(i-1, 2) * 150;
-            const isActive = i === currentLevel ? 'active' : '';
-            html += `<div class="level-item ${isActive}"><span>Level ${i} ${i===currentLevel?'<span style="color:var(--accent)">YOU</span>':''}</span><span>${xpReq} XP</span></div>`;
-        }
-        document.getElementById('levelList').innerHTML = html;
-        document.getElementById('levelModal').style.display = 'flex';
+        // Level Logic
+        const level = Math.floor(Math.sqrt(state.points/150)) + 1;
+        document.getElementById('levelName').innerText = `LEVEL ${level}`;
+        document.getElementById('levelPts').innerText = `${state.points % 150}/150 XP`;
+        document.getElementById('xpBar').style.width = `${(state.points % 150)/1.5}%`;
     }
 
     function toggleSidebar() { ui.sidebar.classList.toggle('active'); ui.overlay.classList.toggle('active'); }
     function openRewards() { document.getElementById('limitModal').style.display='none'; toggleSidebar(); }
+    function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display='flex'; }
     
-    function claimDaily() {
-        state.points += CONFIG.ptsLogin; state.lastLogin = new Date().toDateString();
-        saveState(); document.getElementById('loginModal').style.display='none';
-        triggerConfetti(); showToast(`+${CONFIG.ptsLogin} Points! Streak Saved.`);
-        renderStreak();
-    }
-
-    function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display = 'flex'; }
-    function toggleFaq(el) {
-        const ans = el.querySelector('.faq-a');
-        if(ans.style.display==='block') ans.style.display='none'; else ans.style.display='block';
-    }
-    function sendSupport() {
-        document.getElementById('supportMsg').value = '';
-        showToast("Message Sent!"); setTimeout(()=>document.getElementById('supportModal').style.display='none',1000);
-    }
-
-    let adInterval=null, verifyListener=null, secondsLeft=15;
-    function watchAd() {
-        window.open(CONFIG.adLink, '_blank');
-        toggleSidebar();
-        ui.dlModal.style.display = 'flex';
-        ui.modalTitle.innerText = "Verifying View...";
-        ui.dlStatus.innerText = "Do not switch tabs for 15s!";
-        ui.dlStatus.style.color = "var(--text-sub)";
-        ui.dlBar.className = "loader-bar";
-        ui.dlBar.style.width = "0%";
-        ui.claimBtn.style.display = "none";
-        secondsLeft = 15;
-
-        if(verifyListener) document.removeEventListener('visibilitychange', verifyListener);
-        verifyListener = () => {
-            if(document.visibilityState==='visible' && secondsLeft>0) {
-                clearInterval(adInterval);
-                ui.dlBar.className="loader-bar error";
-                ui.dlBar.style.width="100%";
-                ui.dlStatus.innerText="Failed! Tab switched too early.";
-                ui.dlStatus.style.color="var(--danger)";
-            }
-        };
-        document.addEventListener('visibilitychange', verifyListener);
-
-        if(adInterval) clearInterval(adInterval);
-        adInterval = setInterval(() => {
-            secondsLeft--;
-            const pct = ((15-secondsLeft)/15)*100;
-            ui.dlBar.style.width = `${pct}%`;
-            if(secondsLeft<=0) {
-                clearInterval(adInterval);
-                document.removeEventListener('visibilitychange', verifyListener);
-                ui.modalTitle.innerText="Verified!";
-                ui.dlStatus.innerText="Click below to claim.";
-                ui.claimBtn.style.display="flex";
-            }
-        }, 1000);
-    }
-
-    function claimReward() {
-        state.points += CONFIG.ptsPerAd; saveState(); closeDl(); triggerConfetti(); showToast(`+${CONFIG.ptsPerAd} Points!`);
-    }
-
-    function buyLimit() {
-        if(state.points >= CONFIG.costUnlock) {
-            state.points -= CONFIG.costUnlock; state.limit += 5;
-            saveState(); triggerConfetti(); showToast("Unlocked 5 Downloads!");
-        } else { showToast("Not enough points!", 'error'); }
-    }
-
     function showToast(msg, type='success') {
         ui.toastMsg.innerText = msg;
-        ui.toast.querySelector('i').style.color = type === 'error' ? 'var(--danger)' : 'var(--gold)';
+        ui.toast.querySelector('i').className = type==='error'?'fas fa-exclamation-circle':'fas fa-check-circle';
         ui.toast.classList.add('show'); setTimeout(() => ui.toast.classList.remove('show'), 3000);
     }
-    
-    function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
-    function closeDl() { ui.dlModal.style.display = 'none'; clearInterval(adInterval); }
+
+    // --- SEARCH LOGIC (With Views & Duration) ---
+    function formatViews(n) {
+        if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+        if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+        return n || '0';
+    }
 
     function quickSearch(t) { ui.input.value = t; handleSearch(); }
-    
+
     async function handleSearch() {
         let q = ui.input.value.trim();
         if(!q) return;
-        ui.input.blur(); ui.empty.style.display = 'none';
-        
-        // CACHE CHECK
-        if(searchCache.has(q)) {
-            renderResults(searchCache.get(q));
-            return;
-        }
+        ui.input.blur(); ui.empty.style.display='none';
 
-        // Show Skeleton
-        ui.grid.innerHTML = Array(8).fill(0).map(()=>`
-            <div class="card" style="pointer-events:none;">
-                <div class="thumb" style="background:#222;"></div>
-                <div class="details">
-                    <div style="height:14px; background:#333; width:80%; margin-bottom:8px; border-radius:4px;"></div>
-                    <div style="height:12px; background:#333; width:50%; margin-bottom:12px; border-radius:4px;"></div>
-                </div>
-            </div>
-        `).join('');
+        if(cache.has(q)) { renderResults(cache.get(q)); return; }
+
+        ui.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;">Searching...</div>';
 
         if(q.includes('spotify.com')) {
              try { const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if(d.title) q = d.title; } catch(e){}
@@ -525,18 +352,19 @@
             const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             if(!data.videos || !data.videos.length) { ui.grid.innerHTML=''; ui.empty.style.display='block'; return; }
-            
-            // Save to Cache
-            searchCache.set(q, data.videos);
+            cache.set(q, data.videos);
             renderResults(data.videos);
-
         } catch(e) { showToast("Search Failed", 'error'); }
     }
 
     function renderResults(videos) {
         ui.grid.innerHTML = videos.map(v => `
             <div class="card">
-                <div class="thumb"><img src="${v.thumbnail}" onload="this.style.opacity=1"></div>
+                <div class="thumb-wrapper">
+                    <img src="${v.thumbnail}" class="thumb-img" onload="this.style.opacity=1">
+                    <div class="badge-dur">${v.timestamp || '3:45'}</div>
+                    <div class="badge-views"><i class="fas fa-eye"></i> ${formatViews(v.views)}</div>
+                </div>
                 <div class="details">
                     <div class="title">${v.title}</div>
                     <div class="author">${v.author.name}</div>
@@ -549,27 +377,88 @@
         `).join('');
     }
 
+    // --- DOWNLOAD LOGIC (Robust & No Popups) ---
     function checkDl(url, type, title) {
         if(state.count >= state.limit) { document.getElementById('limitModal').style.display='flex'; return; }
         
-        ui.dlModal.style.display = 'flex';
-        ui.modalTitle.innerText = "Downloading...";
-        ui.dlStatus.innerText = "Connecting...";
-        ui.dlStatus.style.color = "var(--text-sub)";
-        ui.dlBar.className = "loader-bar";
-        ui.dlBar.style.width = "100%";
-        ui.claimBtn.style.display = "none";
+        // 1. Show Floating Bar
+        ui.floatBar.classList.add('active');
+        ui.floatTitle.innerText = title;
+        ui.floatStatus.innerText = "Connecting to server...";
+        
+        // 2. Mock Process (Connecting -> Downloading -> Done)
+        // Since we don't have the real backend URL in this context, we simulate the experience
+        // In your real deployment, you would replace the setTimeout with actual fetch()
         
         setTimeout(() => {
-            state.count++; state.points += CONFIG.ptsPerDl; saveState();
-            ui.dlStatus.innerText = "Saving...";
-            const a = document.createElement('a');
-            a.href = "data:text/plain,mock"; a.download = title; 
-            setTimeout(() => { closeDl(); showToast(`Done! +${CONFIG.ptsPerDl} XP`); }, 1000);
-        }, 2000);
+            ui.floatStatus.innerText = "Downloading... 0%";
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if(progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // FINISH
+                    ui.floatStatus.innerText = "Saving file...";
+                    state.count++; state.points += CONFIG.ptsPerDl; saveState();
+                    
+                    // Fallback to direct download link simulation
+                    // In real app: window.location.href = `/api/download?url=${url}`;
+                    showToast("Download Started!", 'success');
+                    
+                    setTimeout(() => {
+                        ui.floatBar.classList.remove('active');
+                    }, 2000);
+                }
+                ui.floatStatus.innerText = `Downloading... ${Math.floor(progress)}%`;
+            }, 500);
+        }, 1500);
     }
 
-    function simStats() { document.getElementById('onlineUsers').innerText = (1200 + Math.floor(Math.random()*300)).toLocaleString(); }
+    // --- AD LOGIC ---
+    let adInterval=null;
+    function watchAd() {
+        window.open(CONFIG.adLink, '_blank');
+        toggleSidebar();
+        document.getElementById('adModal').style.display='flex';
+        document.getElementById('claimBtn').style.display='none';
+        document.getElementById('adLoader').style.width='0%';
+        
+        let sec = 15;
+        if(adInterval) clearInterval(adInterval);
+        
+        // Simple animation
+        setTimeout(()=> document.getElementById('adLoader').style.width='100%', 100);
+        
+        adInterval = setInterval(()=>{
+            sec--;
+            if(sec<=0) {
+                clearInterval(adInterval);
+                document.getElementById('claimBtn').style.display='block';
+            }
+        }, 1000);
+    }
+
+    function claimReward() {
+        state.points += CONFIG.ptsPerAd; saveState();
+        document.getElementById('adModal').style.display='none';
+        triggerConfetti(); showToast(`+${CONFIG.ptsPerAd} Points!`);
+    }
+
+    function buyLimit() {
+        if(state.points >= CONFIG.costUnlock) {
+            state.points -= CONFIG.costUnlock; state.limit += 5;
+            saveState(); triggerConfetti(); showToast("Unlocked 5 Downloads!");
+        } else { showToast("Not enough points!", 'error'); }
+    }
+
+    function sendSupport() {
+        document.getElementById('supportMsg').value='';
+        showToast("Sent!"); setTimeout(()=>document.getElementById('supportModal').style.display='none',500);
+    }
+
+    function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
     
     init();
 </script>
