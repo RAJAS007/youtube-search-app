@@ -19,6 +19,7 @@
             --text-main: #ffffff; --text-sub: #a1a1aa;
             --accent: #6366f1; --gold: #fbbf24; --danger: #ef4444;
             --border: #3f3f46; --font: 'Plus Jakarta Sans', sans-serif;
+            --bmc-yellow: #FFDD00;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
@@ -61,7 +62,40 @@
         .btn-gold { background: var(--gold); color: #000; }
         .btn-accent { background: var(--accent); color: #fff; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); }
-        .btn-coffee { background:#ffd500; color:#000; text-decoration:none; }
+        
+        /* NEW BMC BUTTON STYLE */
+        .bmc-container { 
+            background: var(--surface-2); border: 1px solid var(--bmc-yellow); 
+            border-radius: 12px; padding: 15px; margin-top: 20px; text-align: center;
+            box-shadow: 0 4px 20px rgba(255, 221, 0, 0.1);
+        }
+        .bmc-label { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-coffee { 
+            background: var(--bmc-yellow) !important; color: #000 !important; 
+            font-family: 'Cookie', cursive; /* Optional fancy font fallback */
+            font-weight: 800; font-size: 14px; 
+            box-shadow: 0 4px 0 #dcbf00; 
+            transform: translateY(0); transition: 0.2s;
+            text-decoration: none;
+        }
+        .btn-coffee:active { transform: translateY(4px); box-shadow: none; }
+        .goal-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+        .goal-fill { height: 100%; background: var(--bmc-yellow); width: 75%; }
+        .goal-text { font-size: 10px; color: var(--text-sub); margin-top: 4px; display: flex; justify-content: space-between; }
+
+        /* DONATION STYLES */
+        .qr-box { background: white; padding: 10px; border-radius: 12px; display: inline-block; margin: 15px 0; }
+        .qr-box img { display: block; width: 140px; height: 140px; }
+        .upi-box { 
+            background: var(--surface-2); border: 1px dashed var(--accent); 
+            padding: 10px; border-radius: 8px; font-family: monospace; 
+            font-size: 13px; display: flex; justify-content: space-between; 
+            align-items: center; cursor: pointer; transition: 0.2s; word-break: break-all;
+        }
+        .upi-box:active { background: rgba(99,102,241,0.1); transform: scale(0.98); }
+        .divider { display: flex; align-items: center; margin: 15px 0; font-size: 12px; color: var(--text-sub); }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .divider::before { margin-right: 10px; } .divider::after { margin-left: 10px; }
 
         /* HERO */
         .hero { text-align: center; padding: 40px 20px 20px 20px; max-width: 800px; margin: 0 auto; }
@@ -176,19 +210,27 @@
     </div>
 
     <div class="streak-card">
-        <div class="streak-header"><span>🔥 Streak</span><span id="streakCount">1 Day</span></div>
+        <div class="streak-header">
+            <span>🔥 Streak</span>
+            <span id="streakCount">1 Day</span>
+        </div>
         <div class="streak-days" id="streakDays"></div>
     </div>
 
     <div class="level-card" onclick="alert('Levels unlock perks soon!')">
-        <div class="level-info"><span id="levelName">LEVEL 1</span><span id="levelPts">0/150 XP</span></div>
+        <div class="level-info">
+            <span id="levelName" class="level-name">LEVEL 1</span>
+            <span id="levelPts">0/150 XP</span>
+        </div>
         <div class="xp-track"><div id="xpBar" class="xp-fill"></div></div>
     </div>
 
     <div class="stats-grid">
         <div class="mini-card">
             <div class="mini-label">Balance</div>
-            <div class="mini-val" style="color:var(--gold)"><i class="fas fa-gem" style="font-size:14px;"></i> <span id="sbPts">0</span></div>
+            <div class="mini-val" style="color:var(--gold)">
+                <i class="fas fa-gem" style="font-size:14px;"></i> <span id="sbPts">0</span>
+            </div>
             <button class="sb-btn btn-gold" onclick="watchAd()">Ad (+40)</button>
         </div>
         <div class="mini-card">
@@ -198,8 +240,20 @@
         </div>
     </div>
 
-    <button class="sb-btn btn-outline" onclick="openSupport()"><i class="fas fa-headset"></i> Support</button>
-    <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn btn-coffee"><i class="fas fa-coffee"></i> Donate</a>
+    <button class="sb-btn btn-outline" onclick="openSupport()">
+        <i class="fas fa-headset"></i> Support
+    </button>
+
+    <div class="bmc-container">
+        <div class="bmc-label">Help us keep servers running</div>
+        <div class="goal-text"><span>Server Goal</span> <span>75%</span></div>
+        <div class="goal-bar"><div class="goal-fill"></div></div>
+        <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn btn-coffee" style="margin-top:12px;">
+            <i class="fas fa-coffee"></i> Buy me a coffee
+        </a>
+        <div style="font-size:10px; color:var(--text-sub); margin-top:8px;">12 supporters this week ❤️</div>
+        <button onclick="openDonate()" style="background:transparent; border:none; color:var(--accent); font-size:11px; margin-top:5px; cursor:pointer; text-decoration:underline;">Or pay via UPI (India)</button>
+    </div>
 </div>
 
 <div class="hero">
@@ -220,7 +274,9 @@
 
 <div class="container">
     <div id="grid" class="grid"></div>
-    <div id="empty" style="text-align:center; padding:50px; color:var(--text-sub); display:none;"><h3>No results found</h3></div>
+    <div id="empty" style="text-align:center; padding:50px; color:var(--text-sub); display:none;">
+        <h3>No results found</h3>
+    </div>
 </div>
 
 <div id="dlBarFloat" class="dl-float">
@@ -253,47 +309,71 @@
 
 <div id="supportModal" class="modal-overlay">
     <div class="modal-card">
-        <h2 style="margin-bottom:15px;">Help Center</h2>
-        
+        <h2>Support</h2>
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">📖 How to use? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">
-                1. <b>Search:</b> Type a song name or paste a link.<br>
-                2. <b>Select:</b> Tap 'Audio' or 'Video'.<br>
-                3. <b>Wait:</b> Let the progress bar finish.<br>
-                4. <b>Save:</b> The file saves to your device.
-            </div>
+            <div class="faq-a">Search, Select Audio/Video, Wait for the bar to finish.</div>
         </div>
-
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">Where are files saved? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Check your browser's "Downloads" folder or Gallery.</div>
+            <div class="faq-q">📁 Where are files? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-a">Check your "Downloads" folder or Gallery.</div>
         </div>
-
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">Is it free? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Yes! We use points from ads to keep it free for you.</div>
+            <div class="faq-q">💸 Is it free? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-a">Yes! Points allow you to download for free.</div>
         </div>
-
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">How to get points? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Downloading, daily streak, and watching ads in the menu.</div>
-        </div>
-
         <div class="contact-form">
-            <textarea id="supportMsg" rows="3" placeholder="Describe your issue..."></textarea>
-            <button class="sb-btn btn-accent" onclick="sendSupport()">Send Message</button>
+            <textarea id="supportMsg" rows="3" placeholder="Describe issue..."></textarea>
+            <button class="sb-btn btn-accent" onclick="sendSupport()">Send</button>
         </div>
         <div class="social-links" style="display:flex; justify-content:center; gap:10px; margin-top:15px;">
             <a href="https://t.me/RZX6969" target="_blank" class="sb-btn" style="width:auto; padding:0 15px;"><i class="fab fa-telegram-plane"></i> Telegram</a>
         </div>
-        <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
+        <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub);">Close</button>
+    </div>
+</div>
+
+<div id="donateModal" class="modal-overlay">
+    <div class="modal-card">
+        <h2><span style="color:var(--gold)">♥</span> Support Us</h2>
+        <p style="color:var(--text-sub); font-size:13px; margin-bottom:15px;">Server costs are high. Any help keeps us alive!</p>
+        
+        <div class="qr-box">
+            <img id="qrImg" src="" alt="UPI QR">
+        </div>
+        
+        <div class="upi-box" onclick="copyUPI()">
+            <span id="upiId">raheemarar948@okicici</span>
+            <i class="fas fa-copy" style="color:var(--accent)"></i>
+        </div>
+
+        <div class="divider">OR</div>
+
+        <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn btn-coffee">
+            <i class="fas fa-coffee"></i> Buy me a coffee
+        </a>
+        
+        <button onclick="document.getElementById('donateModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub);">Close</button>
+    </div>
+</div>
+
+<div id="loginModal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="font-size:40px; margin-bottom:10px;">🎁</div>
+        <h2>Daily Bonus!</h2>
+        <p style="color:var(--text-sub); margin-bottom:15px;">Welcome back! Here are free points.</p>
+        <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +10 Pts</button>
     </div>
 </div>
 
 <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Notification</span></div>
 
 <script>
+    // --- UPI SETUP ---
+    const UPI_ID = "raheemarar948@okicici"; 
+    document.getElementById('upiId').innerText = UPI_ID;
+    document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${UPI_ID}&pn=MusicHub&cu=INR`;
+
     const CONFIG = { dailyFree: 5, ptsPerAd: 40, ptsPerDl: 4, costUnlock: 100, adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee" };
     const state = {
         points: parseInt(localStorage.getItem('mh_points') || '0'),
@@ -350,7 +430,12 @@
     function toggleSidebar() { ui.sidebar.classList.toggle('active'); ui.overlay.classList.toggle('active'); }
     function openRewards() { document.getElementById('limitModal').style.display='none'; toggleSidebar(); }
     function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display='flex'; }
+    function openDonate() { toggleSidebar(); document.getElementById('donateModal').style.display='flex'; }
     
+    function copyUPI() {
+        navigator.clipboard.writeText(UPI_ID).then(() => showToast("UPI ID Copied!"));
+    }
+
     function showToast(msg, type='success') {
         ui.toastMsg.innerText = msg;
         ui.toast.querySelector('i').className = type==='error'?'fas fa-exclamation-circle':'fas fa-check-circle';
@@ -416,11 +501,10 @@
     async function checkDl(url, type, title) {
         if(state.count >= state.limit) { document.getElementById('limitModal').style.display='flex'; return; }
         
-        // Init UI
         ui.floatBar.classList.add('active');
         ui.floatTitle.innerText = title;
         ui.floatStatus.innerText = "Connecting...";
-        ui.floatFill.className = "dl-bar-fill indeterminate"; // Start as active indeterminate
+        ui.floatFill.className = "dl-bar-fill indeterminate"; 
         ui.floatFill.style.width = "100%";
 
         const api = type === 'mp3' 
@@ -436,9 +520,8 @@
             let receivedLength = 0;
             let chunks = [];
 
-            // If we have content length, switch to determinate progress
             if(contentLength) {
-                ui.floatFill.className = "dl-bar-fill"; // Remove indeterminate bounce
+                ui.floatFill.className = "dl-bar-fill"; 
                 ui.floatFill.style.width = "0%";
             }
 
@@ -449,18 +532,15 @@
                 chunks.push(value);
                 receivedLength += value.length;
 
-                // Update Bar if determinate
                 if (contentLength) {
                     const percent = Math.floor((receivedLength / contentLength) * 100);
                     ui.floatFill.style.width = `${percent}%`;
                     ui.floatStatus.innerText = `Downloading... ${percent}%`;
                 } else {
-                    // Keep indeterminate but show MB count
                     ui.floatStatus.innerText = `Downloading... ${(receivedLength/1024/1024).toFixed(1)} MB`;
                 }
             }
 
-            // Complete
             ui.floatFill.className = "dl-bar-fill";
             ui.floatFill.style.width = "100%";
             ui.floatStatus.innerText = "Saving file...";
@@ -481,7 +561,6 @@
 
         } catch (error) {
             console.error(error);
-            // Fallback to Direct Link if streaming fails (CORS/Server issue)
             ui.floatStatus.innerText = "Opening direct link...";
             window.location.href = api; 
             state.count++; saveState();
@@ -525,6 +604,12 @@
     function sendSupport() {
         document.getElementById('supportMsg').value='';
         showToast("Sent!"); setTimeout(()=>document.getElementById('supportModal').style.display='none',500);
+    }
+
+    function claimDaily() {
+        state.points += CONFIG.ptsLogin; state.lastLogin = new Date().toDateString();
+        saveState(); document.getElementById('loginModal').style.display='none';
+        triggerConfetti(); showToast(`+${CONFIG.ptsLogin} Points! Streak Saved.`);
     }
 
     function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
