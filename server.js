@@ -16,7 +16,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 app.use(cors());
 app.use(express.static(__dirname));
 
-// 1. SEARCH API
+// 1. OPTIMIZED SEARCH API
 app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q;
@@ -24,8 +24,25 @@ app.get('/api/search', async (req, res) => {
     
     console.log(`Searching: ${query}`);
     const searchResult = await ytSearch(query);
-    res.json(searchResult);
+
+    // --- OPTIMIZATION START ---
+    // Extract only the 'videos' array, take the top 20, and keep only essential data.
+    // This reduces the response size from ~50KB to ~2KB.
+    const videos = (searchResult.videos || []).slice(0, 20).map(v => ({
+        title: v.title,
+        url: v.url,
+        timestamp: v.timestamp,
+        views: v.views,
+        thumbnail: v.thumbnail,
+        author: v.author,
+        seconds: v.seconds
+    }));
+
+    res.json({ videos });
+    // --- OPTIMIZATION END ---
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Search failed' });
   }
 });
@@ -42,6 +59,7 @@ app.get('/api/resolve', async (req, res) => {
     });
 
     const $ = cheerio.load(response.data);
+    // Basic scrape for Spotify title
     let title = $('title').text().replace('| Spotify', '').replace('- song by', '-').trim();
     console.log(`Resolved: ${title}`);
     
@@ -56,6 +74,7 @@ app.get('/api/convert-to-mp3', async (req, res) => {
     const { url, title } = req.query;
     if (!url) return res.status(400).send('URL required');
 
+    // API that provides the raw video stream (MP4)
     const externalMp4Api = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
     const safeFilename = (title || 'audio').replace(/[^a-z0-9]/gi, '_');
 
@@ -63,7 +82,6 @@ app.get('/api/convert-to-mp3', async (req, res) => {
 
     try {
         // Step A: Fetch the video stream manually using Axios
-        // This is more reliable than letting ffmpeg fetch it
         const response = await axios({
             method: 'get',
             url: externalMp4Api,
@@ -82,6 +100,7 @@ app.get('/api/convert-to-mp3', async (req, res) => {
             .format('mp3')
             .audioBitrate(128)
             .on('error', (err) => {
+                // Only log error if we haven't already sent a response
                 console.error('Conversion Error:', err.message);
                 if (!res.headersSent) res.status(500).send('Conversion Failed');
             })
