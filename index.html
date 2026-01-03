@@ -38,7 +38,16 @@
         .sb-title { font-size: 20px; font-weight: 700; }
         .sb-close { cursor: pointer; color: var(--text-sub); font-size: 24px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 50%; }
 
-        .level-card { background: linear-gradient(135deg, #1e1e24 0%, #111 100%); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
+        /* LEVEL & STREAK */
+        .streak-card { background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%); border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(99,102,241,0.3); }
+        .streak-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #c7d2fe; margin-bottom: 12px; }
+        .streak-days { display: flex; justify-content: space-between; gap: 4px; }
+        .day-circle { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: rgba(255,255,255,0.5); position: relative; }
+        .day-circle.active { background: var(--gold); color: #000; font-weight: 800; box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .day-circle.future { border: 1px dashed rgba(255,255,255,0.2); background: transparent; }
+        .day-label { font-size: 10px; position: absolute; bottom: -18px; color: var(--text-sub); width: 100%; text-align: center; }
+
+        .level-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
         .level-card:hover { border-color: var(--accent); }
         .level-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
         .level-name { color: var(--accent); font-weight: 800; font-size: 14px; }
@@ -48,13 +57,16 @@
         .sb-card { background: var(--surface-2); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
         .sb-stat-label { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display:flex; justify-content:space-between; }
         .sb-stat-val { font-size: 24px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-        .sb-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; transition: 0.2s; }
-        .btn-gold { background: var(--gold); color: #000; }
+        
+        .sb-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; transition: 0.2s; position: relative; overflow: hidden; }
+        .btn-gold { background: var(--gold); color: #000; animation: pulse 2s infinite; }
         .btn-accent { background: var(--accent); color: #fff; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); margin-top: 10px; }
         .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        /* LEVELS LIST (Inside Modal) */
+        /* LEVELS LIST */
         .level-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
         .level-item { display: flex; justify-content: space-between; padding: 12px; background: var(--surface-2); border-radius: 10px; border: 1px solid transparent; font-size: 14px; }
         .level-item.active { border-color: var(--accent); background: rgba(99,102,241,0.1); }
@@ -135,6 +147,14 @@
         <div class="sb-close" onclick="toggleSidebar()">×</div>
     </div>
 
+    <div class="streak-card">
+        <div class="streak-header">
+            <span>🔥 Daily Streak</span>
+            <span id="streakCount">1 Day</span>
+        </div>
+        <div class="streak-days" id="streakDays"></div>
+    </div>
+
     <div class="level-card" onclick="showLevelRoadmap()">
         <div class="level-info">
             <span id="levelName" class="level-name">LEVEL 1</span>
@@ -171,6 +191,10 @@
     <button class="sb-btn btn-outline" onclick="openSupport()">
         <i class="fas fa-headset"></i> Help & Support
     </button>
+
+    <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn" style="background:#ffd500; color:#000; text-decoration:none; box-shadow: 0 4px 15px rgba(255, 213, 0, 0.3);">
+        <i class="fas fa-coffee"></i> Buy me a coffee
+    </a>
 </div>
 
 <div class="hero">
@@ -213,30 +237,26 @@
 <div id="supportModal" class="modal-overlay">
     <div class="modal-card">
         <h2 style="margin-bottom:20px;">Help Center</h2>
-        
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">How do I download? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Search for a song, click 'Audio' or 'Video', wait for the connection, and the file will save to your device.</div>
+            <div class="faq-a">Search, click Audio/Video, wait for connection.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">Why is there a limit? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">To keep our servers fast for everyone, we limit free downloads. You can easily unlock more by using points!</div>
+            <div class="faq-q">Why limits? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-a">To keep servers fast. Earn points to unlock more.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">How do I get points? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">You earn points by downloading songs, logging in daily, or watching short ads in the Rewards menu.</div>
+            <div class="faq-a">Downloading, daily streak, and watching ads.</div>
         </div>
-
         <div class="contact-form">
             <textarea id="supportMsg" rows="3" placeholder="Describe your issue..."></textarea>
             <button class="sb-btn btn-accent" onclick="sendSupport()">Send Message</button>
         </div>
-
         <div class="social-links">
             <a href="https://t.me/RZX6969" target="_blank" class="social-btn"><i class="fab fa-telegram-plane"></i></a>
             <a href="mailto:support@musichub.com" class="social-btn"><i class="fas fa-envelope"></i></a>
         </div>
-
         <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
@@ -245,8 +265,7 @@
     <div class="modal-card">
         <div style="font-size:40px; margin-bottom:10px;">🏆</div>
         <h2 style="margin-bottom:20px;">Level Roadmap</h2>
-        <div id="levelList" class="level-list">
-            </div>
+        <div id="levelList" class="level-list"></div>
         <button onclick="document.getElementById('levelModal').style.display='none'" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
@@ -254,8 +273,8 @@
 <div id="loginModal" class="modal-overlay">
     <div class="modal-card">
         <div style="font-size:48px; margin-bottom:15px;">🎁</div>
-        <h2>Daily Bonus!</h2>
-        <p style="color:var(--text-sub); margin-bottom:20px;">Welcome back! Here are free points.</p>
+        <h2>Daily Streak!</h2>
+        <p style="color:var(--text-sub); margin-bottom:20px;">Keep it up for big rewards.</p>
         <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +10 Pts</button>
     </div>
 </div>
@@ -264,7 +283,7 @@
     <div class="modal-card">
         <div style="font-size:48px; margin-bottom:15px;">⛔</div>
         <h2>Limit Reached</h2>
-        <p style="color:var(--text-sub); margin-bottom:20px;">You need to unlock more downloads.</p>
+        <p style="color:var(--text-sub); margin-bottom:20px;">Unlock more to continue.</p>
         <button onclick="openRewards()" class="sb-btn btn-accent">Increase Limit</button>
         <button onclick="document.getElementById('limitModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub);">Close</button>
     </div>
@@ -274,11 +293,11 @@
 
 <script>
     const CONFIG = {
-        dailyFree: 5,        // 5 Daily Downloads
-        ptsPerAd: 40,        // 40 Points per ad
-        ptsPerDl: 4,         // 4 Points per download
-        ptsLogin: 10,        // 10 Points login bonus
-        costUnlock: 100,     // 100 Points to unlock 5 more
+        dailyFree: 5,
+        ptsPerAd: 40,
+        ptsPerDl: 4,
+        ptsLogin: 10,
+        costUnlock: 100,
         adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee"
     };
 
@@ -287,7 +306,9 @@
         count: parseInt(localStorage.getItem('mh_count') || '0'),
         limit: parseInt(localStorage.getItem('mh_limit') || CONFIG.dailyFree),
         date: localStorage.getItem('mh_date') || '',
-        lastLogin: localStorage.getItem('mh_last_login') || ''
+        xp: parseInt(localStorage.getItem('mh_xp') || '0'),
+        lastLogin: localStorage.getItem('mh_last_login') || '',
+        streak: parseInt(localStorage.getItem('mh_streak') || '1')
     };
 
     const ui = {
@@ -308,17 +329,26 @@
         toastMsg: document.getElementById('toastMsg'),
         levelName: document.getElementById('levelName'),
         levelPts: document.getElementById('levelPts'),
-        xpBar: document.getElementById('xpBar')
+        xpBar: document.getElementById('xpBar'),
+        streakCount: document.getElementById('streakCount'),
+        streakDays: document.getElementById('streakDays')
     };
 
     function init() {
         const today = new Date().toDateString();
+        const yesterday = new Date(new Date().setDate(new Date().getDate()-1)).toDateString();
+
         if(state.date !== today) {
             state.count = 0; state.limit = CONFIG.dailyFree; state.date = today;
+            // Streak
+            if(state.lastLogin === yesterday) state.streak++;
+            else if(state.lastLogin !== today) state.streak = 1;
             saveState();
         }
         if(state.lastLogin !== today) setTimeout(() => document.getElementById('loginModal').style.display='flex', 1000);
+        
         updateUI();
+        renderStreak();
         setInterval(simStats, 4000); simStats();
     }
 
@@ -327,7 +357,9 @@
         localStorage.setItem('mh_count', state.count);
         localStorage.setItem('mh_limit', state.limit);
         localStorage.setItem('mh_date', state.date);
+        localStorage.setItem('mh_xp', state.points);
         localStorage.setItem('mh_last_login', state.lastLogin);
+        localStorage.setItem('mh_streak', state.streak);
         updateUI();
     }
 
@@ -335,8 +367,8 @@
         ui.pts.innerText = state.points;
         ui.sbPts.innerText = state.points;
         ui.sbLimit.innerText = `${state.count}/${state.limit}`;
+        ui.streakCount.innerText = `${state.streak} Days`;
         
-        // Harder Level Calc: (Level^2 * 150)
         const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
         const nextLevelXp = Math.pow(level, 2) * 150; 
         const prevLevelXp = Math.pow(level-1, 2) * 150;
@@ -349,61 +381,55 @@
         ui.xpBar.style.width = `${pct}%`;
     }
 
-    // --- LEVEL ROADMAP ---
+    function renderStreak() {
+        let html = '';
+        for(let i=1; i<=7; i++) {
+            let cls = '';
+            if(i < state.streak) cls = 'active'; 
+            else if(i === state.streak) cls = 'active'; 
+            else cls = 'future';
+            html += `<div class="day-circle ${cls}">${i}</div>`;
+        }
+        ui.streakDays.innerHTML = html;
+    }
+
     function showLevelRoadmap() {
         toggleSidebar();
         const currentLevel = Math.floor(Math.sqrt(state.points / 150)) + 1;
         let html = '';
-        
         for(let i=1; i<=20; i++) {
-            const xpReq = Math.pow(i-1, 2) * 150; // XP required to Reach Level i
+            const xpReq = Math.pow(i-1, 2) * 150;
             const isActive = i === currentLevel ? 'active' : '';
-            const label = i === currentLevel ? '(Current)' : (i < currentLevel ? '✔' : '🔒');
-            
-            html += `
-            <div class="level-item ${isActive}">
-                <span>Level ${i} ${i===currentLevel ? '<span style="color:var(--accent); font-size:11px;">YOU</span>' : ''}</span>
-                <span>${xpReq} XP</span>
-            </div>`;
+            html += `<div class="level-item ${isActive}"><span>Level ${i} ${i===currentLevel?'<span style="color:var(--accent)">YOU</span>':''}</span><span>${xpReq} XP</span></div>`;
         }
-        
         document.getElementById('levelList').innerHTML = html;
         document.getElementById('levelModal').style.display = 'flex';
     }
 
     function toggleSidebar() { ui.sidebar.classList.toggle('active'); ui.overlay.classList.toggle('active'); }
     function openRewards() { document.getElementById('limitModal').style.display='none'; toggleSidebar(); }
+    
     function claimDaily() {
         state.points += CONFIG.ptsLogin; state.lastLogin = new Date().toDateString();
         saveState(); document.getElementById('loginModal').style.display='none';
-        triggerConfetti(); showToast(`+${CONFIG.ptsLogin} Daily Bonus!`);
+        triggerConfetti(); showToast(`+${CONFIG.ptsLogin} Points! Streak Saved.`);
+        renderStreak();
     }
 
     function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display = 'flex'; }
-    
     function toggleFaq(el) {
         const ans = el.querySelector('.faq-a');
-        const icon = el.querySelector('.fa-chevron-down');
-        if(ans.style.display === 'block') { ans.style.display = 'none'; icon.style.transform = 'rotate(0deg)'; }
-        else { ans.style.display = 'block'; icon.style.transform = 'rotate(180deg)'; }
+        if(ans.style.display==='block') ans.style.display='none'; else ans.style.display='block';
     }
-
     function sendSupport() {
-        const msg = document.getElementById('supportMsg').value;
-        if(!msg) return showToast("Please write a message", 'error');
         document.getElementById('supportMsg').value = '';
-        showToast("Message Sent! We'll reply soon.");
-        setTimeout(() => document.getElementById('supportModal').style.display = 'none', 1000);
+        showToast("Message Sent!"); setTimeout(()=>document.getElementById('supportModal').style.display='none',1000);
     }
 
-    let adInterval = null;
-    let verifyListener = null;
-    let secondsLeft = 15; 
-
+    let adInterval=null, verifyListener=null, secondsLeft=15;
     function watchAd() {
         window.open(CONFIG.adLink, '_blank');
         toggleSidebar();
-
         ui.dlModal.style.display = 'flex';
         ui.modalTitle.innerText = "Verifying View...";
         ui.dlStatus.innerText = "Do not switch tabs for 15s!";
@@ -414,16 +440,13 @@
         secondsLeft = 15;
 
         if(verifyListener) document.removeEventListener('visibilitychange', verifyListener);
-        
         verifyListener = () => {
-            if(document.visibilityState === 'visible' && secondsLeft > 0) {
+            if(document.visibilityState==='visible' && secondsLeft>0) {
                 clearInterval(adInterval);
-                document.removeEventListener('visibilitychange', verifyListener);
-                ui.dlBar.className = "loader-bar error";
-                ui.dlBar.style.width = "100%";
-                ui.dlStatus.innerText = "Failed! You switched tabs too early.";
-                ui.dlStatus.style.color = "var(--danger)";
-                ui.modalTitle.innerText = "Verification Failed";
+                ui.dlBar.className="loader-bar error";
+                ui.dlBar.style.width="100%";
+                ui.dlStatus.innerText="Failed! Tab switched too early.";
+                ui.dlStatus.style.color="var(--danger)";
             }
         };
         document.addEventListener('visibilitychange', verifyListener);
@@ -431,25 +454,20 @@
         if(adInterval) clearInterval(adInterval);
         adInterval = setInterval(() => {
             secondsLeft--;
-            const pct = ((15 - secondsLeft) / 15) * 100;
+            const pct = ((15-secondsLeft)/15)*100;
             ui.dlBar.style.width = `${pct}%`;
-
-            if(secondsLeft <= 0) {
+            if(secondsLeft<=0) {
                 clearInterval(adInterval);
                 document.removeEventListener('visibilitychange', verifyListener);
-                ui.modalTitle.innerText = "Verified!";
-                ui.dlStatus.innerText = "Click below to claim points.";
-                ui.claimBtn.style.display = "flex"; 
+                ui.modalTitle.innerText="Verified!";
+                ui.dlStatus.innerText="Click below to claim.";
+                ui.claimBtn.style.display="flex";
             }
         }, 1000);
     }
 
     function claimReward() {
-        state.points += CONFIG.ptsPerAd;
-        saveState();
-        closeDl();
-        triggerConfetti();
-        showToast(`Success! +${CONFIG.ptsPerAd} Points`);
+        state.points += CONFIG.ptsPerAd; saveState(); closeDl(); triggerConfetti(); showToast(`+${CONFIG.ptsPerAd} Points!`);
     }
 
     function buyLimit() {
@@ -476,10 +494,7 @@
         ui.input.blur(); ui.empty.style.display = 'none';
         
         if(q.includes('spotify.com')) {
-             try {
-                const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`);
-                const d = await res.json(); if(d.title) q = d.title;
-             } catch(e){}
+             try { const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if(d.title) q = d.title; } catch(e){}
         }
 
         try {
@@ -509,6 +524,7 @@
         ui.dlModal.style.display = 'flex';
         ui.modalTitle.innerText = "Downloading...";
         ui.dlStatus.innerText = "Connecting...";
+        ui.dlStatus.style.color = "var(--text-sub)";
         ui.dlBar.className = "loader-bar";
         ui.dlBar.style.width = "100%";
         ui.claimBtn.style.display = "none";
@@ -518,16 +534,11 @@
             ui.dlStatus.innerText = "Saving...";
             const a = document.createElement('a');
             a.href = "data:text/plain,mock"; a.download = title; 
-            setTimeout(() => {
-                closeDl();
-                showToast(`Done! +${CONFIG.ptsPerDl} XP`);
-            }, 1000);
+            setTimeout(() => { closeDl(); showToast(`Done! +${CONFIG.ptsPerDl} XP`); }, 1000);
         }, 2000);
     }
 
-    function simStats() {
-        document.getElementById('onlineUsers').innerText = (1200 + Math.floor(Math.random()*300)).toLocaleString();
-    }
+    function simStats() { document.getElementById('onlineUsers').innerText = (1200 + Math.floor(Math.random()*300)).toLocaleString(); }
     
     init();
 </script>
