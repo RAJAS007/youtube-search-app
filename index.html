@@ -24,110 +24,131 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-        header { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; background: rgba(9,9,11,0.9); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-        .brand { font-weight: 800; font-size: 22px; display: flex; align-items: center; gap: 8px; }
+        header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(9,9,11,0.9); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .brand { font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px; }
         .brand i { color: var(--accent); }
-        .points-badge { background: rgba(99,102,241,0.1); color: var(--accent); padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(99,102,241,0.2); cursor: pointer; }
+        .points-badge { background: rgba(99,102,241,0.1); color: var(--accent); padding: 6px 12px; border-radius: 50px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(99,102,241,0.2); cursor: pointer; transition: 0.2s; }
+        .points-badge:hover { background: rgba(99,102,241,0.2); transform: scale(1.05); }
 
-        /* SIDEBAR */
+        /* --- COMPACT SIDEBAR --- */
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 998; opacity: 0; pointer-events: none; transition: 0.3s; }
         .sidebar-overlay.active { opacity: 1; pointer-events: all; }
-        .sidebar { position: fixed; top: 0; right: -320px; width: 320px; height: 100%; background: var(--surface); z-index: 999; padding: 24px; display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-left: 1px solid var(--border); overflow-y: auto; }
-        .sidebar.active { right: 0; }
-        .sb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .sb-title { font-size: 20px; font-weight: 700; }
-        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 24px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 50%; }
-
-        /* LEVEL & STREAK */
-        .streak-card { background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%); border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(99,102,241,0.3); }
-        .streak-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #c7d2fe; margin-bottom: 12px; }
-        .streak-days { display: flex; justify-content: space-between; gap: 4px; }
-        .day-circle { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: rgba(255,255,255,0.5); position: relative; }
-        .day-circle.active { background: var(--gold); color: #000; font-weight: 800; box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
-        .day-circle.future { border: 1px dashed rgba(255,255,255,0.2); background: transparent; }
-        .day-label { font-size: 10px; position: absolute; bottom: -18px; color: var(--text-sub); width: 100%; text-align: center; }
-
-        .level-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
-        .level-card:hover { border-color: var(--accent); }
-        .level-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
-        .level-name { color: var(--accent); font-weight: 800; font-size: 14px; }
-        .xp-track { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
-        .xp-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s; box-shadow: 0 0 10px var(--accent); }
-
-        .sb-card { background: var(--surface-2); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
-        .sb-stat-label { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display:flex; justify-content:space-between; }
-        .sb-stat-val { font-size: 24px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         
-        .sb-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; transition: 0.2s; position: relative; overflow: hidden; }
+        .sidebar { 
+            position: fixed; top: 0; right: -280px; width: 280px; height: 100%; 
+            background: var(--surface); z-index: 999; padding: 20px; 
+            display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 1px solid var(--border); overflow-y: auto; 
+        }
+        .sidebar.active { right: 0; }
+
+        .sb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .sb-title { font-size: 18px; font-weight: 700; }
+        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 20px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 50%; }
+
+        /* COMPACT CARDS */
+        .streak-card, .level-card { 
+            background: var(--surface-2); border: 1px solid var(--border); 
+            border-radius: 12px; padding: 12px; margin-bottom: 12px; 
+        }
+        .streak-card { background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%); border-color: rgba(99,102,241,0.3); }
+        
+        .streak-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #c7d2fe; margin-bottom: 8px; }
+        .streak-days { display: flex; justify-content: space-between; gap: 2px; }
+        .day-circle { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.5); }
+        .day-circle.active { background: var(--gold); color: #000; font-weight: 800; }
+        .day-circle.future { border: 1px dashed rgba(255,255,255,0.2); background: transparent; }
+
+        .level-info { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px; font-weight: 600; color: var(--text-sub); }
+        .level-name { color: var(--accent); font-weight: 800; font-size: 12px; }
+        .xp-track { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .xp-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s; }
+
+        /* GRID STATS (Side by Side) */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .mini-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .mini-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; }
+        .mini-val { font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
+        
+        /* SMALLER BUTTONS */
+        .sb-btn { 
+            width: 100%; padding: 10px; border: none; border-radius: 10px; 
+            font-weight: 600; font-size: 12px; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; gap: 6px; 
+            margin-top: 8px; transition: 0.2s; 
+        }
         .btn-gold { background: var(--gold); color: #000; animation: pulse 2s infinite; }
         .btn-accent { background: var(--accent); color: #fff; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); margin-top: 10px; }
-        .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
-        
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); }
+        .btn-coffee { background:#ffd500; color:#000; box-shadow: 0 2px 10px rgba(255, 213, 0, 0.2); }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        /* LEVELS LIST */
-        .level-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
-        .level-item { display: flex; justify-content: space-between; padding: 12px; background: var(--surface-2); border-radius: 10px; border: 1px solid transparent; font-size: 14px; }
-        .level-item.active { border-color: var(--accent); background: rgba(99,102,241,0.1); }
-        .level-item span:last-child { font-weight: 700; color: var(--gold); }
+        /* LEVEL LIST */
+        .level-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+        .level-item { display: flex; justify-content: space-between; padding: 10px; background: var(--surface-2); border-radius: 8px; font-size: 13px; }
+        .level-item.active { border: 1px solid var(--accent); background: rgba(99,102,241,0.1); }
 
         /* HERO & SEARCH */
-        .hero { text-align: center; padding: 50px 20px 30px 20px; max-width: 800px; margin: 0 auto; }
-        .hero h1 { font-size: 42px; font-weight: 800; margin-bottom: 16px; line-height: 1.1; }
+        .hero { text-align: center; padding: 40px 20px 20px 20px; max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 12px; line-height: 1.1; }
         .hero-highlight { background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .search-container { position: relative; max-width: 580px; margin: 0 auto 30px auto; }
-        .search-box { background: var(--surface); border: 2px solid var(--border); border-radius: 100px; padding: 6px 6px 6px 24px; display: flex; align-items: center; height: 56px; }
-        .search-input { flex: 1; border: none; background: transparent; font-size: 16px; color: white; outline: none; height: 100%; }
-        .search-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--accent); color: white; cursor: pointer; font-size: 16px; }
+        .search-container { position: relative; max-width: 580px; margin: 0 auto 24px auto; }
+        .search-box { background: var(--surface); border: 2px solid var(--border); border-radius: 100px; padding: 4px 4px 4px 20px; display: flex; align-items: center; height: 50px; }
+        .search-input { flex: 1; border: none; background: transparent; font-size: 15px; color: white; outline: none; height: 100%; }
+        .search-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: white; cursor: pointer; font-size: 14px; }
         
-        .stats-row { display: flex; justify-content: center; gap: 24px; font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 30px; }
-        .stats-row i { color: var(--accent); margin-right: 6px; }
-        .chips-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        .chip { background: var(--surface-2); border: 1px solid var(--border); padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-sub); transition: 0.2s; }
+        .stats-row { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 24px; }
+        .stats-row i { color: var(--accent); margin-right: 5px; }
+        .chips-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .chip { background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text-sub); transition: 0.2s; }
         .chip:hover { color: white; border-color: var(--accent); background: rgba(99,102,241,0.1); }
 
         /* GRID */
-        .container { flex: 1; padding: 0 24px 60px 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .container { flex: 1; padding: 0 20px 40px 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid transparent; transition: 0.3s; display: flex; flex-direction: column; }
         .thumb { position: relative; padding-top: 56.25%; background: #111; }
         .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        .details { padding: 16px; flex: 1; display: flex; flex-direction: column; }
-        .title { font-size: 15px; font-weight: 700; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .author { font-size: 13px; color: var(--text-sub); margin-bottom: 16px; }
-        .actions { margin-top: auto; display: flex; gap: 10px; }
-        .btn { flex: 1; height: 38px; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .details { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+        .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .author { font-size: 12px; color: var(--text-sub); margin-bottom: 12px; }
+        .actions { margin-top: auto; display: flex; gap: 8px; }
+        .btn { flex: 1; height: 34px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-mp3 { background: var(--text-main); color: var(--bg); }
         .btn-mp4 { background: var(--surface-2); color: var(--text-main); }
 
         /* MODALS & SUPPORT */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-card { background: var(--surface); padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.3s; max-height: 80vh; overflow-y: auto; }
+        .modal-card { background: var(--surface); padding: 24px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.3s; max-height: 80vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .loader { width: 100%; height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin-top: 20px; position: relative; }
+        .loader { width: 100%; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 20px; position: relative; }
         .loader-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
         .loader-bar.error { background: var(--danger); }
         
         .faq-item { text-align: left; border-bottom: 1px solid var(--border); padding: 12px 0; }
-        .faq-q { font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px; }
-        .faq-a { display: none; font-size: 13px; color: var(--text-sub); margin-top: 8px; line-height: 1.4; }
-        .contact-form textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: white; margin-top: 15px; font-family: inherit; resize: none; outline: none; }
+        .faq-q { font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; font-size: 13px; }
+        .faq-a { display: none; font-size: 12px; color: var(--text-sub); margin-top: 6px; line-height: 1.4; }
+        .contact-form textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: white; margin-top: 15px; font-family: inherit; resize: none; outline: none; font-size: 13px; }
         .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-        .social-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 18px; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .social-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 16px; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .social-btn:hover { background: var(--accent); }
 
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1e1e1e; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 2000; transition: 0.4s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1e1e1e; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 2000; transition: 0.4s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         @media (max-width: 640px) {
-            .grid { grid-template-columns: 1fr; gap: 16px; }
-            .card { flex-direction: row; height: 120px; padding: 10px; gap: 12px; align-items: center; }
-            .thumb { width: 120px; height: 100%; padding-top: 0; border-radius: 10px; flex-shrink: 0; }
-            .details { padding: 0; justify-content: space-between; height: 100%; }
-            .actions { margin-top: auto; }
-            .btn { height: 32px; font-size: 12px; }
+            .hero h1 { font-size: 28px; }
+            .grid { grid-template-columns: 1fr; gap: 12px; }
+            .card { flex-direction: row; height: 100px; padding: 8px; gap: 12px; align-items: center; }
+            .thumb { width: 100px; height: 100%; padding-top: 0; border-radius: 8px; flex-shrink: 0; }
+            .details { padding: 0; justify-content: center; height: 100%; }
+            .title { font-size: 13px; margin-bottom: 2px; }
+            .author { margin-bottom: 8px; }
+            .actions { margin-top: 0; }
+            .btn { height: 28px; font-size: 11px; }
         }
     </style>
 </head>
@@ -149,7 +170,7 @@
 
     <div class="streak-card">
         <div class="streak-header">
-            <span>🔥 Daily Streak</span>
+            <span>🔥 Streak</span>
             <span id="streakCount">1 Day</span>
         </div>
         <div class="streak-days" id="streakDays"></div>
@@ -161,39 +182,34 @@
             <span id="levelPts">0/150 XP</span>
         </div>
         <div class="xp-track"><div id="xpBar" class="xp-fill"></div></div>
-        <div style="font-size:11px; color:var(--text-sub); margin-top:6px; text-align:right;">Click to view roadmap →</div>
     </div>
 
-    <div class="sb-card">
-        <div class="sb-stat-label">
-            <span>Balance</span>
-            <span style="color:var(--text-sub); font-size:11px;">+40 XP/Ad</span>
+    <div class="stats-grid">
+        <div class="mini-card">
+            <div class="mini-label">Balance</div>
+            <div class="mini-val" style="color:var(--gold)">
+                <i class="fas fa-gem" style="font-size:14px;"></i> <span id="sbPts">0</span>
+            </div>
+            <button class="sb-btn btn-gold" onclick="watchAd()" style="margin-top:auto;">
+                Ad (+40)
+            </button>
         </div>
-        <div class="sb-stat-val" style="color:var(--gold)">
-            <i class="fas fa-gem"></i> <span id="sbPts">0</span>
-        </div>
-        <button class="sb-btn btn-gold" onclick="watchAd()">
-            <i class="fas fa-play"></i> Watch Ad (+40 Pts)
-        </button>
-    </div>
 
-    <div class="sb-card">
-        <div class="sb-stat-label">
-            <span>Daily Limit</span>
-            <span style="color:var(--text-sub); font-size:11px;">+4 XP/Dl</span>
+        <div class="mini-card">
+            <div class="mini-label">Downloads</div>
+            <div class="mini-val"><span id="sbLimit">0/5</span></div>
+            <button class="sb-btn btn-accent" onclick="buyLimit()" style="margin-top:auto;">
+                Unlock
+            </button>
         </div>
-        <div class="sb-stat-val"><span id="sbLimit">0/5</span></div>
-        <button class="sb-btn btn-accent" onclick="buyLimit()">
-            Unlock 5 More (-100 Pts)
-        </button>
     </div>
 
     <button class="sb-btn btn-outline" onclick="openSupport()">
-        <i class="fas fa-headset"></i> Help & Support
+        <i class="fas fa-headset"></i> Support
     </button>
 
-    <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn" style="background:#ffd500; color:#000; text-decoration:none; box-shadow: 0 4px 15px rgba(255, 213, 0, 0.3);">
-        <i class="fas fa-coffee"></i> Buy me a coffee
+    <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="sb-btn btn-coffee" style="text-decoration:none;">
+        <i class="fas fa-coffee"></i> Donate
     </a>
 </div>
 
@@ -206,7 +222,7 @@
         </form>
     </div>
     <div class="stats-row">
-        <span><i class="fas fa-cloud-download-alt"></i> <span id="totalDl">0</span> Downloads</span>
+        <span><i class="fas fa-cloud-download-alt"></i> <span id="totalDl">0</span> DLs</span>
         <span><i class="fas fa-user-friends"></i> <span id="onlineUsers">1,240</span> Online</span>
     </div>
     <div class="chips-row">
@@ -227,19 +243,19 @@
 <div id="dlModal" class="modal-overlay">
     <div class="modal-card">
         <h2 id="modalTitle" style="margin-bottom:10px; color:var(--text-main);">Verifying Ad...</h2>
-        <p id="dlStatus" style="color:var(--text-sub); font-size:14px;">Do not switch tabs!</p>
+        <p id="dlStatus" style="color:var(--text-sub); font-size:13px;">Do not switch tabs!</p>
         <div class="loader"><div id="dlBar" class="loader-bar"></div></div>
-        <button id="claimBtn" onclick="claimReward()" class="sb-btn btn-gold" style="display:none; margin-top:20px;">CLAIM REWARD</button>
-        <button onclick="closeDl()" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
+        <button id="claimBtn" onclick="claimReward()" class="sb-btn btn-gold" style="display:none; margin-top:15px;">CLAIM REWARD</button>
+        <button onclick="closeDl()" style="margin-top:10px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
 
 <div id="supportModal" class="modal-overlay">
     <div class="modal-card">
-        <h2 style="margin-bottom:20px;">Help Center</h2>
+        <h2 style="margin-bottom:15px;">Help Center</h2>
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">How do I download? <i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">Search, click Audio/Video, wait for connection.</div>
+            <div class="faq-a">Search for a song, click 'Audio' or 'Video', wait for the connection.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q">Why limits? <i class="fas fa-chevron-down"></i></div>
@@ -257,35 +273,35 @@
             <a href="https://t.me/RZX6969" target="_blank" class="social-btn"><i class="fab fa-telegram-plane"></i></a>
             <a href="mailto:support@musichub.com" class="social-btn"><i class="fas fa-envelope"></i></a>
         </div>
-        <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
+        <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
 
 <div id="levelModal" class="modal-overlay">
     <div class="modal-card">
-        <div style="font-size:40px; margin-bottom:10px;">🏆</div>
-        <h2 style="margin-bottom:20px;">Level Roadmap</h2>
+        <div style="font-size:32px; margin-bottom:10px;">🏆</div>
+        <h2 style="margin-bottom:15px;">Level Roadmap</h2>
         <div id="levelList" class="level-list"></div>
-        <button onclick="document.getElementById('levelModal').style.display='none'" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
+        <button onclick="document.getElementById('levelModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
 
 <div id="loginModal" class="modal-overlay">
     <div class="modal-card">
-        <div style="font-size:48px; margin-bottom:15px;">🎁</div>
-        <h2>Daily Streak!</h2>
-        <p style="color:var(--text-sub); margin-bottom:20px;">Keep it up for big rewards.</p>
+        <div style="font-size:40px; margin-bottom:10px;">🎁</div>
+        <h2>Daily Bonus!</h2>
+        <p style="color:var(--text-sub); margin-bottom:15px;">Welcome back! Here are free points.</p>
         <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +10 Pts</button>
     </div>
 </div>
 
 <div id="limitModal" class="modal-overlay">
     <div class="modal-card">
-        <div style="font-size:48px; margin-bottom:15px;">⛔</div>
+        <div style="font-size:40px; margin-bottom:10px;">⛔</div>
         <h2>Limit Reached</h2>
-        <p style="color:var(--text-sub); margin-bottom:20px;">Unlock more to continue.</p>
+        <p style="color:var(--text-sub); margin-bottom:15px;">Unlock more to continue.</p>
         <button onclick="openRewards()" class="sb-btn btn-accent">Increase Limit</button>
-        <button onclick="document.getElementById('limitModal').style.display='none'" style="margin-top:15px; background:transparent; border:none; color:var(--text-sub);">Close</button>
+        <button onclick="document.getElementById('limitModal').style.display='none'" style="margin-top:10px; background:transparent; border:none; color:var(--text-sub);">Close</button>
     </div>
 </div>
 
@@ -293,11 +309,7 @@
 
 <script>
     const CONFIG = {
-        dailyFree: 5,
-        ptsPerAd: 40,
-        ptsPerDl: 4,
-        ptsLogin: 10,
-        costUnlock: 100,
+        dailyFree: 5, ptsPerAd: 40, ptsPerDl: 4, ptsLogin: 10, costUnlock: 100,
         adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee"
     };
 
@@ -340,13 +352,11 @@
 
         if(state.date !== today) {
             state.count = 0; state.limit = CONFIG.dailyFree; state.date = today;
-            // Streak
             if(state.lastLogin === yesterday) state.streak++;
             else if(state.lastLogin !== today) state.streak = 1;
             saveState();
         }
         if(state.lastLogin !== today) setTimeout(() => document.getElementById('loginModal').style.display='flex', 1000);
-        
         updateUI();
         renderStreak();
         setInterval(simStats, 4000); simStats();
@@ -367,7 +377,7 @@
         ui.pts.innerText = state.points;
         ui.sbPts.innerText = state.points;
         ui.sbLimit.innerText = `${state.count}/${state.limit}`;
-        ui.streakCount.innerText = `${state.streak} Days`;
+        ui.streakCount.innerText = `${state.streak} Day${state.streak>1?'s':''}`;
         
         const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
         const nextLevelXp = Math.pow(level, 2) * 150; 
