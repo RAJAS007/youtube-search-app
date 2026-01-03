@@ -468,11 +468,13 @@
         ui.grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;">Searching...</div>';
 
         if(q.includes('spotify.com')) {
-             try { const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if(d.title) q = d.title; } catch(e){}
+             // UPDATE: Pointing to Render Backend
+             try { const res = await fetch(`https://youtube-search-app-r16f.onrender.com/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if(d.title) q = d.title; } catch(e){}
         }
 
         try {
-            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+            // UPDATE: Pointing to Render Backend
+            const res = await fetch(`https://youtube-search-app-r16f.onrender.com/api/search?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             if(!data.videos || !data.videos.length) { ui.grid.innerHTML=''; ui.empty.style.display='block'; return; }
             cache.set(q, data.videos);
@@ -510,8 +512,9 @@
         ui.floatFill.className = "dl-bar-fill indeterminate"; 
         ui.floatFill.style.width = "100%";
 
+        // UPDATE: Pointing to Render Backend for MP3
         const api = type === 'mp3' 
-            ? `/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
+            ? `https://youtube-search-app-r16f.onrender.com/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
             : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
 
         try {
