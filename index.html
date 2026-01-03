@@ -28,7 +28,8 @@
         .brand { font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px; }
         .brand i { color: var(--accent); }
         .points-badge { background: rgba(99,102,241,0.1); color: var(--accent); padding: 6px 12px; border-radius: 50px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(99,102,241,0.2); cursor: pointer; transition: 0.2s; }
-        
+        .points-badge:hover { background: rgba(99,102,241,0.2); transform: scale(1.05); }
+
         /* SIDEBAR (Compact) */
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 998; opacity: 0; pointer-events: none; transition: 0.3s; }
         .sidebar-overlay.active { opacity: 1; pointer-events: all; }
@@ -82,7 +83,6 @@
         .thumb-wrapper { position: relative; padding-top: 56.25%; background: #111; }
         .thumb-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity:0; transition:opacity 0.3s; }
         
-        /* NEW BADGES */
         .badge-dur { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: 700; padding: 3px 6px; border-radius: 4px; }
         .badge-views { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; font-size: 11px; font-weight: 600; padding: 3px 6px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
 
@@ -95,37 +95,50 @@
         .btn-mp3 { background: var(--text-main); color: var(--bg); }
         .btn-mp4 { background: var(--surface-2); color: var(--text-main); }
 
-        /* FLOATING DOWNLOAD BAR (Replacing Modal) */
+        /* FLOATING DOWNLOAD BAR (UPDATED FOR REAL PROGRESS) */
         .dl-float {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
             width: 90%; max-width: 400px;
             background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px);
-            border: 1px solid var(--border); border-radius: 50px;
-            padding: 12px 20px;
-            display: flex; align-items: center; gap: 15px;
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             z-index: 2000; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0;
         }
         .dl-float.active { transform: translateX(-50%) translateY(0); opacity: 1; }
         
-        .dl-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .dl-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         .dl-title { font-size: 13px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        .dl-status { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+        .dl-status { font-size: 11px; color: var(--text-sub); }
         
-        .dl-spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* The Actual Bar */
+        .dl-bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .dl-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
 
         /* TOAST */
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1e1e1e; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 2100; transition: 0.4s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        /* GENERIC MODAL CSS (For Limits/Support) */
+        /* GENERIC MODAL CSS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-card { background: var(--surface); padding: 24px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); animation: slideUp 0.3s; }
+        .modal-card { background: var(--surface); padding: 24px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: slideUp 0.3s; max-height: 80vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .loader { width: 100%; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 20px; position: relative; }
+        .loader-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
+        .loader-bar.error { background: var(--danger); }
+        
+        .faq-item { text-align: left; border-bottom: 1px solid var(--border); padding: 12px 0; }
+        .faq-q { font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; font-size: 13px; }
+        .faq-a { display: none; font-size: 12px; color: var(--text-sub); margin-top: 6px; line-height: 1.4; }
+        .contact-form textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: white; margin-top: 15px; font-family: inherit; resize: none; outline: none; font-size: 13px; }
+        .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .social-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 16px; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .social-btn:hover { background: var(--accent); }
 
         @media (max-width: 640px) {
+            .hero h1 { font-size: 28px; }
             .grid { grid-template-columns: 1fr; gap: 12px; }
             .card { flex-direction: row; height: 100px; padding: 8px; gap: 12px; align-items: center; }
             .thumb-wrapper { width: 120px; height: 100%; padding-top: 0; border-radius: 8px; flex-shrink: 0; }
@@ -133,7 +146,8 @@
             .title { font-size: 13px; margin-bottom: 2px; }
             .author { margin-bottom: 8px; }
             .actions { margin-top: 0; }
-            .badge-views { display: none; } /* Hide views on mobile to save space */
+            .btn { height: 28px; font-size: 11px; }
+            .badge-views { display: none; } 
         }
     </style>
 </head>
@@ -217,10 +231,12 @@
 </div>
 
 <div id="dlBarFloat" class="dl-float">
-    <div class="dl-spinner"></div>
-    <div class="dl-info">
+    <div class="dl-header">
         <div class="dl-title" id="floatTitle">Song Name</div>
         <div class="dl-status" id="floatStatus">Connecting...</div>
+    </div>
+    <div class="dl-bar-bg">
+        <div class="dl-bar-fill" id="floatFill"></div>
     </div>
 </div>
 
@@ -277,7 +293,7 @@
         grid: document.getElementById('grid'), empty: document.getElementById('empty'),
         toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'),
         floatBar: document.getElementById('dlBarFloat'), floatTitle: document.getElementById('floatTitle'),
-        floatStatus: document.getElementById('floatStatus')
+        floatStatus: document.getElementById('floatStatus'), floatFill: document.getElementById('floatFill')
     };
 
     const cache = new Map();
@@ -289,7 +305,6 @@
             saveState();
         }
         updateUI();
-        // Render Streak Circles
         let html = '';
         for(let i=1; i<=7; i++) {
             let cls = i <= state.streak ? 'active' : 'future';
@@ -309,7 +324,6 @@
     function updateUI() {
         ui.pts.innerText = state.points; ui.sbPts.innerText = state.points;
         ui.sbLimit.innerText = `${state.count}/${state.limit}`;
-        // Level Logic
         const level = Math.floor(Math.sqrt(state.points/150)) + 1;
         document.getElementById('levelName').innerText = `LEVEL ${level}`;
         document.getElementById('levelPts').innerText = `${state.points % 150}/150 XP`;
@@ -326,7 +340,6 @@
         ui.toast.classList.add('show'); setTimeout(() => ui.toast.classList.remove('show'), 3000);
     }
 
-    // --- SEARCH LOGIC (With Views & Duration) ---
     function formatViews(n) {
         if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
         if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
@@ -377,43 +390,73 @@
         `).join('');
     }
 
-    // --- DOWNLOAD LOGIC (Robust & No Popups) ---
-    function checkDl(url, type, title) {
+    // --- REAL DOWNLOAD STREAMING LOGIC ---
+    async function checkDl(url, type, title) {
         if(state.count >= state.limit) { document.getElementById('limitModal').style.display='flex'; return; }
         
-        // 1. Show Floating Bar
         ui.floatBar.classList.add('active');
         ui.floatTitle.innerText = title;
         ui.floatStatus.innerText = "Connecting to server...";
-        
-        // 2. Mock Process (Connecting -> Downloading -> Done)
-        // Since we don't have the real backend URL in this context, we simulate the experience
-        // In your real deployment, you would replace the setTimeout with actual fetch()
-        
-        setTimeout(() => {
-            ui.floatStatus.innerText = "Downloading... 0%";
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 20;
-                if(progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    
-                    // FINISH
-                    ui.floatStatus.innerText = "Saving file...";
-                    state.count++; state.points += CONFIG.ptsPerDl; saveState();
-                    
-                    // Fallback to direct download link simulation
-                    // In real app: window.location.href = `/api/download?url=${url}`;
-                    showToast("Download Started!", 'success');
-                    
-                    setTimeout(() => {
-                        ui.floatBar.classList.remove('active');
-                    }, 2000);
+        ui.floatFill.style.width = "0%";
+
+        const api = type === 'mp3' 
+            ? `/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
+            : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
+
+        try {
+            const response = await fetch(api);
+            if (!response.ok) throw new Error("Network error");
+
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            let receivedLength = 0;
+            let chunks = [];
+
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+
+                chunks.push(value);
+                receivedLength += value.length;
+
+                // Update Bar
+                if (contentLength) {
+                    const percent = Math.floor((receivedLength / contentLength) * 100);
+                    ui.floatFill.style.width = `${percent}%`;
+                    ui.floatStatus.innerText = `Downloading... ${percent}%`;
+                } else {
+                    // Fallback if no content-length
+                    ui.floatStatus.innerText = `Downloading... ${(receivedLength/1024/1024).toFixed(1)} MB`;
+                    ui.floatFill.style.width = "50%"; // Indeterminate
                 }
-                ui.floatStatus.innerText = `Downloading... ${Math.floor(progress)}%`;
-            }, 500);
-        }, 1500);
+            }
+
+            // Complete
+            ui.floatFill.style.width = "100%";
+            ui.floatStatus.innerText = "Saving file...";
+            
+            const blob = new Blob(chunks);
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${title}.${type}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+            state.count++; state.points += CONFIG.ptsPerDl; saveState();
+            showToast("Download Complete!", 'success');
+            setTimeout(() => ui.floatBar.classList.remove('active'), 2500);
+
+        } catch (error) {
+            // FALLBACK TO DIRECT LINK (If Stream Fails due to CORS)
+            console.error(error);
+            ui.floatStatus.innerText = "Opening direct link...";
+            window.location.href = api; // Force browser download
+            state.count++; saveState();
+            setTimeout(() => ui.floatBar.classList.remove('active'), 2000);
+        }
     }
 
     // --- AD LOGIC ---
@@ -424,13 +467,9 @@
         document.getElementById('adModal').style.display='flex';
         document.getElementById('claimBtn').style.display='none';
         document.getElementById('adLoader').style.width='0%';
-        
         let sec = 15;
         if(adInterval) clearInterval(adInterval);
-        
-        // Simple animation
         setTimeout(()=> document.getElementById('adLoader').style.width='100%', 100);
-        
         adInterval = setInterval(()=>{
             sec--;
             if(sec<=0) {
