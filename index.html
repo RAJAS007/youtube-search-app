@@ -36,21 +36,29 @@
         .sidebar.active { right: 0; }
         .sb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .sb-title { font-size: 20px; font-weight: 700; }
-        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 24px; }
+        .sb-close { cursor: pointer; color: var(--text-sub); font-size: 24px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 50%; }
 
-        .level-card { background: linear-gradient(135deg, #1e1e24 0%, #111 100%); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .level-card { background: linear-gradient(135deg, #1e1e24 0%, #111 100%); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
+        .level-card:hover { border-color: var(--accent); }
         .level-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
         .level-name { color: var(--accent); font-weight: 800; font-size: 14px; }
         .xp-track { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
         .xp-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s; box-shadow: 0 0 10px var(--accent); }
 
         .sb-card { background: var(--surface-2); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+        .sb-stat-label { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display:flex; justify-content:space-between; }
         .sb-stat-val { font-size: 24px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .sb-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; transition: 0.2s; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-accent { background: var(--accent); color: #fff; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); margin-top: 10px; }
         .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); }
+
+        /* LEVELS LIST (Inside Modal) */
+        .level-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+        .level-item { display: flex; justify-content: space-between; padding: 12px; background: var(--surface-2); border-radius: 10px; border: 1px solid transparent; font-size: 14px; }
+        .level-item.active { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+        .level-item span:last-child { font-weight: 700; color: var(--gold); }
 
         /* HERO & SEARCH */
         .hero { text-align: center; padding: 50px 20px 30px 20px; max-width: 800px; margin: 0 auto; }
@@ -90,13 +98,12 @@
         .loader-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
         .loader-bar.error { background: var(--danger); }
         
-        /* SUPPORT STYLES */
         .faq-item { text-align: left; border-bottom: 1px solid var(--border); padding: 12px 0; }
         .faq-q { font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px; }
         .faq-a { display: none; font-size: 13px; color: var(--text-sub); margin-top: 8px; line-height: 1.4; }
         .contact-form textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: white; margin-top: 15px; font-family: inherit; resize: none; outline: none; }
         .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-        .social-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 18px; cursor: pointer; transition: 0.2s; }
+        .social-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 18px; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .social-btn:hover { background: var(--accent); }
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1e1e1e; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 2000; transition: 0.4s; opacity: 0; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); }
@@ -128,26 +135,33 @@
         <div class="sb-close" onclick="toggleSidebar()">×</div>
     </div>
 
-    <div class="level-card">
+    <div class="level-card" onclick="showLevelRoadmap()">
         <div class="level-info">
             <span id="levelName" class="level-name">LEVEL 1</span>
-            <span id="levelPts">0/200 XP</span>
+            <span id="levelPts">0/150 XP</span>
         </div>
         <div class="xp-track"><div id="xpBar" class="xp-fill"></div></div>
+        <div style="font-size:11px; color:var(--text-sub); margin-top:6px; text-align:right;">Click to view roadmap →</div>
     </div>
 
     <div class="sb-card">
-        <div class="sb-stat-label">Current Balance</div>
+        <div class="sb-stat-label">
+            <span>Balance</span>
+            <span style="color:var(--text-sub); font-size:11px;">+40 XP/Ad</span>
+        </div>
         <div class="sb-stat-val" style="color:var(--gold)">
             <i class="fas fa-gem"></i> <span id="sbPts">0</span>
         </div>
         <button class="sb-btn btn-gold" onclick="watchAd()">
-            <i class="fas fa-play"></i> Watch Ad (+50 Pts)
+            <i class="fas fa-play"></i> Watch Ad (+40 Pts)
         </button>
     </div>
 
     <div class="sb-card">
-        <div class="sb-stat-label">Daily Downloads</div>
+        <div class="sb-stat-label">
+            <span>Daily Limit</span>
+            <span style="color:var(--text-sub); font-size:11px;">+4 XP/Dl</span>
+        </div>
         <div class="sb-stat-val"><span id="sbLimit">0/5</span></div>
         <button class="sb-btn btn-accent" onclick="buyLimit()">
             Unlock 5 More (-100 Pts)
@@ -219,11 +233,21 @@
         </div>
 
         <div class="social-links">
-            <a href="#" class="social-btn"><i class="fab fa-telegram-plane"></i></a>
+            <a href="https://t.me/RZX6969" target="_blank" class="social-btn"><i class="fab fa-telegram-plane"></i></a>
             <a href="mailto:support@musichub.com" class="social-btn"><i class="fas fa-envelope"></i></a>
         </div>
 
         <button onclick="document.getElementById('supportModal').style.display='none'" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
+    </div>
+</div>
+
+<div id="levelModal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="font-size:40px; margin-bottom:10px;">🏆</div>
+        <h2 style="margin-bottom:20px;">Level Roadmap</h2>
+        <div id="levelList" class="level-list">
+            </div>
+        <button onclick="document.getElementById('levelModal').style.display='none'" style="margin-top:20px; background:transparent; border:none; color:var(--text-sub); cursor:pointer;">Close</button>
     </div>
 </div>
 
@@ -232,7 +256,7 @@
         <div style="font-size:48px; margin-bottom:15px;">🎁</div>
         <h2>Daily Bonus!</h2>
         <p style="color:var(--text-sub); margin-bottom:20px;">Welcome back! Here are free points.</p>
-        <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +20 Pts</button>
+        <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +10 Pts</button>
     </div>
 </div>
 
@@ -250,11 +274,11 @@
 
 <script>
     const CONFIG = {
-        dailyFree: 5,
-        ptsPerAd: 50,
-        ptsPerDl: 10,
-        ptsLogin: 20,
-        costUnlock: 100,
+        dailyFree: 5,        // 5 Daily Downloads
+        ptsPerAd: 40,        // 40 Points per ad
+        ptsPerDl: 4,         // 4 Points per download
+        ptsLogin: 10,        // 10 Points login bonus
+        costUnlock: 100,     // 100 Points to unlock 5 more
         adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee"
     };
 
@@ -263,7 +287,6 @@
         count: parseInt(localStorage.getItem('mh_count') || '0'),
         limit: parseInt(localStorage.getItem('mh_limit') || CONFIG.dailyFree),
         date: localStorage.getItem('mh_date') || '',
-        xp: parseInt(localStorage.getItem('mh_xp') || '0'),
         lastLogin: localStorage.getItem('mh_last_login') || ''
     };
 
@@ -304,7 +327,6 @@
         localStorage.setItem('mh_count', state.count);
         localStorage.setItem('mh_limit', state.limit);
         localStorage.setItem('mh_date', state.date);
-        localStorage.setItem('mh_xp', state.points);
         localStorage.setItem('mh_last_login', state.lastLogin);
         updateUI();
     }
@@ -314,10 +336,10 @@
         ui.sbPts.innerText = state.points;
         ui.sbLimit.innerText = `${state.count}/${state.limit}`;
         
-        // Exponential Leveling
-        const level = Math.floor(Math.sqrt(state.points / 50)) + 1;
-        const nextLevelXp = Math.pow(level, 2) * 50; 
-        const prevLevelXp = Math.pow(level-1, 2) * 50;
+        // Harder Level Calc: (Level^2 * 150)
+        const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
+        const nextLevelXp = Math.pow(level, 2) * 150; 
+        const prevLevelXp = Math.pow(level-1, 2) * 150;
         const range = nextLevelXp - prevLevelXp;
         const current = state.points - prevLevelXp;
         const pct = Math.min((current / range) * 100, 100);
@@ -325,6 +347,28 @@
         ui.levelName.innerText = `LEVEL ${level}`;
         ui.levelPts.innerText = `${Math.floor(current)}/${range} XP`;
         ui.xpBar.style.width = `${pct}%`;
+    }
+
+    // --- LEVEL ROADMAP ---
+    function showLevelRoadmap() {
+        toggleSidebar();
+        const currentLevel = Math.floor(Math.sqrt(state.points / 150)) + 1;
+        let html = '';
+        
+        for(let i=1; i<=20; i++) {
+            const xpReq = Math.pow(i-1, 2) * 150; // XP required to Reach Level i
+            const isActive = i === currentLevel ? 'active' : '';
+            const label = i === currentLevel ? '(Current)' : (i < currentLevel ? '✔' : '🔒');
+            
+            html += `
+            <div class="level-item ${isActive}">
+                <span>Level ${i} ${i===currentLevel ? '<span style="color:var(--accent); font-size:11px;">YOU</span>' : ''}</span>
+                <span>${xpReq} XP</span>
+            </div>`;
+        }
+        
+        document.getElementById('levelList').innerHTML = html;
+        document.getElementById('levelModal').style.display = 'flex';
     }
 
     function toggleSidebar() { ui.sidebar.classList.toggle('active'); ui.overlay.classList.toggle('active'); }
@@ -335,22 +379,13 @@
         triggerConfetti(); showToast(`+${CONFIG.ptsLogin} Daily Bonus!`);
     }
 
-    // --- SUPPORT SYSTEM ---
-    function openSupport() {
-        toggleSidebar();
-        document.getElementById('supportModal').style.display = 'flex';
-    }
+    function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display = 'flex'; }
     
     function toggleFaq(el) {
         const ans = el.querySelector('.faq-a');
         const icon = el.querySelector('.fa-chevron-down');
-        if(ans.style.display === 'block') {
-            ans.style.display = 'none';
-            icon.style.transform = 'rotate(0deg)';
-        } else {
-            ans.style.display = 'block';
-            icon.style.transform = 'rotate(180deg)';
-        }
+        if(ans.style.display === 'block') { ans.style.display = 'none'; icon.style.transform = 'rotate(0deg)'; }
+        else { ans.style.display = 'block'; icon.style.transform = 'rotate(180deg)'; }
     }
 
     function sendSupport() {
@@ -361,7 +396,6 @@
         setTimeout(() => document.getElementById('supportModal').style.display = 'none', 1000);
     }
 
-    // --- HARDER AD LOGIC ---
     let adInterval = null;
     let verifyListener = null;
     let secondsLeft = 15; 
@@ -434,7 +468,6 @@
     function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
     function closeDl() { ui.dlModal.style.display = 'none'; clearInterval(adInterval); }
 
-    // --- SEARCH ---
     function quickSearch(t) { ui.input.value = t; handleSearch(); }
     
     async function handleSearch() {
@@ -485,7 +518,10 @@
             ui.dlStatus.innerText = "Saving...";
             const a = document.createElement('a');
             a.href = "data:text/plain,mock"; a.download = title; 
-            setTimeout(() => closeDl(), 1000);
+            setTimeout(() => {
+                closeDl();
+                showToast(`Done! +${CONFIG.ptsPerDl} XP`);
+            }, 1000);
         }, 2000);
     }
 
