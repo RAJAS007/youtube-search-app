@@ -45,7 +45,54 @@ const getSafeFilename = (title) => {
         .substring(0, 100);
 };
 
+// ==========================================
+// MP4 DOWNLOAD API (Ironman Redirect)
+// ==========================================
+app.get('/api/download-mp4', async (req, res) => {
+    const { url, title } = req.query;
 
+    if (!url) {
+        return res.status(400).json({ error: 'YouTube URL required' });
+    }
+
+    log.info(`MP4 Redirect Request: ${title || url}`);
+
+    // Redirect to Ironman API (Fastest approach, as requested)
+    const extUrl = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(url)}`;
+    return res.redirect(extUrl);
+});
+
+// ==========================================
+// MP3 CONVERSION API (Local ytdl-core)
+// ==========================================
+app.get('/api/convert-to-mp3', async (req, res) => {
+    const { url, title } = req.query;
+    if (!url) return res.status(400).json({ error: 'Valid YouTube URL required' });
+
+    const safeFilename = getSafeFilename(title);
+    log.info(`MP3 Proxy Request: ${safeFilename}`);
+
+    try {
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
+        res.setHeader('Content-Type', 'audio/mpeg');
+
+        // Use Ironman MP4 Stream as input (FFmpeg follows redirects)
+        const ironmanUrl = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(url)}`;
+
+        ffmpeg(ironmanUrl)
+            .audioBitrate(128)
+            .format('mp3')
+            .on('error', (err) => {
+                log.error(`FFmpeg error (Ironman Source): ${err.message}`);
+                if (!res.headersSent) res.status(500).end();
+            })
+            .pipe(res, { end: true });
+
+    } catch (error) {
+        log.error(`MP3 Init error: ${error.message}`);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 // Start server
 app.listen(port, () => {
