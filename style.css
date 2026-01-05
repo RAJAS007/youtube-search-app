@@ -2,26 +2,26 @@
 :root {
     --bg-dark: #0f1014;
     --bg-gradient: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                   radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
     --surface-glass: rgba(255, 255, 255, 0.03);
     --surface-glass-hover: rgba(255, 255, 255, 0.07);
     --border-glass: rgba(255, 255, 255, 0.08);
     --border-glass-hover: rgba(255, 255, 255, 0.15);
-    
+
     --accent: #6366f1;
     --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     --accent-glow: 0 0 20px rgba(99, 102, 241, 0.5);
-    
+
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-tertiary: #64748b;
-    
+
     --danger: #ef4444;
     --success: #22c55e;
     --warning: #f59e0b;
-    
+
     --font-stack: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    
+
     --radius-sm: 8px;
     --radius-md: 16px;
     --radius-lg: 24px;
@@ -50,7 +50,12 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -218,7 +223,8 @@ main {
     transition: var(--transition);
 }
 
-.chip:hover, .chip.active {
+.chip:hover,
+.chip.active {
     background: var(--surface-glass-hover);
     border-color: var(--accent);
     color: var(--text-primary);
@@ -246,7 +252,7 @@ main {
     transform: translateY(-8px);
     border-color: var(--accent);
     background: rgba(30, 30, 35, 0.6);
-    box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
 }
 
 .thumb-container {
@@ -273,7 +279,7 @@ main {
 .play-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -393,8 +399,25 @@ main {
     transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     border-left: 1px solid var(--border-glass);
     padding: 24px;
+    padding-bottom: 100px;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
 }
 
 .sidebar.active {
@@ -404,7 +427,7 @@ main {
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     z-index: 900;
     opacity: 0;
@@ -438,7 +461,7 @@ main {
 .modal-bg {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(8px);
 }
 
@@ -472,7 +495,7 @@ main {
 
 .dl-progress {
     height: 4px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
     margin-top: 8px;
     overflow: hidden;
@@ -487,8 +510,13 @@ main {
 
 /* Animations */
 @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
 }
 
 .skeleton {
