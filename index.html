@@ -26,7 +26,7 @@
     <!-- Header -->
     <header class="glass">
         <div class="brand">
-            <i class="fas fa-play-circle"></i> Result
+            <i class="fas fa-play-circle"></i> MusicHub
         </div>
         <div class="points-pill glass">
             <i class="fas fa-gem" style="color:var(--warning)"></i> <span id="ptsDisplay">0</span>
@@ -38,6 +38,51 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
             <h2 class="text-gradient">Menu</h2>
             <button id="closeSidebar" class="btn btn-icon glass"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Streak & XP -->
+        <div class="glass-panel"
+            style="padding:16px;border-radius:16px;margin-bottom:12px;background:linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(234, 88, 12, 0.05) 100%);border-color:rgba(249,115,22,0.2);">
+            <div
+                style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#fed7aa;margin-bottom:10px;">
+                <span>🔥 Streak</span>
+                <span id="streakCount">1 Day</span>
+            </div>
+            <div id="streakDays" style="display:flex;justify-content:space-between;gap:4px;"></div>
+        </div>
+
+        <div class="glass-panel"
+            style="padding:16px;border-radius:16px;margin-bottom:24px;background:linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);border-color:rgba(99,102,241,0.2);">
+            <div
+                style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">
+                <span id="levelName" style="color:var(--accent);font-weight:800;">LEVEL 1</span>
+                <span id="levelPts">0/150 XP</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">
+                <div id="xpBar" style="height:100%;background:var(--accent-gradient);width:0%;"></div>
+            </div>
+        </div>
+
+        <!-- Support & Donation -->
+        <div class="glass-panel" style="padding:16px;border-radius:16px;margin-bottom:24px;text-align:center;">
+            <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px;">Support
+                Development</h4>
+            <div
+                style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-bottom:8px;overflow:hidden">
+                <div style="height:100%;width:82%;background:linear-gradient(90deg, #FFDD00, #22c55e);"></div>
+            </div>
+            <p style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;">Server Costs: 82% Reached</p>
+
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary" style="flex:1;background:#22c55e;color:white;"
+                    onclick="window.openDonate()">
+                    <i class="fas fa-qrcode"></i> UPI
+                </button>
+                <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="btn btn-secondary"
+                    style="flex:1;text-decoration:none;color:white;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-coffee"></i> BMC
+                </a>
+            </div>
         </div>
 
         <!-- User Stats -->
@@ -139,6 +184,39 @@
             <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="window.unlockLimit()">
                 Unlock 5 More (100 Pts)
             </button>
+            <button class="btn btn-secondary" style="width:100%;"
+                onclick="this.closest('.modal-container').classList.remove('active')">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Donate Modal -->
+    <div id="donateModal" class="modal-container">
+        <div class="modal-bg" onclick="this.parentElement.classList.remove('active')"></div>
+        <div class="modal-content glass-panel" style="border-radius:24px;padding:32px;text-align:center;">
+            <i class="fas fa-heart" style="font-size:48px;color:var(--danger);margin-bottom:20px;"></i>
+            <h3>Support Us</h3>
+            <p style="color:var(--text-secondary);margin-bottom:20px;">Scan to Pay via UPI</p>
+
+            <div style="background:white;padding:16px;border-radius:16px;display:inline-block;margin-bottom:20px;">
+                <img id="qrImg" src="" alt="UPI QR" style="width:160px;height:160px;display:block;">
+            </div>
+
+            <div class="chips-container" style="margin-bottom:20px;margin-top:0;">
+                <div class="chip" onclick="window.setAmount(10)">₹10</div>
+                <div class="chip" onclick="window.setAmount(50)">₹50</div>
+                <div class="chip active" onclick="window.setAmount(100)">₹100</div>
+                <div class="chip" onclick="window.setAmount(500)">₹500</div>
+            </div>
+
+            <div class="glass"
+                style="padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:20px;"
+                onclick="window.copyUPI()">
+                <span id="upiId" style="font-family:monospace;">raheemarar948@okicici</span>
+                <i class="fas fa-copy" style="color:var(--accent)"></i>
+            </div>
+
             <button class="btn btn-secondary" style="width:100%;"
                 onclick="this.closest('.modal-container').classList.remove('active')">
                 Close

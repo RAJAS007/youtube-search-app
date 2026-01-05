@@ -1,6 +1,6 @@
 /**
  * MusicHub Premium - Main Script
- * Version: 3.0
+ * Version: 3.1 - Restored Features & Fixes
  */
 
 // ==========================================
@@ -16,11 +16,13 @@ const state = {
     points: 0,
     count: 0,
     limit: 5,
+    streak: 1,
     favorites: JSON.parse(localStorage.getItem('mh_favorites') || '[]'),
     playlists: JSON.parse(localStorage.getItem('mh_playlists') || '[]'),
     searchHistory: JSON.parse(localStorage.getItem('mh_search_history') || '[]'),
     activeDownloads: [],
-    lastResults: []
+    lastResults: [],
+    currentDonationAmount: 100
 };
 
 // ==========================================
@@ -50,7 +52,7 @@ const showToast = (msg, type = 'success') => {
         <span style="font-weight: 600; font-size: 14px;">${msg}</span>
     `;
     document.body.appendChild(toast);
-    
+
     // Animate in
     requestAnimationFrame(() => toast.style.transform = 'translateX(-50%) translateY(0)');
 
@@ -73,7 +75,8 @@ class App {
         this.setupEventListeners();
         await this.syncState();
         this.renderHistory();
-        
+        this.updateStreakUI(); // Initial XP render
+
         // Initial "Trending" load (simulated)
         this.handleSearch('New Music 2026', false);
     }
@@ -92,16 +95,17 @@ class App {
 
         // Chips
         $$('.chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                $('#searchInput').value = chip.innerText.replace(/[^\w\s]/gi, '').trim();
-                this.handleSearch($('#searchInput').value);
-            });
+            if (!chip.onclick) { // Avoid overwriting donation chips
+                chip.addEventListener('click', () => {
+                    $('#searchInput').value = chip.innerText.replace(/[^\w\s]/gi, '').trim();
+                    this.handleSearch($('#searchInput').value);
+                });
+            }
         });
 
         // Nav Links
         $('#navFavs').addEventListener('click', () => this.showFavorites());
-        $('#navPlaylists').addEventListener('click', () => this.showPlaylists());
-        
+
         // History Focus
         $('#searchInput').addEventListener('focus', () => $('#searchHistory').style.display = 'block');
         $('#searchInput').addEventListener('blur', () => setTimeout(() => $('#searchHistory').style.display = 'none', 200));
@@ -114,6 +118,7 @@ class App {
             state.points = data.points;
             state.count = data.count;
             state.limit = data.limit;
+            state.streak = data.streak;
             this.updateUI();
         } catch (e) {
             console.error('Sync failed', e);
@@ -124,6 +129,35 @@ class App {
         $('#ptsDisplay').innerText = state.points;
         $('#sbPts').innerText = state.points;
         $('#sbLimit').innerText = `${state.count}/${state.limit}`;
+        this.updateXP();
+        this.updateStreakUI();
+    }
+
+    // New Feature: XP Logic
+    updateXP() {
+        const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
+        $('#levelName').innerText = `LEVEL ${level}`;
+        $('#levelPts').innerText = `${state.points % 150}/150 XP`;
+        $('#xpBar').style.width = `${(state.points % 150) / 1.5}%`;
+    }
+
+    // New Feature: Streak UI
+    updateStreakUI() {
+        $('#streakCount').innerText = `${state.streak} Days`;
+        let html = '';
+        for (let i = 1; i <= 7; i++) {
+            const isActive = i <= state.streak;
+            const isToday = i === state.streak;
+            // Simple visual representation
+            html += `<div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:${isActive ? '800' : '600'};
+                background:${isActive ? 'var(--accent-gradient)' : 'rgba(255,255,255,0.05)'};
+                color:${isActive ? 'white' : 'rgba(255,255,255,0.3)'};
+                border:1px solid ${isActive ? 'transparent' : 'rgba(255,255,255,0.1)'};
+                box-shadow:${isActive ? '0 0 10px rgba(249,115,22,0.4)' : 'none'}">
+                ${i}
+            </div>`;
+        }
+        $('#streakDays').innerHTML = html;
     }
 
     toggleSidebar(show) {
@@ -141,11 +175,11 @@ class App {
     // ==========================================
     async handleSearch(query, saveHistory = true) {
         if (!query) return;
-        
+
         // UI Prep
         $('#searchInput').blur();
         $('#grid').innerHTML = Array(8).fill('<div class="media-card skeleton"><div class="thumb-container"></div><div class="card-content"></div></div>').join('');
-        
+
         if (saveHistory) this.addToHistory(query);
 
         // Spotify Resolve
@@ -160,7 +194,7 @@ class App {
         try {
             const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            
+
             state.lastResults = data.videos || [];
             this.renderGrid(state.lastResults);
         } catch (e) {
@@ -215,7 +249,7 @@ class App {
     toggleFav(index) {
         const video = state.lastResults[index];
         const idx = state.favorites.findIndex(f => f.url === video.url);
-        
+
         if (idx > -1) {
             state.favorites.splice(idx, 1);
             showToast('Removed from Favorites');
@@ -224,7 +258,7 @@ class App {
             showToast('Added to Favorites');
         }
         localStorage.setItem('mh_favorites', JSON.stringify(state.favorites));
-        
+
         // Re-render if looking at favs, otherwise just update specific card icon
         if ($('#searchInput').value === '') this.renderGrid(state.lastResults); // Simple refresh
     }
@@ -249,7 +283,7 @@ class App {
     }
 
     renderHistory() {
-        $('#searchHistory').innerHTML = state.searchHistory.map(q => 
+        $('#searchHistory').innerHTML = state.searchHistory.map(q =>
             `<div style="padding:12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05)" 
                   onclick="$('#searchInput').value='${q}'; app.handleSearch('${q}')">
                 <i class="fas fa-history" style="margin-right:10px;color:var(--text-secondary)"></i> ${q}
@@ -258,16 +292,16 @@ class App {
     }
 
     // ==========================================
-    // DOWNLOAD MANAGER
+    // DOWNLOAD MANAGER (FIXED)
     // ==========================================
     async initDownload(index, type) {
         const video = state.lastResults[index];
-        
+
         // Check Limits
         try {
             const res = await fetch('/api/download/check');
             const checks = await res.json();
-            
+
             if (!checks.allowed) {
                 this.showLimitModal();
                 return;
@@ -306,39 +340,44 @@ class App {
         const item = $('#dlManagerList').firstElementChild;
         const bar = item.querySelector('.dl-fill');
         const txt = item.querySelector('.status-text');
-        
+
         let p = 0;
         const interval = setInterval(() => {
             p += Math.random() * 5;
-            if (p > 90) p = 90;
+            if (p > 90) p = 90; // Wait at 90% for actual response
             bar.style.width = p + '%';
             txt.innerText = 'Converting...';
-        }, 200);
+        }, 300); // 300ms intervals
 
-        // Actual Request
+        // Actual Request - Increased Stability
         const endpoint = type === 'mp3' ? '/api/convert-to-mp3' : '/api/download-mp4';
         const url = `${CONFIG.renderUrl}${endpoint}?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}`;
 
-        // Trigger Hidden Download
+
+        // Create iframe to trigger download
         const frame = document.createElement('iframe');
         frame.style.display = 'none';
         frame.src = url;
         document.body.appendChild(frame);
 
-        // Cleanup simulation after presumed start
+        // Keep iframe/UI alive longer for slow conversions (e.g., 60s)
         setTimeout(async () => {
             clearInterval(interval);
             bar.style.width = '100%';
             bar.style.backgroundColor = 'var(--success)';
             txt.innerText = 'Downloaded!';
             txt.style.color = 'var(--success)';
-            
+
             // Register download
             await fetch('/api/download/complete', { method: 'POST' });
             this.syncState();
-            
-            setTimeout(() => { frame.remove(); item.remove(); }, 5000);
-        }, 4000);
+
+            // Cleanup after 10s (give user time to see success)
+            setTimeout(() => { frame.remove(); item.remove(); }, 10000);
+        }, 8000); // Wait 8s before showing "Done" (optimistic) to allow request to initiate
+
+        // Safety cleanup for very long hangs
+        setTimeout(() => frame.remove(), 120000);
     }
 
     showLimitModal() {
@@ -349,7 +388,7 @@ class App {
     // REWARDS & ADS
     // ==========================================
     async watchAd() {
-         try {
+        try {
             await fetch('/api/ad/start', { method: 'POST' });
             window.open(CONFIG.adLink, '_blank');
             this.showAdModal();
@@ -366,7 +405,7 @@ class App {
         btn.style.display = 'none';
 
         setTimeout(() => loader.style.width = '100%', 100);
-        
+
         setTimeout(() => {
             btn.style.display = 'block';
         }, 15000); // 15s timer
@@ -376,7 +415,7 @@ class App {
         try {
             const res = await fetch('/api/ad/claim', { method: 'POST' });
             const data = await res.json();
-            
+
             if (data.success) {
                 state.points = data.points;
                 this.updateUI();
@@ -410,13 +449,43 @@ class App {
             showToast('Unlock failed', 'error');
         }
     }
+
+    // ==========================================
+    // DONATION LOGIC
+    // ==========================================
+    openDonate() {
+        this.toggleSidebar(false);
+        $('#donateModal').classList.add('active');
+        this.updateQR();
+    }
+
+    setAmount(amt) {
+        state.currentDonationAmount = amt;
+        $$('.chip').forEach(c => c.classList.remove('active'));
+        // Find chip with correct amount and setActive (complex selector avoided for simplicity)
+        event.target.classList.add('active');
+        this.updateQR();
+    }
+
+    updateQR() {
+        $('#qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=${CONFIG.upiId}&pn=MusicHub&am=${state.currentDonationAmount}&cu=INR`;
+    }
+
+    copyUPI() {
+        navigator.clipboard.writeText(CONFIG.upiId).then(() => showToast("UPI ID Copied!"));
+    }
 }
 
 // Global Instance
 const app = new App();
 
-// Global Helpers for HTML onClick (simpler than bindings sometimes)
+// Global Helpers for HTML onClick
 window.app = app;
 window.watchAd = () => app.watchAd();
 window.claimReward = () => app.claimReward();
 window.unlockLimit = () => app.unlockLimit();
+
+// Donation
+window.openDonate = () => app.openDonate();
+window.setAmount = (amt) => app.setAmount(amt);
+window.copyUPI = () => app.copyUPI();
