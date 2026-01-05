@@ -1836,10 +1836,13 @@
             ui.floatFill.className = "dl-bar-fill indeterminate";
             ui.floatFill.style.width = "100%";
 
-            // MP3 uses Render (heavy FFmpeg), MP4 uses external API
+            // Helper to get direct MP4 link
+            const mp4Direct = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
+
+            // Use Render for BOTH MP3 (conversion) and MP4 (proxying to fix CORS)
             const api = type === 'mp3'
                 ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
-                : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
+                : `${CONFIG.renderUrl}/api/proxy?url=${encodeURIComponent(mp4Direct)}&filename=${encodeURIComponent(title)}.mp4`;
 
             try {
                 const response = await fetch(api);
@@ -1904,8 +1907,8 @@
 
             } catch (error) {
                 console.error(error);
-                ui.floatStatus.innerText = "Opening direct link...";
-                window.location.href = api;
+                ui.floatStatus.innerHTML = `Download started in new tab. <a href="${api}" target="_blank" style="color:white;text-decoration:underline;">Click here if not</a>`;
+                window.open(api, '_blank');
 
                 // Still record on server even for fallback
                 try {
@@ -1913,7 +1916,7 @@
                     await fetchState();
                 } catch (e) { }
 
-                setTimeout(() => ui.floatBar.classList.remove('active'), 2000);
+                setTimeout(() => ui.floatBar.classList.remove('active'), 5000);
             }
         }
 
