@@ -33,7 +33,7 @@ const getSafeFilename = (title) => {
         .substring(0, 100);
 };
 
-// MP3 Conversion using ytdl-core + ffmpeg
+// MP3 Conversion using ytdl-core + ffmpeg (with Metadata)
 app.get('/api/convert-to-mp3', async (req, res) => {
     const { url, title } = req.query;
 
@@ -41,29 +41,44 @@ app.get('/api/convert-to-mp3', async (req, res) => {
         return res.status(400).json({ error: 'Valid YouTube URL required' });
     }
 
-    const safeFilename = getSafeFilename(title);
-    log.info(`MP3 Request: ${safeFilename}`);
-
     try {
+        // Get video info first for metadata
+        const info = await ytdl.getInfo(url);
+        const videoTitle = info.videoDetails.title || title || 'audio';
+        const artist = info.videoDetails.author.name || 'MusicHub';
+        const safeFilename = getSafeFilename(videoTitle);
+
+        log.info(`MP3 Request: ${safeFilename}`);
+
         res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
         res.setHeader('Content-Type', 'audio/mpeg');
         res.setHeader('Access-Control-Allow-Origin', '*');
 
-        // High quality audio
-        const stream = ytdl(url, { quality: 'highestaudio' });
+        // High quality audio stream (with buffer optimization)
+        const stream = ytdl(url, {
+            quality: 'highestaudio',
+            highWaterMark: 1 << 23
+        });
 
-        ffmpeg(stream)
+        const command = ffmpeg(stream)
             .format('mp3')
             .audioBitrate(128)
-            .on('error', (err) => {
-                log.error(`FFmpeg error: ${err.message}`);
-                if (!res.headersSent) res.status(500).end();
-            })
+            .outputOptions('-id3v2_version', '3')
+            .outputOptions('-metadata', `title=${videoTitle}`)
+            .outputOptions('-metadata', `artist=${artist}`)
+            .outputOptions('-metadata', `album=MusicHub Download`);
+
+        command.on('error', (err) => {
+            log.error(`FFmpeg error: ${err.message}`);
+            // Only send error if headers haven't been sent (streaming hasn't started essentially)
+            // If streaming started, client will just see a cut-off stream
+            if (!res.headersSent) res.status(500).end();
+        })
             .pipe(res, { end: true });
 
     } catch (error) {
         log.error(`MP3 Init error: ${error.message}`);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
 
@@ -112,11 +127,13 @@ app.get('/api/download-mp4', async (req, res) => {
             needsMerge = false;
         }
 
+        const opts = { highWaterMark: 1 << 23 };
+
         if (needsMerge) {
             log.info(`Merging needed for ${quality}`);
             const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
-            const videoStream = ytdl(url, { format: format });
-            const audioStream = ytdl(url, { format: audioFormat });
+            const videoStream = ytdl(url, { format: format, ...opts });
+            const audioStream = ytdl(url, { format: audioFormat, ...opts });
 
             ffmpeg()
                 .input(videoStream)
@@ -132,7 +149,7 @@ app.get('/api/download-mp4', async (req, res) => {
                 .pipe(res, { end: true });
         } else {
             log.info(`Direct streaming ${format.qualityLabel}`);
-            ytdl(url, { format: format })
+            ytdl(url, { format: format, ...opts })
                 .on('error', (err) => {
                     log.error(`Stream error: ${err.message}`);
                     if (!res.headersSent) res.status(500).end();

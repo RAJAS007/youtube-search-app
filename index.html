@@ -1833,7 +1833,21 @@
             }
 
             // --- REAL STREAMING DOWNLOAD (with server-side verification) ---
-            async function checkDl(url, type, title) {
+            function checkDl(url, type, title) {
+                if (type === 'mp4') {
+                    currentDl = { url, title };
+                    document.getElementById('qualityModal').style.display = 'flex';
+                } else {
+                    startDl(url, type, title);
+                }
+            }
+
+            function selectQuality(q) {
+                document.getElementById('qualityModal').style.display = 'none';
+                startDl(currentDl.url, 'mp4', currentDl.title, q);
+            }
+
+            async function startDl(url, type, title, quality = 'Highest') {
                 // Check with server if download is allowed
                 try {
                     const checkRes = await fetch('/api/download/check');
@@ -1858,7 +1872,7 @@
                 // No more external proxy needed - we are the server now!
                 const api = type === 'mp3'
                     ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
-                    : `${CONFIG.renderUrl}/api/download-mp4?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+                    : `${CONFIG.renderUrl}/api/download-mp4?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&quality=${quality}`;
 
                 try {
                     const response = await fetch(api);

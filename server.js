@@ -6,6 +6,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
+const ytdl = require('@distube/ytdl-core');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -635,69 +636,122 @@ app.get('/api/resolve', async (req, res) => {
 // ==========================================
 // MP3 CONVERSION API (with rate limiting)
 // ==========================================
+// ==========================================
+// MP3 CONVERSION API (Internal FFmpeg)
+// ==========================================
 app.get('/api/convert-to-mp3', async (req, res) => {
   const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'unknown';
 
-  // Rate limiting for conversions
   if (!convertLimiter.isAllowed(clientIP)) {
-    log.warn(`Conversion rate limit exceeded for IP: ${clientIP}`);
-    return res.status(429).json({
-      error: 'Too many conversion requests',
-      retryAfter: '60 seconds'
-    });
+    return res.status(429).json({ error: 'Too many requests', retryAfter: '60s' });
   }
 
   const { url, title } = req.query;
-  if (!url) {
-    return res.status(400).json({ error: 'URL parameter is required' });
+  if (!url || !ytdl.validateURL(url)) {
+    return res.status(400).json({ error: 'Valid YouTube URL required' });
   }
-
-  // Basic YouTube URL validation
-  if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-    return res.status(400).json({ error: 'Invalid YouTube URL' });
-  }
-
-  const externalMp4Api = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(url)}`;
-  const safeFilename = (title || 'audio')
-    .replace(/[^a-z0-9\s-]/gi, '')
-    .replace(/\s+/g, '_')
-    .substring(0, 100);
-
-  log.info(`Converting to MP3: "${safeFilename}"`);
 
   try {
-    const response = await axios({
-      method: 'get',
-      url: externalMp4Api,
-      responseType: 'stream',
-      timeout: 120000, // 2 minute timeout
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
-      }
-    });
+    const info = await ytdl.getInfo(url);
+    const videoTitle = info.videoDetails.title || title || 'audio';
+    const artist = info.videoDetails.author.name || 'MusicHub';
+    const safeFilename = videoTitle.replace(/[^a-z0-9\s-]/gi, '').replace(/\s+/g, '_').substring(0, 100);
+
+    log.info(`Converting MP3: ${safeFilename}`);
 
     res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
     res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
 
-    ffmpeg(response.data)
+    const stream = ytdl(url, { quality: 'highestaudio', highWaterMark: 1 << 23 }); // 8MB buffer
+
+    ffmpeg(stream)
       .format('mp3')
       .audioBitrate(128)
-      .on('start', () => log.info(`FFmpeg started for: ${safeFilename}`))
-      .on('end', () => log.success(`Conversion complete: ${safeFilename}`))
+      .outputOptions('-id3v2_version', '3')
+      .outputOptions('-metadata', `title=${videoTitle}`)
+      .outputOptions('-metadata', `artist=${artist}`)
       .on('error', (err) => {
         log.error(`FFmpeg error: ${err.message}`);
-        if (!res.headersSent) {
-          res.status(500).json({ error: 'Conversion failed' });
-        }
+        if (!res.headersSent) res.status(500).end();
       })
       .pipe(res, { end: true });
 
   } catch (error) {
-    log.error(`Stream error: ${error.message}`);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Could not fetch source video' });
+    log.error(`MP3 Error: ${error.message}`);
+    res.status(500).json({ error: 'Conversion failed' });
+  }
+});
+
+// ==========================================
+// MP4 DOWNLOAD API (Internal ytdl-core)
+// ==========================================
+app.get('/api/download-mp4', async (req, res) => {
+  const { url, title, quality = '720p' } = req.query;
+
+  if (!url || !ytdl.validateURL(url)) return res.status(400).json({ error: 'Invalid URL' });
+
+  const safeFilename = (title || 'video').replace(/[^a-z0-9\s-]/gi, '').replace(/\s+/g, '_').substring(0, 100);
+  log.info(`MP4 Request: ${safeFilename} [${quality}]`);
+
+  try {
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
+    res.setHeader('Content-Type', 'video/mp4');
+
+    const info = await ytdl.getInfo(url);
+    let format;
+    let needsMerge = false;
+
+    if (quality === 'Highest') {
+      format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
+      needsMerge = !format.hasAudio;
+    } else if (quality === '1080p') {
+      format = info.formats.find(f => f.qualityLabel === '1080p' && f.container === 'mp4');
+      if (!format) {
+        format = info.formats.find(f => f.qualityLabel === '1080p');
+        needsMerge = !!format;
+      }
+    } else {
+      // Fallback to 720p/360p or best mp4 with audio
+      format = info.formats.find(f => f.qualityLabel === quality && f.hasAudio && f.container === 'mp4');
     }
+
+    if (!format) {
+      format = info.formats.find(f => f.qualityLabel === '720p' && f.hasAudio && f.container === 'mp4')
+        || ytdl.chooseFormat(info.formats, { quality: 'highest' });
+      needsMerge = false;
+    }
+
+    const opts = { highWaterMark: 1 << 23 };
+
+    if (needsMerge) {
+      const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
+      const videoStream = ytdl(url, { format, ...opts });
+      const audioStream = ytdl(url, { format: audioFormat, ...opts });
+
+      ffmpeg()
+        .input(videoStream)
+        .input(audioStream)
+        .format('mp4')
+        .outputOptions('-c:v copy')
+        .outputOptions('-c:a aac')
+        .outputOptions('-movflags frag_keyframe+empty_moov')
+        .on('error', err => {
+          log.error(`Merge error: ${err.message}`);
+          if (!res.headersSent) res.status(500).end();
+        })
+        .pipe(res, { end: true });
+    } else {
+      ytdl(url, { format, ...opts })
+        .on('error', err => {
+          log.error(`Stream error: ${err.message}`);
+          if (!res.headersSent) res.status(500).end();
+        })
+        .pipe(res);
+    }
+
+  } catch (error) {
+    log.error(`MP4 Error: ${error.message}`);
+    res.status(500).json({ error: 'Download failed' });
   }
 });
 
