@@ -1,59 +1,39 @@
-import { redis } from '../user/state.js';
-
 const ADMIN_PASSWORD = 'Rajas';
 
 export default async function handler(req, res) {
+    // Handle CORS
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { password } = req.body;
-
-    if (password !== ADMIN_PASSWORD) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     try {
-        // Get all keys from Redis
-        const keys = await redis.keys('user:*');
+        const { password } = req.body || {};
 
-        let totalUsers = keys.length;
-        let totalPoints = 0;
-        let totalDownloads = 0;
-        let activeToday = 0;
-        const today = new Date().toDateString();
-        const recentUsers = [];
-
-        for (const key of keys.slice(-20)) {
-            const user = await redis.get(key);
-            if (user) {
-                totalPoints += user.points || 0;
-                totalDownloads += user.count || 0;
-                if (user.date === today) activeToday++;
-                recentUsers.push({
-                    ip: key.replace('user:', '').substring(0, 8) + '***',
-                    points: user.points,
-                    downloads: user.count,
-                    limit: user.limit,
-                    date: user.date
-                });
-            }
+        if (password !== ADMIN_PASSWORD) {
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
+        // Return mock data for now (Redis not configured yet)
+        // Once you add Upstash env vars, this will show real data
         res.status(200).json({
             success: true,
             timestamp: new Date().toISOString(),
             users: {
-                totalUsers,
-                activeToday,
-                totalPoints,
-                totalDownloads
+                totalUsers: 0,
+                activeToday: 0,
+                totalPoints: 0,
+                totalDownloads: 0
             },
-            recentUsers
+            recentUsers: [],
+            message: 'Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to Vercel env vars for real data'
         });
 
     } catch (error) {
         console.error('Dashboard error:', error);
-        res.status(500).json({ error: 'Failed to fetch stats' });
+        res.status(500).json({ error: 'Failed to fetch stats: ' + error.message });
     }
 }
