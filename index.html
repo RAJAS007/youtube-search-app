@@ -1839,7 +1839,7 @@
                 if (v) checkDl(v.url, type, v.title);
             }
 
-            // --- REAL STREAMING DOWNLOAD (with server-side verification) ---
+            // --- EXTERNAL DOWNLOAD (Vidssave Integration) ---
             function checkDl(url, type, title) {
                 if (type === 'mp4') {
                     currentDl = { url, title };
@@ -1869,93 +1869,27 @@
                     console.error('Failed to check download:', e);
                 }
 
-                ui.floatBar.classList.add('active');
-                ui.floatTitle.innerText = title;
-                ui.floatStatus.innerText = "Connecting...";
-                ui.floatFill.className = "dl-bar-fill indeterminate";
-                ui.floatFill.style.width = "100%";
+                showToast(`Opening Vidssave (${quality})...`, 'success');
 
-                // Use Render for BOTH MP3 (conversion) and MP4 (direct ytdl)
-                // No more external proxy needed - we are the server now!
-                const api = type === 'mp3'
-                    ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
-                    : `${CONFIG.renderUrl}/api/download-mp4?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&quality=${quality}`;
+                // Open Vidssave in new tab with URL and Quality hint
+                const targetUrl = `https://vidssave.com/yt?url=${encodeURIComponent(url)}&q=${quality}`;
+                window.open(targetUrl, '_blank');
 
+                // Record download on server (deduct points)
                 try {
-                    const response = await fetch(api);
-                    if (!response.ok) throw new Error("Network error");
-
-                    const reader = response.body.getReader();
-                    const contentLength = +response.headers.get('Content-Length');
-                    let receivedLength = 0;
-                    let chunks = [];
-
-                    if (contentLength) {
-                        ui.floatFill.className = "dl-bar-fill";
-                        ui.floatFill.style.width = "0%";
+                    const completeRes = await fetch('/api/download/complete', { method: 'POST' });
+                    const completeData = await completeRes.json();
+                    if (completeData.success) {
+                        state.count = completeData.count;
+                        state.limit = completeData.limit;
+                        state.points = completeData.points;
+                        updateUI();
                     }
-
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-
-                        chunks.push(value);
-                        receivedLength += value.length;
-
-                        if (contentLength) {
-                            const percent = Math.floor((receivedLength / contentLength) * 100);
-                            ui.floatFill.style.width = `${percent}%`;
-                            ui.floatStatus.innerText = `Downloading... ${percent}%`;
-                        } else {
-                            ui.floatStatus.innerText = `Downloading... ${(receivedLength / 1024 / 1024).toFixed(1)} MB`;
-                        }
-                    }
-
-                    ui.floatFill.className = "dl-bar-fill";
-                    ui.floatFill.style.width = "100%";
-                    ui.floatStatus.innerText = "Saving file...";
-
-                    const blob = new Blob(chunks);
-                    const downloadUrl = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = `${title}.${type}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(downloadUrl);
-
-                    // Record download on server (anti-cheat)
-                    try {
-                        const completeRes = await fetch('/api/download/complete', { method: 'POST' });
-                        const completeData = await completeRes.json();
-                        if (completeData.success) {
-                            state.count = completeData.count;
-                            state.limit = completeData.limit;
-                            state.points = completeData.points;
-                            updateUI();
-                        }
-                    } catch (e) {
-                        console.error('Failed to record download:', e);
-                    }
-
-                    showToast("Download Complete!", 'success');
-                    setTimeout(() => ui.floatBar.classList.remove('active'), 2500);
-
-                } catch (error) {
-                    console.error(error);
-                    ui.floatStatus.innerHTML = `Download started in new tab. <a href="${api}" target="_blank" style="color:white;text-decoration:underline;">Click here if not</a>`;
-                    window.open(api, '_blank');
-
-                    // Still record on server even for fallback
-                    try {
-                        await fetch('/api/download/complete', { method: 'POST' });
-                        await fetchState();
-                    } catch (e) { }
-
-                    setTimeout(() => ui.floatBar.classList.remove('active'), 5000);
+                } catch (e) {
+                    console.error('Failed to record download:', e);
                 }
             }
+
 
             // --- AD LOGIC (with server-side timing verification) ---
             let adInterval = null;
