@@ -1638,122 +1638,140 @@
             <p style="color:var(--text-sub); margin-bottom:15px;">Welcome back! Here are free points.</p>
             <button onclick="claimDaily()" class="sb-btn btn-gold">Claim +10 Pts</button>
         </div>
-    </div>
+        <div id="qualityModal" class="modal-overlay">
+            <div class="modal-card">
+                <h2>Select Quality</h2>
+                <p style="color:var(--text-sub); margin-bottom:15px;">Choose MP4 resolution</p>
 
-    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Notification</span></div>
+                <div style="display:grid; gap:10px;">
+                    <button onclick="selectQuality('Highest')" class="sb-btn btn-gold">Best Available (Auto)</button>
+                    <button onclick="selectQuality('1080p')" class="sb-btn btn-outline">1080p (Full HD)</button>
+                    <button onclick="selectQuality('720p')" class="sb-btn btn-outline">720p (HD)</button>
+                    <button onclick="selectQuality('360p')" class="sb-btn btn-outline">360p (Data Saver)</button>
+                </div>
 
-    <script>
-        // --- UPI SETUP ---
-        const UPI_ID = "raheemarar948@okicici";
-        let currentAmount = 100;
+                <button onclick="document.getElementById('qualityModal').style.display='none'"
+                    style="margin-top:15px; background:transparent; border:none; color:var(--text-sub);">Cancel</button>
+            </div>
+        </div>
 
-        function updateQR() {
-            document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=${UPI_ID}&pn=MusicHub&am=${currentAmount}&cu=INR`;
-        }
+        <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Notification</span></div>
 
-        function setAmount(amt) {
-            currentAmount = amt;
-            document.querySelectorAll('.amount-chip').forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
+        <script>
+            // --- UPI SETUP ---
+            const UPI_ID = "raheemarar948@okicici";
+            let currentAmount = 100;
+
+            // Current download context
+            let currentDl = { url: '', title: '' };
+
+            function updateQR() {
+                document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=${UPI_ID}&pn=MusicHub&am=${currentAmount}&cu=INR`;
+            }
+
+            function setAmount(amt) {
+                currentAmount = amt;
+                document.querySelectorAll('.amount-chip').forEach(el => el.classList.remove('active'));
+                event.target.classList.add('active');
+                updateQR();
+            }
+
+            // Init QR
             updateQR();
-        }
 
-        // Init QR
-        updateQR();
+            const CONFIG = {
+                adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee",
+                renderUrl: "https://youtube-search-app-r16f.onrender.com"
+            };
 
-        const CONFIG = {
-            adLink: "https://www.effectivegatecpm.com/rey536wd4n?key=40890ac4e198ed5f5ee7eaeb9e169aee",
-            renderUrl: "https://youtube-search-app-r16f.onrender.com"
-        };
+            // Server-side state (no more localStorage cheating!)
+            let state = {
+                points: 0,
+                count: 0,
+                limit: 5,
+                streak: 1
+            };
 
-        // Server-side state (no more localStorage cheating!)
-        let state = {
-            points: 0,
-            count: 0,
-            limit: 5,
-            streak: 1
-        };
+            const ui = {
+                pts: document.getElementById('ptsDisplay'), sbPts: document.getElementById('sbPts'),
+                sbLimit: document.getElementById('sbLimit'), sidebar: document.getElementById('sidebar'),
+                overlay: document.getElementById('sbOverlay'), input: document.getElementById('searchInput'),
+                grid: document.getElementById('grid'), empty: document.getElementById('empty'),
+                toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'),
+                floatBar: document.getElementById('dlBarFloat'), floatTitle: document.getElementById('floatTitle'),
+                floatStatus: document.getElementById('floatStatus'), floatFill: document.getElementById('floatFill')
+            };
 
-        const ui = {
-            pts: document.getElementById('ptsDisplay'), sbPts: document.getElementById('sbPts'),
-            sbLimit: document.getElementById('sbLimit'), sidebar: document.getElementById('sidebar'),
-            overlay: document.getElementById('sbOverlay'), input: document.getElementById('searchInput'),
-            grid: document.getElementById('grid'), empty: document.getElementById('empty'),
-            toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'),
-            floatBar: document.getElementById('dlBarFloat'), floatTitle: document.getElementById('floatTitle'),
-            floatStatus: document.getElementById('floatStatus'), floatFill: document.getElementById('floatFill')
-        };
+            const cache = new Map();
 
-        const cache = new Map();
-
-        // Fetch state from server (anti-cheat)
-        async function fetchState() {
-            try {
-                const res = await fetch('/api/user/state');
-                const data = await res.json();
-                state.points = data.points;
-                state.count = data.count;
-                state.limit = data.limit;
-                state.streak = data.streak;
-                updateUI();
-            } catch (e) {
-                console.error('Failed to fetch state:', e);
+            // Fetch state from server (anti-cheat)
+            async function fetchState() {
+                try {
+                    const res = await fetch('/api/user/state');
+                    const data = await res.json();
+                    state.points = data.points;
+                    state.count = data.count;
+                    state.limit = data.limit;
+                    state.streak = data.streak;
+                    updateUI();
+                } catch (e) {
+                    console.error('Failed to fetch state:', e);
+                }
             }
-        }
 
-        async function init() {
-            await fetchState();
-            let html = '';
-            for (let i = 1; i <= 7; i++) {
-                let cls = i <= state.streak ? 'active' : 'future';
-                html += `<div class="day-circle ${cls}" style="${i > state.streak ? 'border:1px dashed #555;background:transparent' : ''}">${i}</div>`;
+            async function init() {
+                await fetchState();
+                let html = '';
+                for (let i = 1; i <= 7; i++) {
+                    let cls = i <= state.streak ? 'active' : 'future';
+                    html += `<div class="day-circle ${cls}" style="${i > state.streak ? 'border:1px dashed #555;background:transparent' : ''}">${i}</div>`;
+                }
+                document.getElementById('streakDays').innerHTML = html;
             }
-            document.getElementById('streakDays').innerHTML = html;
-        }
 
-        function updateUI() {
-            ui.pts.innerText = state.points;
-            ui.sbPts.innerText = state.points;
-            ui.sbLimit.innerText = `${state.count}/${state.limit}`;
-            const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
-            document.getElementById('levelName').innerText = `LEVEL ${level}`;
-            document.getElementById('levelPts').innerText = `${state.points % 150}/150 XP`;
-            document.getElementById('xpBar').style.width = `${(state.points % 150) / 1.5}%`;
-        }
+            function updateUI() {
+                ui.pts.innerText = state.points;
+                ui.sbPts.innerText = state.points;
+                ui.sbLimit.innerText = `${state.count}/${state.limit}`;
+                const level = Math.floor(Math.sqrt(state.points / 150)) + 1;
+                document.getElementById('levelName').innerText = `LEVEL ${level}`;
+                document.getElementById('levelPts').innerText = `${state.points % 150}/150 XP`;
+                document.getElementById('xpBar').style.width = `${(state.points % 150) / 1.5}%`;
+            }
 
-        function toggleSidebar() { ui.sidebar.classList.toggle('active'); ui.overlay.classList.toggle('active'); }
-        function openRewards() { document.getElementById('limitModal').style.display = 'none'; toggleSidebar(); }
-        function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display = 'flex'; }
-        function openDonate() { toggleSidebar(); document.getElementById('donateModal').style.display = 'flex'; }
+            function toggleSidebar() { ui.sidebar.classList.toggle('active'); ui.overlay.classList.toggle('active'); }
+            function openRewards() { document.getElementById('limitModal').style.display = 'none'; toggleSidebar(); }
+            function openSupport() { toggleSidebar(); document.getElementById('supportModal').style.display = 'flex'; }
+            function openDonate() { toggleSidebar(); document.getElementById('donateModal').style.display = 'flex'; }
 
-        function copyUPI() {
-            navigator.clipboard.writeText(UPI_ID).then(() => showToast("UPI ID Copied!"));
-        }
+            function copyUPI() {
+                navigator.clipboard.writeText(UPI_ID).then(() => showToast("UPI ID Copied!"));
+            }
 
-        function showToast(msg, type = 'success') {
-            ui.toastMsg.innerText = msg;
-            ui.toast.querySelector('i').className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-            ui.toast.classList.add('show'); setTimeout(() => ui.toast.classList.remove('show'), 3000);
-        }
+            function showToast(msg, type = 'success') {
+                ui.toastMsg.innerText = msg;
+                ui.toast.querySelector('i').className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+                ui.toast.classList.add('show'); setTimeout(() => ui.toast.classList.remove('show'), 3000);
+            }
 
-        function toggleFaq(el) {
-            const ans = el.querySelector('.faq-a');
-            if (ans.style.display === 'block') ans.style.display = 'none'; else ans.style.display = 'block';
-        }
+            function toggleFaq(el) {
+                const ans = el.querySelector('.faq-a');
+                if (ans.style.display === 'block') ans.style.display = 'none'; else ans.style.display = 'block';
+            }
 
-        function formatViews(n) {
-            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-            return n || '0';
-        }
+            function formatViews(n) {
+                if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+                if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+                return n || '0';
+            }
 
-        function quickSearch(t) { ui.input.value = t; handleSearch(); }
+            function quickSearch(t) { ui.input.value = t; handleSearch(); }
 
-        // Generate skeleton loading cards
-        function showSkeletons(count = 8) {
-            let html = '';
-            for (let i = 0; i < count; i++) {
-                html += `
+            // Generate skeleton loading cards
+            function showSkeletons(count = 8) {
+                let html = '';
+                for (let i = 0; i < count; i++) {
+                    html += `
                 <div class="skeleton-card" style="animation-delay: ${i * 0.05}s">
                     <div class="skeleton-thumb"></div>
                     <div class="skeleton-details">
@@ -1765,37 +1783,37 @@
                         </div>
                     </div>
                 </div>`;
-            }
-            ui.grid.innerHTML = html;
-        }
-
-        async function handleSearch() {
-            let q = ui.input.value.trim();
-            if (!q) return;
-            ui.input.blur(); ui.empty.style.display = 'none';
-
-            if (cache.has(q)) { renderResults(cache.get(q)); return; }
-
-            // Show skeleton loaders
-            showSkeletons(8);
-
-            // Spotify resolve - uses Vercel API (same domain)
-            if (q.includes('spotify.com')) {
-                try { const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if (d.title) q = d.title; } catch (e) { }
+                }
+                ui.grid.innerHTML = html;
             }
 
-            try {
-                // Search - uses Vercel API (same domain)
-                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-                const data = await res.json();
-                if (!data.videos || !data.videos.length) { ui.grid.innerHTML = ''; ui.empty.style.display = 'block'; return; }
-                cache.set(q, data.videos);
-                renderResults(data.videos);
-            } catch (e) { showToast("Search Failed", 'error'); ui.grid.innerHTML = ''; }
-        }
+            async function handleSearch() {
+                let q = ui.input.value.trim();
+                if (!q) return;
+                ui.input.blur(); ui.empty.style.display = 'none';
 
-        function renderResults(videos) {
-            ui.grid.innerHTML = videos.map((v, i) => `
+                if (cache.has(q)) { renderResults(cache.get(q)); return; }
+
+                // Show skeleton loaders
+                showSkeletons(8);
+
+                // Spotify resolve - uses Vercel API (same domain)
+                if (q.includes('spotify.com')) {
+                    try { const res = await fetch(`/api/resolve?url=${encodeURIComponent(q)}`); const d = await res.json(); if (d.title) q = d.title; } catch (e) { }
+                }
+
+                try {
+                    // Search - uses Vercel API (same domain)
+                    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (!data.videos || !data.videos.length) { ui.grid.innerHTML = ''; ui.empty.style.display = 'block'; return; }
+                    cache.set(q, data.videos);
+                    renderResults(data.videos);
+                } catch (e) { showToast("Search Failed", 'error'); ui.grid.innerHTML = ''; }
+            }
+
+            function renderResults(videos) {
+                ui.grid.innerHTML = videos.map((v, i) => `
             <div class="card" style="animation-delay: ${i * 0.05}s">
                 <div class="thumb-wrapper">
                     <img src="${v.thumbnail}" class="thumb-img" onload="this.style.opacity=1">
@@ -1812,199 +1830,198 @@
                 </div>
             </div>
         `).join('');
-        }
-
-        // --- REAL STREAMING DOWNLOAD (with server-side verification) ---
-        async function checkDl(url, type, title) {
-            // Check with server if download is allowed
-            try {
-                const checkRes = await fetch('/api/download/check');
-                const checkData = await checkRes.json();
-
-                if (!checkData.allowed) {
-                    document.getElementById('limitModal').style.display = 'flex';
-                    await fetchState(); // Refresh state
-                    return;
-                }
-            } catch (e) {
-                console.error('Failed to check download:', e);
             }
 
-            ui.floatBar.classList.add('active');
-            ui.floatTitle.innerText = title;
-            ui.floatStatus.innerText = "Connecting...";
-            ui.floatFill.className = "dl-bar-fill indeterminate";
-            ui.floatFill.style.width = "100%";
-
-            // Helper to get direct MP4 link
-            const mp4Direct = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
-
-            // Use Render for BOTH MP3 (conversion) and MP4 (proxying to fix CORS)
-            const api = type === 'mp3'
-                ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
-                : `${CONFIG.renderUrl}/api/proxy?url=${encodeURIComponent(mp4Direct)}&filename=${encodeURIComponent(title)}.mp4`;
-
-            try {
-                const response = await fetch(api);
-                if (!response.ok) throw new Error("Network error");
-
-                const reader = response.body.getReader();
-                const contentLength = +response.headers.get('Content-Length');
-                let receivedLength = 0;
-                let chunks = [];
-
-                if (contentLength) {
-                    ui.floatFill.className = "dl-bar-fill";
-                    ui.floatFill.style.width = "0%";
-                }
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    chunks.push(value);
-                    receivedLength += value.length;
-
-                    if (contentLength) {
-                        const percent = Math.floor((receivedLength / contentLength) * 100);
-                        ui.floatFill.style.width = `${percent}%`;
-                        ui.floatStatus.innerText = `Downloading... ${percent}%`;
-                    } else {
-                        ui.floatStatus.innerText = `Downloading... ${(receivedLength / 1024 / 1024).toFixed(1)} MB`;
-                    }
-                }
-
-                ui.floatFill.className = "dl-bar-fill";
-                ui.floatFill.style.width = "100%";
-                ui.floatStatus.innerText = "Saving file...";
-
-                const blob = new Blob(chunks);
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = `${title}.${type}`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(downloadUrl);
-
-                // Record download on server (anti-cheat)
+            // --- REAL STREAMING DOWNLOAD (with server-side verification) ---
+            async function checkDl(url, type, title) {
+                // Check with server if download is allowed
                 try {
-                    const completeRes = await fetch('/api/download/complete', { method: 'POST' });
-                    const completeData = await completeRes.json();
-                    if (completeData.success) {
-                        state.count = completeData.count;
-                        state.limit = completeData.limit;
-                        state.points = completeData.points;
-                        updateUI();
+                    const checkRes = await fetch('/api/download/check');
+                    const checkData = await checkRes.json();
+
+                    if (!checkData.allowed) {
+                        document.getElementById('limitModal').style.display = 'flex';
+                        await fetchState(); // Refresh state
+                        return;
                     }
                 } catch (e) {
-                    console.error('Failed to record download:', e);
+                    console.error('Failed to check download:', e);
                 }
 
-                showToast("Download Complete!", 'success');
-                setTimeout(() => ui.floatBar.classList.remove('active'), 2500);
+                ui.floatBar.classList.add('active');
+                ui.floatTitle.innerText = title;
+                ui.floatStatus.innerText = "Connecting...";
+                ui.floatFill.className = "dl-bar-fill indeterminate";
+                ui.floatFill.style.width = "100%";
 
-            } catch (error) {
-                console.error(error);
-                ui.floatStatus.innerHTML = `Download started in new tab. <a href="${api}" target="_blank" style="color:white;text-decoration:underline;">Click here if not</a>`;
-                window.open(api, '_blank');
+                // Use Render for BOTH MP3 (conversion) and MP4 (direct ytdl)
+                // No more external proxy needed - we are the server now!
+                const api = type === 'mp3'
+                    ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
+                    : `${CONFIG.renderUrl}/api/download-mp4?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
 
-                // Still record on server even for fallback
                 try {
-                    await fetch('/api/download/complete', { method: 'POST' });
-                    await fetchState();
-                } catch (e) { }
+                    const response = await fetch(api);
+                    if (!response.ok) throw new Error("Network error");
 
-                setTimeout(() => ui.floatBar.classList.remove('active'), 5000);
-            }
-        }
+                    const reader = response.body.getReader();
+                    const contentLength = +response.headers.get('Content-Length');
+                    let receivedLength = 0;
+                    let chunks = [];
 
-        // --- AD LOGIC (with server-side timing verification) ---
-        let adInterval = null;
-        async function watchAd() {
-            // Tell server we started watching ad
-            try {
-                await fetch('/api/ad/start', { method: 'POST' });
-            } catch (e) {
-                console.error('Failed to start ad timer:', e);
-            }
+                    if (contentLength) {
+                        ui.floatFill.className = "dl-bar-fill";
+                        ui.floatFill.style.width = "0%";
+                    }
 
-            window.open(CONFIG.adLink, '_blank');
-            toggleSidebar();
-            document.getElementById('adModal').style.display = 'flex';
-            document.getElementById('claimBtn').style.display = 'none';
-            document.getElementById('adLoader').style.width = '0%';
-            let sec = 15;
-            if (adInterval) clearInterval(adInterval);
-            setTimeout(() => document.getElementById('adLoader').style.width = '100%', 100);
-            adInterval = setInterval(() => {
-                sec--;
-                if (sec <= 0) {
-                    clearInterval(adInterval);
-                    document.getElementById('claimBtn').style.display = 'block';
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        chunks.push(value);
+                        receivedLength += value.length;
+
+                        if (contentLength) {
+                            const percent = Math.floor((receivedLength / contentLength) * 100);
+                            ui.floatFill.style.width = `${percent}%`;
+                            ui.floatStatus.innerText = `Downloading... ${percent}%`;
+                        } else {
+                            ui.floatStatus.innerText = `Downloading... ${(receivedLength / 1024 / 1024).toFixed(1)} MB`;
+                        }
+                    }
+
+                    ui.floatFill.className = "dl-bar-fill";
+                    ui.floatFill.style.width = "100%";
+                    ui.floatStatus.innerText = "Saving file...";
+
+                    const blob = new Blob(chunks);
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `${title}.${type}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(downloadUrl);
+
+                    // Record download on server (anti-cheat)
+                    try {
+                        const completeRes = await fetch('/api/download/complete', { method: 'POST' });
+                        const completeData = await completeRes.json();
+                        if (completeData.success) {
+                            state.count = completeData.count;
+                            state.limit = completeData.limit;
+                            state.points = completeData.points;
+                            updateUI();
+                        }
+                    } catch (e) {
+                        console.error('Failed to record download:', e);
+                    }
+
+                    showToast("Download Complete!", 'success');
+                    setTimeout(() => ui.floatBar.classList.remove('active'), 2500);
+
+                } catch (error) {
+                    console.error(error);
+                    ui.floatStatus.innerHTML = `Download started in new tab. <a href="${api}" target="_blank" style="color:white;text-decoration:underline;">Click here if not</a>`;
+                    window.open(api, '_blank');
+
+                    // Still record on server even for fallback
+                    try {
+                        await fetch('/api/download/complete', { method: 'POST' });
+                        await fetchState();
+                    } catch (e) { }
+
+                    setTimeout(() => ui.floatBar.classList.remove('active'), 5000);
                 }
-            }, 1000);
-        }
+            }
 
-        async function claimReward() {
-            // Verify with server that 15 seconds passed
-            try {
-                const res = await fetch('/api/ad/claim', { method: 'POST' });
-                const data = await res.json();
-
-                if (!data.success) {
-                    showToast(data.error || 'Wait for the ad to complete!', 'error');
-                    return;
+            // --- AD LOGIC (with server-side timing verification) ---
+            let adInterval = null;
+            async function watchAd() {
+                // Tell server we started watching ad
+                try {
+                    await fetch('/api/ad/start', { method: 'POST' });
+                } catch (e) {
+                    console.error('Failed to start ad timer:', e);
                 }
 
-                state.points = data.points;
-                updateUI();
-                document.getElementById('adModal').style.display = 'none';
-                triggerConfetti();
-                showToast(`+${data.earned} Points!`);
-            } catch (e) {
-                console.error('Failed to claim reward:', e);
-                showToast('Failed to claim. Try again.', 'error');
+                window.open(CONFIG.adLink, '_blank');
+                toggleSidebar();
+                document.getElementById('adModal').style.display = 'flex';
+                document.getElementById('claimBtn').style.display = 'none';
+                document.getElementById('adLoader').style.width = '0%';
+                let sec = 15;
+                if (adInterval) clearInterval(adInterval);
+                setTimeout(() => document.getElementById('adLoader').style.width = '100%', 100);
+                adInterval = setInterval(() => {
+                    sec--;
+                    if (sec <= 0) {
+                        clearInterval(adInterval);
+                        document.getElementById('claimBtn').style.display = 'block';
+                    }
+                }, 1000);
             }
-        }
 
-        async function buyLimit() {
-            try {
-                const res = await fetch('/api/user/unlock', { method: 'POST' });
-                const data = await res.json();
+            async function claimReward() {
+                // Verify with server that 15 seconds passed
+                try {
+                    const res = await fetch('/api/ad/claim', { method: 'POST' });
+                    const data = await res.json();
 
-                if (!data.success) {
-                    showToast(data.error || 'Not enough points!', 'error');
-                    await fetchState();
-                    return;
+                    if (!data.success) {
+                        showToast(data.error || 'Wait for the ad to complete!', 'error');
+                        return;
+                    }
+
+                    state.points = data.points;
+                    updateUI();
+                    document.getElementById('adModal').style.display = 'none';
+                    triggerConfetti();
+                    showToast(`+${data.earned} Points!`);
+                } catch (e) {
+                    console.error('Failed to claim reward:', e);
+                    showToast('Failed to claim. Try again.', 'error');
                 }
-
-                state.points = data.points;
-                state.limit = data.limit;
-                updateUI();
-                triggerConfetti();
-                showToast('Unlocked 5 Downloads!');
-            } catch (e) {
-                console.error('Failed to unlock:', e);
-                showToast('Failed to unlock. Try again.', 'error');
             }
-        }
 
-        function sendSupport() {
-            document.getElementById('supportMsg').value = '';
-            showToast("Sent!");
-            setTimeout(() => document.getElementById('supportModal').style.display = 'none', 500);
-        }
+            async function buyLimit() {
+                try {
+                    const res = await fetch('/api/user/unlock', { method: 'POST' });
+                    const data = await res.json();
 
-        function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
+                    if (!data.success) {
+                        showToast(data.error || 'Not enough points!', 'error');
+                        await fetchState();
+                        return;
+                    }
 
-        init();
-    </script>
+                    state.points = data.points;
+                    state.limit = data.limit;
+                    updateUI();
+                    triggerConfetti();
+                    showToast('Unlocked 5 Downloads!');
+                } catch (e) {
+                    console.error('Failed to unlock:', e);
+                    showToast('Failed to unlock. Try again.', 'error');
+                }
+            }
 
-    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
-        data-id="Music_Hub0" data-description="Support me on Buy me a coffee!" data-message="" data-color="#40DCA5"
-        data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+            function sendSupport() {
+                document.getElementById('supportMsg').value = '';
+                showToast("Sent!");
+                setTimeout(() => document.getElementById('supportModal').style.display = 'none', 500);
+            }
+
+            function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
+
+            init();
+        </script>
+
+        <script data-name="BMC-Widget" data-cfasync="false"
+            src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="Music_Hub0"
+            data-description="Support me on Buy me a coffee!" data-message="" data-color="#40DCA5" data-position="Right"
+            data-x_margin="18" data-y_margin="18"></script>
 
 </body>
 

@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
+const ytdl = require('@distube/ytdl-core');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,63 +25,128 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'healthy', service: 'mp3-converter', timestamp: new Date().toISOString() });
 });
 
-// MP3 Conversion - The only heavy endpoint
-app.get('/api/convert-to-mp3', async (req, res) => {
-    const { url, title } = req.query;
-
-    if (!url) {
-        return res.status(400).json({ error: 'URL required' });
-    }
-
-    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-        return res.status(400).json({ error: 'Invalid YouTube URL' });
-    }
-
-    const externalMp4Api = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(url)}`;
-    const safeFilename = (title || 'audio')
+// Helper for filename
+const getSafeFilename = (title) => {
+    return (title || 'audio')
         .replace(/[^a-z0-9\s-]/gi, '')
         .replace(/\s+/g, '_')
         .substring(0, 100);
+};
 
-    log.info(`Converting: "${safeFilename}"`);
+// MP3 Conversion using ytdl-core + ffmpeg
+app.get('/api/convert-to-mp3', async (req, res) => {
+    const { url, title } = req.query;
+
+    if (!url || !ytdl.validateURL(url)) {
+        return res.status(400).json({ error: 'Valid YouTube URL required' });
+    }
+
+    const safeFilename = getSafeFilename(title);
+    log.info(`MP3 Request: ${safeFilename}`);
 
     try {
-        const response = await axios({
-            method: 'get',
-            url: externalMp4Api,
-            responseType: 'stream',
-            timeout: 120000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36'
-            }
-        });
-
         res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
         res.setHeader('Content-Type', 'audio/mpeg');
         res.setHeader('Access-Control-Allow-Origin', '*');
 
-        ffmpeg(response.data)
+        // High quality audio
+        const stream = ytdl(url, { quality: 'highestaudio' });
+
+        ffmpeg(stream)
             .format('mp3')
             .audioBitrate(128)
-            .on('start', () => log.info(`FFmpeg started: ${safeFilename}`))
-            .on('end', () => log.success(`Done: ${safeFilename}`))
             .on('error', (err) => {
                 log.error(`FFmpeg error: ${err.message}`);
-                if (!res.headersSent) {
-                    res.status(500).json({ error: 'Conversion failed' });
-                }
+                if (!res.headersSent) res.status(500).end();
             })
             .pipe(res, { end: true });
 
     } catch (error) {
-        log.error(`Stream error: ${error.message}`);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Could not fetch source' });
+        log.error(`MP3 Init error: ${error.message}`);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// MP4 Direct Download using ytdl-core (with Quality Support)
+app.get('/api/download-mp4', async (req, res) => {
+    const { url, title, quality = '720p' } = req.query;
+
+    if (!url || !ytdl.validateURL(url)) {
+        return res.status(400).json({ error: 'Valid YouTube URL required' });
+    }
+
+    const safeFilename = getSafeFilename(title);
+    log.info(`MP4 Request: ${safeFilename} [${quality}]`);
+
+    try {
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+
+        // Get video info
+        const info = await ytdl.getInfo(url);
+
+        let format;
+        let needsMerge = false;
+
+        if (quality === 'Highest') {
+            format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
+            needsMerge = !format.hasAudio;
+        } else if (quality === '1080p') {
+            format = info.formats.find(f => f.qualityLabel === '1080p' && f.container === 'mp4');
+            if (!format) {
+                format = info.formats.find(f => f.qualityLabel === '1080p');
+                needsMerge = !!format;
+            }
+        } else if (quality === '720p') {
+            format = info.formats.find(f => f.qualityLabel === '720p' && f.hasAudio && f.container === 'mp4');
+        } else if (quality === '360p') {
+            format = info.formats.find(f => f.qualityLabel === '360p' && f.hasAudio && f.container === 'mp4');
         }
+
+        // Fallback
+        if (!format) {
+            log.info(`Quality ${quality} not found, falling back`);
+            format = info.formats.find(f => f.qualityLabel === '720p' && f.hasAudio && f.container === 'mp4')
+                || ytdl.chooseFormat(info.formats, { quality: 'highest' });
+            needsMerge = false;
+        }
+
+        if (needsMerge) {
+            log.info(`Merging needed for ${quality}`);
+            const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
+            const videoStream = ytdl(url, { format: format });
+            const audioStream = ytdl(url, { format: audioFormat });
+
+            ffmpeg()
+                .input(videoStream)
+                .input(audioStream)
+                .format('mp4')
+                .outputOptions('-c:v copy')
+                .outputOptions('-c:a aac')
+                .outputOptions('-movflags frag_keyframe+empty_moov')
+                .on('error', (err) => {
+                    log.error(`Merge error: ${err.message}`);
+                    if (!res.headersSent) res.status(500).end();
+                })
+                .pipe(res, { end: true });
+        } else {
+            log.info(`Direct streaming ${format.qualityLabel}`);
+            ytdl(url, { format: format })
+                .on('error', (err) => {
+                    log.error(`Stream error: ${err.message}`);
+                    if (!res.headersSent) res.status(500).end();
+                })
+                .pipe(res);
+        }
+
+    } catch (error) {
+        log.error(`MP4 Init error: ${error.message}`);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
 // Start server
 app.listen(port, () => {
-    log.success(`🎵 MP3 Converter running on port ${port}`);
+    log.success(`🎵 Enhanced Downloader running on port ${port}`);
 });
