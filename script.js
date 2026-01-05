@@ -336,48 +336,95 @@ class App {
     }
 
     async processDownload(video, type) {
-        // Simulated progress for UX
+        // Get the download item UI elements
         const item = $('#dlManagerList').firstElementChild;
+        if (!item) return;
+
         const bar = item.querySelector('.dl-fill');
         const txt = item.querySelector('.status-text');
 
-        let p = 0;
-        const interval = setInterval(() => {
-            p += Math.random() * 5;
-            if (p > 90) p = 90; // Wait at 90% for actual response
-            bar.style.width = p + '%';
-            txt.innerText = 'Converting...';
-        }, 300); // 300ms intervals
+        // Build the download URL
+        const api = type === 'mp3'
+            ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}`
+            : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(video.url)}`;
 
-        // Actual Request - Increased Stability
-        const endpoint = type === 'mp3' ? '/api/convert-to-mp3' : '/api/download-mp4';
-        const url = `${CONFIG.renderUrl}${endpoint}?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}`;
+        try {
+            txt.innerText = 'Connecting...';
+            bar.style.width = '5%';
 
+            const response = await fetch(api);
+            if (!response.ok) throw new Error("Network error");
 
-        // Create iframe to trigger download
-        const frame = document.createElement('iframe');
-        frame.style.display = 'none';
-        frame.src = url;
-        document.body.appendChild(frame);
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            let receivedLength = 0;
+            let chunks = [];
 
-        // Keep iframe/UI alive longer for slow conversions (e.g., 60s)
-        setTimeout(async () => {
-            clearInterval(interval);
+            // Read stream
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                chunks.push(value);
+                receivedLength += value.length;
+
+                if (contentLength) {
+                    const percent = Math.floor((receivedLength / contentLength) * 100);
+                    bar.style.width = `${percent}%`;
+                    txt.innerText = `Downloading... ${percent}%`;
+                } else {
+                    txt.innerText = `Downloading... ${(receivedLength / 1024 / 1024).toFixed(1)} MB`;
+                    // Simulate progress for unknown size
+                    const fakePercent = Math.min(90, receivedLength / 50000);
+                    bar.style.width = `${fakePercent}%`;
+                }
+            }
+
+            // Create blob and trigger download
             bar.style.width = '100%';
+            txt.innerText = 'Saving file...';
+
+            const blob = new Blob(chunks);
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${video.title.replace(/[^a-z0-9\s-]/gi, '').substring(0, 80)}.${type}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+            // Success
             bar.style.backgroundColor = 'var(--success)';
             txt.innerText = 'Downloaded!';
             txt.style.color = 'var(--success)';
 
-            // Register download
+            // Register download with server
             await fetch('/api/download/complete', { method: 'POST' });
             this.syncState();
 
-            // Cleanup after 10s (give user time to see success)
-            setTimeout(() => { frame.remove(); item.remove(); }, 10000);
-        }, 8000); // Wait 8s before showing "Done" (optimistic) to allow request to initiate
+            state.points += 4; // Bonus points
+            showToast('Download Complete! +4 pts');
 
-        // Safety cleanup for very long hangs
-        setTimeout(() => frame.remove(), 120000);
+            // Cleanup
+            setTimeout(() => item.remove(), 5000);
+
+        } catch (error) {
+            console.error('Download error:', error);
+
+            // Fallback: Open direct link
+            txt.innerText = 'Opening direct...';
+            bar.style.width = '100%';
+
+            window.open(api, '_blank');
+
+            // Register download anyway
+            await fetch('/api/download/complete', { method: 'POST' });
+            this.syncState();
+
+            showToast('Opened in new tab');
+            setTimeout(() => item.remove(), 3000);
+        }
     }
 
     showLimitModal() {
