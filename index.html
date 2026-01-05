@@ -1813,23 +1813,30 @@
             }
 
             function renderResults(videos) {
+                window.lastVideos = videos; // Store for safe access
                 ui.grid.innerHTML = videos.map((v, i) => `
-            <div class="card" style="animation-delay: ${i * 0.05}s">
-                <div class="thumb-wrapper">
-                    <img src="${v.thumbnail}" class="thumb-img" onload="this.style.opacity=1">
-                    <div class="badge-dur">${v.timestamp || '3:45'}</div>
-                    <div class="badge-views"><i class="fas fa-eye"></i> ${formatViews(v.views)}</div>
-                </div>
-                <div class="details">
-                    <div class="title">${v.title}</div>
-                    <div class="author">${v.author.name}</div>
-                    <div class="actions">
-                        <button class="btn btn-mp3" onclick="checkDl('${v.url}','mp3','${v.title.replace(/'/g, "")}')"><i class="fas fa-music"></i> Audio</button>
-                        <button class="btn btn-mp4" onclick="checkDl('${v.url}','mp4','${v.title.replace(/'/g, "")}')"><i class="fas fa-video"></i> Video</button>
-                    </div>
-                </div>
+    <div class="card" style="animation-delay: ${i * 0.05}s">
+        <div class="thumb-wrapper">
+            <img src="${v.thumbnail}" class="thumb-img" onload="this.style.opacity=1">
+            <div class="badge-dur">${v.timestamp || '3:45'}</div>
+            <div class="badge-views"><i class="fas fa-eye"></i> ${formatViews(v.views)}</div>
+        </div>
+        <div class="details">
+            <div class="title">${v.title}</div>
+            <div class="author">${v.author.name}</div>
+            <div class="actions">
+                <button class="btn btn-mp3" onclick="initDl(${i}, 'mp3')"><i class="fas fa-music"></i> Audio</button>
+                <button class="btn btn-mp4" onclick="initDl(${i}, 'mp4')"><i class="fas fa-video"></i> Video</button>
             </div>
-        `).join('');
+        </div>
+    </div>
+`).join('');
+            }
+
+            // Safe download initiator
+            function initDl(index, type) {
+                const v = window.lastVideos[index];
+                if (v) checkDl(v.url, type, v.title);
             }
 
             // --- REAL STREAMING DOWNLOAD (with server-side verification) ---

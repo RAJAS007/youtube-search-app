@@ -3,6 +3,7 @@ const cors = require('cors');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const ytdl = require('@distube/ytdl-core');
+const axios = require('axios');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +17,18 @@ const log = {
     success: (msg) => console.log(`[${new Date().toISOString()}] ✅ ${msg}`),
     error: (msg) => console.error(`[${new Date().toISOString()}] ❌ ${msg}`)
 };
+
+// Cookie Agent Setup (for Anti-Bot)
+let agent;
+try {
+    if (process.env.YOUTUBE_COOKIES) {
+        const cookies = JSON.parse(process.env.YOUTUBE_COOKIES);
+        agent = ytdl.createAgent(cookies);
+        log.success('Loaded YouTube Cookies for Anti-Bot');
+    }
+} catch (e) {
+    log.error(`Failed to load cookies: ${e.message}`);
+} const ytdlOpts = { agent, highWaterMark: 1 << 23 };
 
 // Middleware
 app.use(cors());
@@ -41,9 +54,31 @@ app.get('/api/convert-to-mp3', async (req, res) => {
         return res.status(400).json({ error: 'Valid YouTube URL required' });
     }
 
+    // Fallback if no cookies configured
+    if (!agent) {
+        log.info(`No cookies found. Using fallback proxy for: ${title}`);
+        try {
+            const extUrl = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(url)}`;
+            const response = await axios({ url: extUrl, method: 'GET', responseType: 'stream' });
+
+            const safeFilename = getSafeFilename(title);
+            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
+            res.setHeader('Content-Type', 'audio/mpeg');
+
+            ffmpeg(response.data)
+                .format('mp3')
+                .audioBitrate(128)
+                .pipe(res, { end: true });
+            return;
+        } catch (e) {
+            log.error(`Fallback failed: ${e.message}`);
+            return res.status(500).json({ error: 'Download failed (Fallback)' });
+        }
+    }
+
     try {
         // Get video info first for metadata
-        const info = await ytdl.getInfo(url);
+        const info = await ytdl.getInfo(url, { agent });
         const videoTitle = info.videoDetails.title || title || 'audio';
         const artist = info.videoDetails.author.name || 'MusicHub';
         const safeFilename = getSafeFilename(videoTitle);
@@ -57,7 +92,7 @@ app.get('/api/convert-to-mp3', async (req, res) => {
         // High quality audio stream (with buffer optimization)
         const stream = ytdl(url, {
             quality: 'highestaudio',
-            highWaterMark: 1 << 23
+            ...ytdlOpts
         });
 
         const command = ffmpeg(stream)
@@ -90,6 +125,13 @@ app.get('/api/download-mp4', async (req, res) => {
         return res.status(400).json({ error: 'Valid YouTube URL required' });
     }
 
+    // Fallback if no cookies configured
+    if (!agent) {
+        log.info(`No cookies found. Redirecting to fallback for MP4: ${title}`);
+        const extUrl = `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(url)}`;
+        return res.redirect(extUrl);
+    }
+
     const safeFilename = getSafeFilename(title);
     log.info(`MP4 Request: ${safeFilename} [${quality}]`);
 
@@ -99,7 +141,7 @@ app.get('/api/download-mp4', async (req, res) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
 
         // Get video info
-        const info = await ytdl.getInfo(url);
+        const info = await ytdl.getInfo(url, { agent });
 
         let format;
         let needsMerge = false;
@@ -127,7 +169,7 @@ app.get('/api/download-mp4', async (req, res) => {
             needsMerge = false;
         }
 
-        const opts = { highWaterMark: 1 << 23 };
+        const opts = { ...ytdlOpts };
 
         if (needsMerge) {
             log.info(`Merging needed for ${quality}`);
