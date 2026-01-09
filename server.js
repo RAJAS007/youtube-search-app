@@ -362,8 +362,8 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'musichub2026';
 const serverStartTime = Date.now();
 const version = '3.3.0';
 
-// Pytubefix API URL (fallback engine)
-const PYTUBEFIX_API_URL = process.env.PYTUBEFIX_API_URL || 'http://localhost:5000';
+// Pytubefix API URL (primary download engine)
+const PYTUBEFIX_API_URL = process.env.PYTUBEFIX_API_URL || 'https://musichub-pytubefix.onrender.com';
 
 // ==========================================
 // HEALTH & STATUS ENDPOINTS
