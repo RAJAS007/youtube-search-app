@@ -524,3 +524,40 @@ main {
     background-size: 1000px 100%;
     animation: shimmer 2s infinite linear;
 }
+
+/* Quality Selection Buttons */
+.quality-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.quality-btn:hover {
+    background: var(--surface-glass-hover);
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+
+.quality-btn:active {
+    transform: scale(0.98);
+}
+
+/* Fade In Up Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

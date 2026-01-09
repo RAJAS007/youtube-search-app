@@ -22,7 +22,8 @@ const state = {
     searchHistory: JSON.parse(localStorage.getItem('mh_search_history') || '[]'),
     activeDownloads: [],
     lastResults: [],
-    currentDonationAmount: 100
+    currentDonationAmount: 100,
+    pendingDownload: null  // For quality selection flow
 };
 
 // ==========================================
@@ -307,12 +308,37 @@ class App {
                 return;
             }
 
-            // Start Download
+            // For MP4, show quality selection modal
+            if (type === 'mp4') {
+                state.pendingDownload = { video, index };
+                this.showQualityModal(video);
+                return;
+            }
+
+            // For MP3, start directly
             this.addDownloadItem(video, type);
-            this.processDownload(video, type);
+            this.processDownload(video, type, '128kbps');
 
         } catch (e) {
             showToast('Network Error', 'error');
+        }
+    }
+
+    // Show quality selection modal
+    showQualityModal(video) {
+        $('#qualityVideoName').innerText = video.title;
+        $('#qualityModal').classList.add('active');
+    }
+
+    // Handle quality selection
+    selectQuality(quality) {
+        $('#qualityModal').classList.remove('active');
+
+        if (state.pendingDownload) {
+            const { video } = state.pendingDownload;
+            this.addDownloadItem(video, 'mp4');
+            this.processDownload(video, 'mp4', quality);
+            state.pendingDownload = null;
         }
     }
 
@@ -335,7 +361,7 @@ class App {
         return id;
     }
 
-    async processDownload(video, type) {
+    async processDownload(video, type, quality = '720p') {
         // Get the download item UI elements
         const item = $('#dlManagerList').firstElementChild;
         if (!item) return;
@@ -343,17 +369,31 @@ class App {
         const bar = item.querySelector('.dl-fill');
         const txt = item.querySelector('.status-text');
 
-        // Build the download URL
+        // Use smart endpoints with auto-fallback (ytdl-core -> pytubefix)
         const api = type === 'mp3'
-            ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}`
-            : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(video.url)}`;
+            ? `/api/smart/mp3?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}`
+            : `/api/smart/mp4?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}&quality=${quality}`;
+
+        // Show selected quality in status
+        if (type === 'mp4') {
+            txt.innerText = `${quality} selected...`;
+        }
 
         try {
             txt.innerText = 'Connecting...';
             bar.style.width = '5%';
 
             const response = await fetch(api);
-            if (!response.ok) throw new Error("Network error");
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            // Check which engine was used
+            const engine = response.headers.get('X-Download-Engine') || 'unknown';
+            if (engine.includes('fallback')) {
+                txt.innerText = 'Using backup engine...';
+            }
 
             const reader = response.body.getReader();
             const contentLength = +response.headers.get('Content-Length');
@@ -412,18 +452,65 @@ class App {
         } catch (error) {
             console.error('Download error:', error);
 
-            // Fallback: Open direct link
-            txt.innerText = 'Opening direct...';
-            bar.style.width = '100%';
+            // Fallback: Try Render server directly for MP3, or Ironman for MP4
+            txt.innerText = 'Trying external backup...';
+            bar.style.width = '50%';
 
-            window.open(api, '_blank');
+            const externalApi = type === 'mp3'
+                ? `${CONFIG.renderUrl}/api/convert-to-mp3?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(video.title)}`
+                : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${encodeURIComponent(video.url)}`;
 
-            // Register download anyway
-            await fetch('/api/download/complete', { method: 'POST' });
-            this.syncState();
+            try {
+                const extResponse = await fetch(externalApi);
+                if (!extResponse.ok) throw new Error('External API failed');
 
-            showToast('Opened in new tab');
-            setTimeout(() => item.remove(), 3000);
+                const reader = extResponse.body.getReader();
+                let chunks = [];
+                let receivedLength = 0;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    receivedLength += value.length;
+                    txt.innerText = `Downloading... ${(receivedLength / 1024 / 1024).toFixed(1)} MB`;
+                    bar.style.width = `${Math.min(95, 50 + receivedLength / 100000)}%`;
+                }
+
+                bar.style.width = '100%';
+                txt.innerText = 'Saving file...';
+
+                const blob = new Blob(chunks);
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `${video.title.replace(/[^a-z0-9\s-]/gi, '').substring(0, 80)}.${type}`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+
+                bar.style.backgroundColor = 'var(--success)';
+                txt.innerText = 'Downloaded!';
+                txt.style.color = 'var(--success)';
+
+                await fetch('/api/download/complete', { method: 'POST' });
+                this.syncState();
+                showToast('Download Complete! +4 pts');
+                setTimeout(() => item.remove(), 5000);
+
+            } catch (extError) {
+                // Final fallback: Open in new tab
+                txt.innerText = 'Opening in browser...';
+                bar.style.width = '100%';
+                bar.style.backgroundColor = 'var(--warning)';
+
+                window.open(externalApi, '_blank');
+                await fetch('/api/download/complete', { method: 'POST' });
+                this.syncState();
+                showToast('Opened in new tab');
+                setTimeout(() => item.remove(), 3000);
+            }
         }
     }
 

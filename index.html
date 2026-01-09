@@ -227,6 +227,53 @@
         </div>
     </div>
 
+    <!-- Quality Selection Modal -->
+    <div id="qualityModal" class="modal-container">
+        <div class="modal-bg" onclick="this.parentElement.classList.remove('active')"></div>
+        <div class="modal-content glass-panel" style="border-radius:24px;padding:32px;text-align:center;max-width:360px;">
+            <i class="fas fa-video" style="font-size:48px;color:var(--accent);margin-bottom:20px;"></i>
+            <h3 id="qualityModalTitle" style="margin-bottom:8px;">Select Quality</h3>
+            <p id="qualityVideoName" style="color:var(--text-secondary);margin-bottom:24px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></p>
+            
+            <div id="qualityOptions" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                <button class="btn quality-btn" data-quality="360p" onclick="app.selectQuality('360p')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-mobile-alt" style="color:var(--text-secondary);width:20px;"></i>
+                        <span>360p</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Small • Fast</span>
+                </button>
+                <button class="btn quality-btn" data-quality="720p" onclick="app.selectQuality('720p')" style="border-color:var(--accent);">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-laptop" style="color:var(--accent);width:20px;"></i>
+                        <span style="color:var(--accent);font-weight:700;">720p HD</span>
+                        <span style="background:var(--accent);color:white;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;">RECOMMENDED</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Balanced</span>
+                </button>
+                <button class="btn quality-btn" data-quality="1080p" onclick="app.selectQuality('1080p')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-tv" style="color:var(--warning);width:20px;"></i>
+                        <span>1080p Full HD</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Large • Slow</span>
+                </button>
+                <button class="btn quality-btn" data-quality="Highest" onclick="app.selectQuality('Highest')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-crown" style="color:#fbbf24;width:20px;"></i>
+                        <span>Highest Available</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Best Quality</span>
+                </button>
+            </div>
+            
+            <button class="btn btn-secondary" style="width:100%;"
+                onclick="this.closest('.modal-container').classList.remove('active')">
+                Cancel
+            </button>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>

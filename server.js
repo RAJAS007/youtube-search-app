@@ -360,7 +360,10 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'musichub2026';
 // SERVER INFO & STARTUP TIME
 // ==========================================
 const serverStartTime = Date.now();
-const version = '3.2.0';
+const version = '3.3.0';
+
+// Pytubefix API URL (fallback engine)
+const PYTUBEFIX_API_URL = process.env.PYTUBEFIX_API_URL || 'http://localhost:5000';
 
 // ==========================================
 // HEALTH & STATUS ENDPOINTS
@@ -753,6 +756,288 @@ app.get('/api/download-mp4', async (req, res) => {
     log.error(`MP4 Error: ${error.message}`);
     res.status(500).json({ error: 'Download failed' });
   }
+});
+
+// ==========================================
+// PYTUBEFIX FALLBACK ENDPOINTS (v2)
+// ==========================================
+
+// Check if pytubefix API is available
+async function isPytubefixAvailable() {
+  try {
+    const response = await axios.get(`${PYTUBEFIX_API_URL}/api/health`, { timeout: 3000 });
+    return response.data?.status === 'healthy';
+  } catch {
+    return false;
+  }
+}
+
+// MP3 via Pytubefix (fallback)
+app.get('/api/convert-to-mp3-v2', async (req, res) => {
+  const { url, title } = req.query;
+
+  if (!url) {
+    return res.status(400).json({ error: 'URL required' });
+  }
+
+  log.info(`[Pytubefix] MP3 Request: ${title || url}`);
+
+  try {
+    // Proxy the request to pytubefix API
+    const response = await axios({
+      method: 'GET',
+      url: `${PYTUBEFIX_API_URL}/api/stream/mp3`,
+      params: { url },
+      responseType: 'stream',
+      timeout: 300000 // 5 min timeout for large files
+    });
+
+    // Forward headers
+    if (response.headers['content-disposition']) {
+      res.setHeader('Content-Disposition', response.headers['content-disposition']);
+    } else {
+      const safeTitle = (title || 'audio').replace(/[^a-z0-9\s-]/gi, '').substring(0, 80);
+      res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.m4a"`);
+    }
+    res.setHeader('Content-Type', response.headers['content-type'] || 'audio/mp4');
+
+    // Pipe the stream
+    response.data.pipe(res);
+
+  } catch (error) {
+    log.error(`[Pytubefix] MP3 Error: ${error.message}`);
+    res.status(500).json({ error: 'Pytubefix conversion failed', details: error.message });
+  }
+});
+
+// MP4 via Pytubefix (fallback)
+app.get('/api/download-mp4-v2', async (req, res) => {
+  const { url, title, quality = '720p' } = req.query;
+
+  if (!url) {
+    return res.status(400).json({ error: 'URL required' });
+  }
+
+  log.info(`[Pytubefix] MP4 Request: ${title || url} [${quality}]`);
+
+  try {
+    // Proxy the request to pytubefix API
+    const response = await axios({
+      method: 'GET',
+      url: `${PYTUBEFIX_API_URL}/api/stream/mp4`,
+      params: { url, resolution: quality },
+      responseType: 'stream',
+      timeout: 600000 // 10 min timeout for videos
+    });
+
+    // Forward headers
+    if (response.headers['content-disposition']) {
+      res.setHeader('Content-Disposition', response.headers['content-disposition']);
+    } else {
+      const safeTitle = (title || 'video').replace(/[^a-z0-9\s-]/gi, '').substring(0, 80);
+      res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.mp4"`);
+    }
+    res.setHeader('Content-Type', 'video/mp4');
+
+    // Pipe the stream
+    response.data.pipe(res);
+
+  } catch (error) {
+    log.error(`[Pytubefix] MP4 Error: ${error.message}`);
+    res.status(500).json({ error: 'Pytubefix download failed', details: error.message });
+  }
+});
+
+// Smart MP3 endpoint - PYTUBEFIX PRIMARY, ytdl-core fallback
+app.get('/api/smart/mp3', async (req, res) => {
+  const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'unknown';
+
+  if (!convertLimiter.isAllowed(clientIP)) {
+    return res.status(429).json({ error: 'Too many requests', retryAfter: '60s' });
+  }
+
+  const { url, title } = req.query;
+  if (!url) {
+    return res.status(400).json({ error: 'URL required' });
+  }
+
+  log.info(`[Smart] MP3 Request: ${title || 'audio'} (Primary: Pytubefix)`);
+
+  // Try Pytubefix first (primary)
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: `${PYTUBEFIX_API_URL}/api/stream/mp3`,
+      params: { url },
+      responseType: 'stream',
+      timeout: 300000
+    });
+
+    const safeTitle = (title || 'audio').replace(/[^a-z0-9\s-]/gi, '').substring(0, 80);
+    res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.m4a"`);
+    res.setHeader('Content-Type', response.headers['content-type'] || 'audio/mp4');
+    res.setHeader('X-Download-Engine', 'pytubefix');
+
+    log.success(`[Smart] Pytubefix streaming MP3: ${safeTitle}`);
+    response.data.pipe(res);
+
+  } catch (error) {
+    log.warn(`[Smart] Pytubefix failed, trying ytdl-core: ${error.message}`);
+
+    // Fallback to ytdl-core
+    try {
+      if (!ytdl.validateURL(url)) {
+        throw new Error('Invalid YouTube URL');
+      }
+
+      const info = await ytdl.getInfo(url);
+      const videoTitle = info.videoDetails.title || title || 'audio';
+      const artist = info.videoDetails.author.name || 'MusicHub';
+      const safeFilename = videoTitle.replace(/[^a-z0-9\s-]/gi, '').replace(/\s+/g, '_').substring(0, 100);
+
+      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp3"`);
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('X-Download-Engine', 'ytdl-core-fallback');
+
+      const stream = ytdl(url, { quality: 'highestaudio', highWaterMark: 1 << 23 });
+
+      ffmpeg(stream)
+        .format('mp3')
+        .audioBitrate(128)
+        .outputOptions('-id3v2_version', '3')
+        .outputOptions('-metadata', `title=${videoTitle}`)
+        .outputOptions('-metadata', `artist=${artist}`)
+        .on('error', (err) => {
+          log.error(`[Smart] ytdl-core fallback also failed: ${err.message}`);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'All download engines failed' });
+          }
+        })
+        .pipe(res, { end: true });
+
+    } catch (fallbackErr) {
+      log.error(`[Smart] Both engines failed: ${fallbackErr.message}`);
+      res.status(500).json({ error: 'All download engines failed' });
+    }
+  }
+});
+
+// Smart MP4 endpoint - PYTUBEFIX PRIMARY, ytdl-core fallback
+app.get('/api/smart/mp4', async (req, res) => {
+  const { url, title, quality = '720p' } = req.query;
+
+  if (!url) {
+    return res.status(400).json({ error: 'URL required' });
+  }
+
+  log.info(`[Smart] MP4 Request: ${title || 'video'} [${quality}] (Primary: Pytubefix)`);
+
+  // Try Pytubefix first (primary)
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: `${PYTUBEFIX_API_URL}/api/stream/mp4`,
+      params: { url, resolution: quality },
+      responseType: 'stream',
+      timeout: 600000
+    });
+
+    const safeTitle = (title || 'video').replace(/[^a-z0-9\s-]/gi, '').substring(0, 80);
+    res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.mp4"`);
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('X-Download-Engine', 'pytubefix');
+
+    log.success(`[Smart] Pytubefix streaming MP4 [${quality}]: ${safeTitle}`);
+    response.data.pipe(res);
+
+  } catch (error) {
+    log.warn(`[Smart] Pytubefix failed, trying ytdl-core: ${error.message}`);
+
+    // Fallback to ytdl-core
+    try {
+      if (!ytdl.validateURL(url)) {
+        throw new Error('Invalid YouTube URL');
+      }
+
+      const info = await ytdl.getInfo(url);
+      const safeFilename = (info.videoDetails.title || title || 'video')
+        .replace(/[^a-z0-9\s-]/gi, '')
+        .replace(/\s+/g, '_')
+        .substring(0, 100);
+
+      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('X-Download-Engine', 'ytdl-core-fallback');
+
+      let format;
+      let needsMerge = false;
+
+      if (quality === 'Highest') {
+        format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
+        needsMerge = !format.hasAudio;
+      } else if (quality === '1080p') {
+        format = info.formats.find(f => f.qualityLabel === '1080p' && f.container === 'mp4');
+        if (!format) {
+          format = info.formats.find(f => f.qualityLabel === '1080p');
+          needsMerge = !!format;
+        }
+      } else {
+        format = info.formats.find(f => f.qualityLabel === quality && f.hasAudio && f.container === 'mp4');
+      }
+
+      if (!format) {
+        format = info.formats.find(f => f.qualityLabel === '720p' && f.hasAudio && f.container === 'mp4')
+          || ytdl.chooseFormat(info.formats, { quality: 'highest' });
+        needsMerge = false;
+      }
+
+      const opts = { highWaterMark: 1 << 23 };
+
+      if (needsMerge) {
+        const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
+        const videoStream = ytdl(url, { format, ...opts });
+        const audioStream = ytdl(url, { format: audioFormat, ...opts });
+
+        ffmpeg()
+          .input(videoStream)
+          .input(audioStream)
+          .format('mp4')
+          .outputOptions('-c:v copy')
+          .outputOptions('-c:a aac')
+          .outputOptions('-movflags frag_keyframe+empty_moov')
+          .on('error', (err) => {
+            log.error(`[Smart] ytdl-core fallback also failed: ${err.message}`);
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'All download engines failed' });
+            }
+          })
+          .pipe(res, { end: true });
+      } else {
+        ytdl(url, { format, ...opts })
+          .on('error', (err) => {
+            log.error(`[Smart] ytdl-core fallback also failed: ${err.message}`);
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'All download engines failed' });
+            }
+          })
+          .pipe(res);
+      }
+
+    } catch (fallbackErr) {
+      log.error(`[Smart] Both engines failed: ${fallbackErr.message}`);
+      res.status(500).json({ error: 'All download engines failed' });
+    }
+  }
+});
+
+// Pytubefix health check endpoint
+app.get('/api/pytubefix/status', async (req, res) => {
+  const available = await isPytubefixAvailable();
+  res.json({
+    available,
+    url: PYTUBEFIX_API_URL,
+    message: available ? 'Pytubefix API is online' : 'Pytubefix API is offline'
+  });
 });
 
 // ==========================================
