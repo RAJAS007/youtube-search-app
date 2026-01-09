@@ -104,27 +104,39 @@ def stream_mp4():
         title = yt.title
         safe_title = re.sub(r'[^\w\s-]', '', title)[:80].strip()
         
-        # Try progressive stream first (has audio)
-        stream = yt.streams.filter(
-            progressive=True, 
-            file_extension='mp4', 
-            resolution=resolution
-        ).first()
+        print(f"[Pytubefix] Requested quality: {resolution} for '{title}'")
         
-        # Fallback to 720p or 360p
-        if not stream:
+        stream = None
+        
+        # Handle 'Highest' quality option
+        if resolution == 'Highest':
+            stream = yt.streams.filter(
+                progressive=True, 
+                file_extension='mp4'
+            ).order_by('resolution').desc().first()
+            print(f"[Pytubefix] Highest quality selected: {stream.resolution if stream else 'None'}")
+        else:
+            # Try requested resolution
             stream = yt.streams.filter(
                 progressive=True, 
                 file_extension='mp4', 
-                resolution='720p'
+                resolution=resolution
             ).first()
+            
+            if stream:
+                print(f"[Pytubefix] Found exact match: {resolution}")
         
+        # Fallback chain: 720p -> 480p -> 360p -> any
         if not stream:
-            stream = yt.streams.filter(
-                progressive=True, 
-                file_extension='mp4', 
-                resolution='360p'
-            ).first()
+            for fallback_res in ['720p', '480p', '360p']:
+                stream = yt.streams.filter(
+                    progressive=True, 
+                    file_extension='mp4', 
+                    resolution=fallback_res
+                ).first()
+                if stream:
+                    print(f"[Pytubefix] Using fallback: {fallback_res}")
+                    break
         
         if not stream:
             # Last resort: any progressive mp4
@@ -132,9 +144,12 @@ def stream_mp4():
                 progressive=True, 
                 file_extension='mp4'
             ).order_by('resolution').desc().first()
+            print(f"[Pytubefix] Using any available: {stream.resolution if stream else 'None'}")
         
         if not stream:
             return jsonify({"error": "No suitable stream found"}), 404
+        
+        print(f"[Pytubefix] Streaming: {stream.resolution} - {stream.filesize_mb:.1f}MB")
         
         # Stream the video
         def generate():
@@ -149,11 +164,13 @@ def stream_mp4():
             mimetype='video/mp4',
             headers={
                 'Content-Disposition': f'attachment; filename="{safe_title}.mp4"',
-                'Content-Type': 'video/mp4'
+                'Content-Type': 'video/mp4',
+                'X-Video-Quality': stream.resolution or 'unknown'
             }
         )
         
     except Exception as e:
+        print(f"[Pytubefix] Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/stream/mp3', methods=['GET'])
