@@ -1,465 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Music Downloader</title>
-    
+    <title>MusicHub - Premium</title>
+
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://pl28387331.effectivegatecpm.com/c9/e0/7e/c9e07e9faa21a69c0b85843260b8a157.js"></script>
-    <style>
-        :root {
-            --primary: #0f0f0f;
-            --secondary: #f2f2f2;
-            --text-main: #0f0f0f;
-            --text-sub: #606060;
-            --bg: #ffffff;
-            --font: 'Roboto', sans-serif;
-            --skel-bg: #e5e5e5;
-        }
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- HEADER --- */
-        header {
-            background: rgba(255, 255, 255, 0.98);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 10px 15px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-            display: flex;
-            justify-content: center;
-        }
-
-        .search-wrapper {
-            width: 100%;
-            max-width: 700px;
-            display: flex;
-            align-items: center;
-            background: #f1f1f1;
-            border-radius: 40px;
-            padding: 4px 4px 4px 16px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .search-wrapper:focus-within {
-            background: #fff;
-            border-color: #1c62b9;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        }
-
-        .search-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 8px 0;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .clear-btn {
-            padding: 10px;
-            color: #606060;
-            cursor: pointer;
-            display: none;
-        }
-        .search-input:not(:placeholder-shown) + .clear-btn { display: block; }
-
-        .search-btn {
-            background: #e5e5e5;
-            border: none;
-            border-radius: 40px;
-            width: 50px;
-            height: 38px;
-            cursor: pointer;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 5px;
-        }
-
-        /* --- CONTAINER --- */
-        .container {
-            flex: 1;
-            padding: 20px;
-            width: 100%;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        /* --- GRID/LIST SWITCHER --- */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        /* --- CARD DESIGN --- */
-        .card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        /* Desktop Hover Effect */
-        @media(min-width: 601px) {
-            .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-        }
-
-        .thumbnail {
-            position: relative;
-            padding-top: 56.25%; /* 16:9 */
-            background: #ddd;
-        }
-        .thumbnail img {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .thumbnail img.loaded { opacity: 1; }
-
-        .duration {
-            position: absolute;
-            bottom: 6px;
-            right: 6px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            font-size: 11px;
-            font-weight: 500;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-
-        .details { padding: 12px; display: flex; flex-direction: column; flex: 1; }
-        
-        .title {
-            font-size: 15px; font-weight: 500;
-            line-height: 1.3;
-            color: var(--text-main);
-            margin-bottom: 6px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .meta {
-            font-size: 12px; color: var(--text-sub);
-            margin-bottom: 12px;
-            display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
-        }
-
-        .actions { margin-top: auto; display: flex; gap: 8px; }
-
-        .btn {
-            flex: 1; height: 32px;
-            border: none; border-radius: 16px;
-            font-size: 12px; font-weight: 500;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 5px;
-            background: #f2f2f2; color: #0f0f0f;
-        }
-        .btn-audio { background: #0f0f0f; color: white; }
-
-        /* --- MOBILE LIST VIEW --- */
-        @media (max-width: 600px) {
-            .container { padding: 10px; }
-            .grid { grid-template-columns: 1fr; gap: 12px; }
-
-            .card {
-                flex-direction: row;
-                height: 100px;
-                border-radius: 0;
-                background: transparent;
-                box-shadow: none !important;
-                border-bottom: 1px solid #f0f0f0;
-                padding-bottom: 12px;
-            }
-
-            .thumbnail {
-                width: 160px;
-                padding-top: 0;
-                height: 100%;
-                border-radius: 8px;
-                overflow: hidden;
-                flex-shrink: 0;
-            }
-
-            .details { padding: 0 0 0 12px; justify-content: space-between; }
-            .title { font-size: 14px; margin-bottom: 2px; -webkit-line-clamp: 2; }
-            .meta { margin-bottom: 6px; font-size: 11px; }
-            
-            .actions { margin-top: 0; }
-            .btn { height: 28px; font-size: 11px; }
-        }
-
-        /* --- SKELETON (Loading State) --- */
-        .skel-card { background: white; border-radius: 8px; overflow: hidden; }
-        .skel-anim { 
-            background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%); 
-            background-size: 200% 100%; animation: load 1.5s infinite; 
-        }
-        @keyframes load { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-
-        /* Mobile Skeleton */
-        @media (max-width: 600px) {
-            .skel-card { display: flex; height: 100px; gap: 12px; margin-bottom: 12px; }
-            .skel-thumb { width: 160px; height: 100%; border-radius: 8px; }
-            .skel-content { flex: 1; padding: 8px 0; }
-            .skel-line { height: 12px; margin-bottom: 8px; border-radius: 4px; }
-        }
-        /* Desktop Skeleton */
-        @media (min-width: 601px) {
-            .skel-card { height: 260px; display: flex; flex-direction: column; }
-            .skel-thumb { height: 160px; width: 100%; }
-            .skel-content { padding: 12px; flex: 1; }
-            .skel-line { height: 14px; margin-bottom: 10px; border-radius: 4px; width: 80%; }
-        }
-
-        /* --- TOAST & POPUP --- */
-        .toast {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: rgba(30,30,30,0.95); color: white; padding: 12px 24px;
-            border-radius: 30px; font-size: 13px; opacity: 0; pointer-events: none;
-            transition: 0.3s; z-index: 2000;
-        }
-        .toast.show { opacity: 1; bottom: 100px; }
-
-        .popup {
-            position: fixed; bottom: 20px; right: 20px; background: white;
-            padding: 16px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            width: 320px; z-index: 1000; display: none; border: 1px solid #eee;
-            animation: slideUp 0.3s;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .progress { height: 4px; background: #eee; border-radius: 2px; margin-top: 10px; overflow: hidden; }
-        .bar { height: 100%; background: #0f0f0f; width: 0%; transition: width 0.2s; }
-        .bar.indeterminate { width: 30%; animation: pingpong 1s infinite alternate; }
-        @keyframes pingpong { from { margin-left: 0; } to { margin-left: 70%; } }
-
-        @media (max-width: 600px) { .popup { width: 92%; left: 4%; bottom: 16px; } }
-        
-        .empty { text-align: center; margin-top: 60px; color: #888; }
-        .empty i { font-size: 40px; margin-bottom: 10px; opacity: 0.3; }
-    </style>
+    <!-- Icon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%236366f1'><path d='M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 297L203.5 403.4c-22.3 14.3-51.5-1.7-51.5-28.1V136.7c0-26.4 29.2-42.4 51.5-28.1L369 215c19.6 12.6 19.6 41.8 0 54.4z'/></svg>">
 </head>
+
 <body>
 
-<header>
-    <form class="search-wrapper" onsubmit="event.preventDefault(); handleSearch();">
-        <i class="fas fa-search" style="color:#888;"></i>
-        <input type="text" class="search-input" id="searchInput" placeholder="Search song or paste link..." autocomplete="off">
-        <i class="fas fa-times clear-btn" onclick="clearSearch()"></i>
-        <button type="submit" class="search-btn">Go</button>
-    </form>
-</header>
+    <!-- Header -->
+    <header class="glass">
+        <div class="brand">
+            <i class="fas fa-play-circle"></i> MusicHub
+        </div>
+        <div class="points-pill glass">
+            <i class="fas fa-gem" style="color:var(--warning)"></i> <span id="ptsDisplay">0</span>
+        </div>
+    </header>
 
-<div class="container">
-    <div id="emptyState" class="empty">
-        <i class="fab fa-youtube"></i>
-        <p>Search for music or paste a link</p>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
+            <h2 class="text-gradient">Menu</h2>
+            <button id="closeSidebar" class="btn btn-icon glass"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Streak & XP -->
+        <div class="glass-panel"
+            style="padding:16px;border-radius:16px;margin-bottom:12px;background:linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(234, 88, 12, 0.05) 100%);border-color:rgba(249,115,22,0.2);">
+            <div
+                style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#fed7aa;margin-bottom:10px;">
+                <span>🔥 Streak</span>
+                <span id="streakCount">1 Day</span>
+            </div>
+            <div id="streakDays" style="display:flex;justify-content:space-between;gap:4px;"></div>
+        </div>
+
+        <div class="glass-panel"
+            style="padding:16px;border-radius:16px;margin-bottom:24px;background:linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);border-color:rgba(99,102,241,0.2);">
+            <div
+                style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">
+                <span id="levelName" style="color:var(--accent);font-weight:800;">LEVEL 1</span>
+                <span id="levelPts">0/150 XP</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">
+                <div id="xpBar" style="height:100%;background:var(--accent-gradient);width:0%;"></div>
+            </div>
+        </div>
+
+        <!-- Support & Donation -->
+        <div class="glass-panel" style="padding:16px;border-radius:16px;margin-bottom:24px;text-align:center;">
+            <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px;">Support
+                Development</h4>
+            <div
+                style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-bottom:8px;overflow:hidden">
+                <div style="height:100%;width:82%;background:linear-gradient(90deg, #FFDD00, #22c55e);"></div>
+            </div>
+            <p style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;">Server Costs: 82% Reached</p>
+
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary" style="flex:1;background:#22c55e;color:white;"
+                    onclick="window.openDonate()">
+                    <i class="fas fa-qrcode"></i> UPI
+                </button>
+                <a href="https://buymeacoffee.com/music_hub0" target="_blank" class="btn btn-secondary"
+                    style="flex:1;text-decoration:none;color:white;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-coffee"></i> BMC
+                </a>
+            </div>
+        </div>
+
+        <!-- User Stats -->
+        <div class="glass-panel" style="padding:20px;border-radius:16px;margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                <span style="color:var(--text-secondary)">Balance</span>
+                <span style="font-weight:700;color:var(--warning)"><i class="fas fa-gem"></i> <span
+                        id="sbPts">0</span></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <span style="color:var(--text-secondary)">Downloads</span>
+                <span style="font-weight:700" id="sbLimit">0/5</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;background:var(--warning);color:black;margin-bottom:10px;"
+                onclick="window.watchAd()">
+                <i class="fas fa-play"></i> Watch Ad (+40 pts)
+            </button>
+            <button class="btn btn-secondary" style="width:100%;" onclick="window.unlockLimit()">
+                <i class="fas fa-unlock"></i> Unlock 5 Downloads (100 pts)
+            </button>
+        </div>
+
+        <!-- Nav Links -->
+        <button id="navFavs" class="btn btn-secondary"
+            style="width:100%;justify-content:flex-start;padding:12px;margin-bottom:10px;">
+            <i class="fas fa-heart" style="color:#ef4444"></i> Favorites
+        </button>
+
+        <!-- Download Manager -->
+        <div class="dl-manager">
+            <h4
+                style="margin-bottom:16px;font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--text-tertiary)">
+                Active Downloads
+            </h4>
+            <div id="dlManagerList">
+                <!-- Downloads injected here -->
+            </div>
+        </div>
     </div>
-    <div id="grid" class="grid"></div>
-</div>
 
-<div id="toast" class="toast">Notification</div>
+    <!-- Overlay -->
+    <div class="overlay"></div>
 
-<div id="popup" class="popup">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="pStatus" style="font-weight:500; font-size:14px;">Downloading...</span>
-        <i class="fas fa-times" style="cursor:pointer; color:#999;" onclick="closePopup()"></i>
-    </div>
-    <div class="progress"><div id="pBar" class="bar"></div></div>
-</div>
+    <!-- Main Content -->
+    <main>
+        <section class="hero-section">
+            <h1 class="hero-title">Download Music <br><span class="text-gradient">Without Limits.</span></h1>
 
-<script>
-    const ui = {
-        input: document.getElementById('searchInput'),
-        grid: document.getElementById('grid'),
-        empty: document.getElementById('emptyState'),
-        toast: document.getElementById('toast'),
-        popup: document.getElementById('popup'),
-        status: document.getElementById('pStatus'),
-        bar: document.getElementById('pBar')
-    };
-
-    function clearSearch() {
-        ui.input.value = '';
-        ui.input.focus();
-    }
-
-    function showToast(msg) {
-        ui.toast.innerText = msg;
-        ui.toast.classList.add('show');
-        setTimeout(() => ui.toast.classList.remove('show'), 3000);
-    }
-
-    function formatViews(n) {
-        if(!n) return '';
-        if (n < 1e3) return n;
-        if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + "K";
-        if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + "M";
-        if (n >= 1e9) return +(n / 1e9).toFixed(1) + "B";
-        return n;
-    }
-
-    function showSkeletons() {
-        ui.empty.style.display = 'none';
-        let html = '';
-        for(let i=0; i<8; i++) {
-            html += `
-            <div class="skel-card">
-                <div class="skel-thumb skel-anim"></div>
-                <div class="skel-content">
-                    <div class="skel-line skel-anim" style="width:90%"></div>
-                    <div class="skel-line skel-anim" style="width:50%"></div>
+            <form id="searchForm" class="search-wrapper">
+                <div class="search-input-group">
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="Search songs, artists, or paste Spotify link..." autocomplete="off">
+                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
                 </div>
-            </div>`;
-        }
-        ui.grid.innerHTML = html;
-    }
+                <!-- Search History Dropdown -->
+                <div id="searchHistory" class="glass-panel"
+                    style="display:none;position:absolute;top:100%;left:0;right:0;margin-top:8px;border-radius:16px;overflow:hidden;z-index:90;">
+                </div>
+            </form>
 
-    async function handleSearch() {
-        let query = ui.input.value.trim();
-        if(!query) return;
+            <div class="chips-container">
+                <div class="chip">🔥 Trending</div>
+                <div class="chip">🇮🇳 Bollywood</div>
+                <div class="chip">🇺🇸 Pop</div>
+                <div class="chip">🇬🇧 UK Drill</div>
+                <div class="chip">☕ Lofi</div>
+            </div>
+        </section>
 
-        ui.input.blur();
-        showSkeletons();
+        <section id="grid" class="media-grid">
+            <!-- Content injected via JS -->
+        </section>
+    </main>
 
-        // Check Spotify
-        if(query.includes('spotify.com')) {
-            try {
-                const res = await fetch(`/api/resolve?url=${encodeURIComponent(query)}`);
-                const data = await res.json();
-                if(data.title) {
-                    query = data.title;
-                    showToast('Spotify Link Resolved');
-                }
-            } catch(e) {
-                showToast('Could not resolve Spotify link');
-                return;
-            }
-        }
+    <!-- Modals -->
+    <div id="adModal" class="modal-container">
+        <div class="modal-bg"></div>
+        <div class="modal-content glass-panel" style="border-radius:24px;padding:32px;text-align:center;">
+            <i class="fas fa-clock" style="font-size:48px;color:var(--warning);margin-bottom:20px;"></i>
+            <h3>Verifying Ad...</h3>
+            <p style="color:var(--text-secondary);margin:10px 0 20px;">Please keep the ad tab open.</p>
 
-        try {
-            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-            const data = await res.json();
+            <div
+                style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:20px;">
+                <div id="adLoader" style="height:100%;width:0%;background:var(--warning);transition:width 15s linear;">
+                </div>
+            </div>
 
-            if(!data.videos || !data.videos.length) {
-                ui.grid.innerHTML = '';
-                ui.empty.style.display = 'block';
-                showToast('No results found');
-                return;
-            }
+            <button id="claimBtn" class="btn btn-primary"
+                style="width:100%;background:var(--success);border:none;display:none;" onclick="window.claimReward()">
+                CLAIM REWARD
+            </button>
+        </div>
+    </div>
 
-            // Render Results
-            ui.grid.innerHTML = data.videos.map(v => {
-                const safeTitle = v.title.replace(/'/g, "").replace(/"/g, "");
-                const views = formatViews(v.views);
-                return `
-                <div class="card">
-                    <div class="thumbnail">
-                        <img src="${v.thumbnail}" loading="lazy" onload="this.classList.add('loaded')">
-                        <div class="duration">${v.timestamp || '0:00'}</div>
-                    </div>
-                    <div class="details">
-                        <div>
-                            <div class="title">${v.title}</div>
-                            <div class="meta">
-                                ${v.author.name} 
-                                ${views ? `• ${views} views` : ''} 
-                                • ${v.ago}
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <button class="btn btn-audio" onclick="dl('${v.url}', 'mp3', '${safeTitle}')">
-                                <i class="fas fa-music"></i> Audio
-                            </button>
-                            <button class="btn" onclick="dl('${v.url}', 'mp4', '${safeTitle}')">
-                                <i class="fas fa-video"></i> Video
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
+    <div id="limitModal" class="modal-container">
+        <div class="modal-bg" onclick="this.parentElement.classList.remove('active')"></div>
+        <div class="modal-content glass-panel" style="border-radius:24px;padding:32px;text-align:center;">
+            <i class="fas fa-lock" style="font-size:48px;color:var(--danger);margin-bottom:20px;"></i>
+            <h3>Limit Reached</h3>
+            <p style="color:var(--text-secondary);margin:10px 0 20px;">You've used your daily free downloads.</p>
+            <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="window.unlockLimit()">
+                Unlock 5 More (100 Pts)
+            </button>
+            <button class="btn btn-secondary" style="width:100%;"
+                onclick="this.closest('.modal-container').classList.remove('active')">
+                Close
+            </button>
+        </div>
+    </div>
 
-        } catch(e) {
-            ui.grid.innerHTML = '';
-            ui.empty.style.display = 'block';
-            showToast('Connection Failed');
-        }
-    }
+    <!-- Donate Modal -->
+    <div id="donateModal" class="modal-container">
+        <div class="modal-bg" onclick="this.parentElement.classList.remove('active')"></div>
+        <div class="modal-content glass-panel" style="border-radius:24px;padding:32px;text-align:center;">
+            <i class="fas fa-heart" style="font-size:48px;color:var(--danger);margin-bottom:20px;"></i>
+            <h3>Support Us</h3>
+            <p style="color:var(--text-secondary);margin-bottom:20px;">Scan to Pay via UPI</p>
 
-    async function dl(url, type, title) {
-        ui.popup.style.display = 'block';
-        ui.status.innerText = 'Downloading...';
-        ui.bar.className = 'bar indeterminate';
-        ui.bar.style.width = '100%';
+            <div style="background:white;padding:16px;border-radius:16px;display:inline-block;margin-bottom:20px;">
+                <img id="qrImg" src="" alt="UPI QR" style="width:160px;height:160px;display:block;">
+            </div>
 
-        let api = type === 'mp3' 
-            ? `/api/convert-to-mp3?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
-            : `https://ironman.koyeb.app/ironman/dl/v2/ytmp4?url=${url}`;
+            <div class="chips-container" style="margin-bottom:20px;margin-top:0;">
+                <div class="chip" onclick="window.setAmount(10)">₹10</div>
+                <div class="chip" onclick="window.setAmount(50)">₹50</div>
+                <div class="chip active" onclick="window.setAmount(100)">₹100</div>
+                <div class="chip" onclick="window.setAmount(500)">₹500</div>
+            </div>
 
-        try {
-            const res = await fetch(api);
-            if(!res.ok) throw new Error();
+            <div class="glass"
+                style="padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:20px;"
+                onclick="window.copyUPI()">
+                <span id="upiId" style="font-family:monospace;">raheemarar948@okicici</span>
+                <i class="fas fa-copy" style="color:var(--accent)"></i>
+            </div>
 
-            const reader = res.body.getReader();
-            const total = +res.headers.get('Content-Length');
-            let received = 0;
-            let chunks = [];
+            <button class="btn btn-secondary" style="width:100%;"
+                onclick="this.closest('.modal-container').classList.remove('active')">
+                Close
+            </button>
+        </div>
+    </div>
 
-            while(true) {
-                const {done, value} = await reader.read();
-                if(done) break;
-                chunks.push(value);
-                received += value.length;
-
-                if(total && type !== 'mp3') {
-                    ui.bar.className = 'bar';
-                    const pct = Math.floor((received/total)*100);
-                    ui.bar.style.width = pct + '%';
-                    ui.status.innerText = `Downloading... ${pct}%`;
-                }
-            }
-
-            ui.status.innerText = 'Saving...';
-            const blob = new Blob(chunks);
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${title}.${type}`;
-            a.click();
+    <!-- Quality Selection Modal -->
+    <div id="qualityModal" class="modal-container">
+        <div class="modal-bg" onclick="this.parentElement.classList.remove('active')"></div>
+        <div class="modal-content glass-panel" style="border-radius:24px;padding:32px;text-align:center;max-width:360px;">
+            <i class="fas fa-video" style="font-size:48px;color:var(--accent);margin-bottom:20px;"></i>
+            <h3 id="qualityModalTitle" style="margin-bottom:8px;">Select Quality</h3>
+            <p id="qualityVideoName" style="color:var(--text-secondary);margin-bottom:24px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></p>
             
-            setTimeout(() => { closePopup(); }, 2000);
-        } catch(e) {
-            showToast('Download Failed');
-            closePopup();
-        }
-    }
+            <div id="qualityOptions" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                <button class="btn quality-btn" data-quality="360p" onclick="app.selectQuality('360p')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-mobile-alt" style="color:var(--text-secondary);width:20px;"></i>
+                        <span>360p</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Small • Fast</span>
+                </button>
+                <button class="btn quality-btn" data-quality="720p" onclick="app.selectQuality('720p')" style="border-color:var(--accent);">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-laptop" style="color:var(--accent);width:20px;"></i>
+                        <span style="color:var(--accent);font-weight:700;">720p HD</span>
+                        <span style="background:var(--accent);color:white;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;">RECOMMENDED</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Balanced</span>
+                </button>
+                <button class="btn quality-btn" data-quality="1080p" onclick="app.selectQuality('1080p')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-tv" style="color:var(--warning);width:20px;"></i>
+                        <span>1080p Full HD</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Large • Slow</span>
+                </button>
+                <button class="btn quality-btn" data-quality="Highest" onclick="app.selectQuality('Highest')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-crown" style="color:#fbbf24;width:20px;"></i>
+                        <span>Highest Available</span>
+                    </div>
+                    <span style="color:var(--text-tertiary);font-size:12px;">Best Quality</span>
+                </button>
+            </div>
+            
+            <button class="btn btn-secondary" style="width:100%;"
+                onclick="this.closest('.modal-container').classList.remove('active')">
+                Cancel
+            </button>
+        </div>
+    </div>
 
-    function closePopup() { ui.popup.style.display = 'none'; }
-</script>
-
-<script src="https://pl28387402.effectivegatecpm.com/86/26/f4/8626f40c509f69bd9c5c70dbbacea3a6.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>

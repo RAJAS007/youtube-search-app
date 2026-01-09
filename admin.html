@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicHub Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #0a0a0b;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+
+        .login-box {
+            background: #18181b;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid #27272a;
+        }
+
+        .login-box h1 {
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        .login-box p {
+            color: #71717a;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #6366f1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4f46e5;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .dashboard {
+            display: none;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: #27272a;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #3f3f46;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #18181b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #27272a;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #71717a;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .stat-value.accent {
+            color: #6366f1;
+        }
+
+        .stat-value.green {
+            color: #22c55e;
+        }
+
+        .section {
+            background: #18181b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #27272a;
+        }
+
+        .section h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table th,
+        .table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .table th {
+            color: #71717a;
+            font-weight: 500;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .refresh-btn {
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container" id="loginView">
+        <div class="login-box">
+            <h1>🔐 Admin Access</h1>
+            <p>Enter password to view dashboard</p>
+            <div id="error" class="error"></div>
+            <input type="password" id="password" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+            <button onclick="login()">Login</button>
+        </div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="header">
+            <h1>📊 MusicHub Admin</h1>
+            <div>
+                <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value accent" id="totalUsers">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Today</div>
+                <div class="stat-value green" id="activeToday">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Downloads</div>
+                <div class="stat-value" id="totalDownloads">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Points</div>
+                <div class="stat-value" id="totalPoints">-</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👥 Recent Users</h2>
+            <table class="table" id="userTable">
+                <tr>
+                    <td>Loading...</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let adminPassword = '';
+
+        async function login() {
+            const pwd = document.getElementById('password').value;
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    adminPassword = pwd;
+                    document.getElementById('loginView').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    loadData();
+                } else {
+                    document.getElementById('error').innerText = 'Invalid password';
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('error').innerText = 'Connection error';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        async function loadData() {
+            try {
+                const res = await fetch('/api/admin/dashboard', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+                const data = await res.json();
+
+                document.getElementById('totalUsers').innerText = data.users.totalUsers;
+                document.getElementById('activeToday').innerText = data.users.activeToday;
+                document.getElementById('totalDownloads').innerText = data.users.totalDownloads;
+                document.getElementById('totalPoints').innerText = data.users.totalPoints;
+
+                document.getElementById('userTable').innerHTML = data.recentUsers.length
+                    ? '<tr><th>IP</th><th>Points</th><th>Downloads</th><th>Date</th></tr>' +
+                    data.recentUsers.map(u => '<tr><td>' + u.ip + '</td><td>' + u.points + '</td><td>' + u.downloads + '/' + u.limit + '</td><td>' + u.date + '</td></tr>').join('')
+                    : '<tr><td>No users yet</td></tr>';
+            } catch (e) {
+                console.error('Load error:', e);
+            }
+        }
+    </script>
+</body>
+
+</html>
